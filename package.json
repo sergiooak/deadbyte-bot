@@ -2,20 +2,25 @@
   "name": "dead-v3",
   "version": "3.0.0",
   "description": "deadbyte 3rd generation",
-  "main": "index.js",
+  "author": "sergiooak",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint src",
+    "doc": "jsdoc -c jsdoc.json"
   },
-  "author": "sergiooak",
-  "license": "ISC",
+  "license": "unlicense",
   "dependencies": {
     "dotenv": "^16.3.1",
     "filenamify": "^6.0.0",
     "glob": "^10.2.7",
     "mime-types": "^2.1.35",
     "whatsapp-web.js": "^1.21.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.45.0"
   }
 }
