@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import wwebjs from 'whatsapp-web.js';
-import { stickerQueue, stickerTextQueue } from './services/queue.js';
 /**
  * Whatsapp Web Client
  * @type {wwebjs.Client}
@@ -9,7 +9,6 @@ const client = new wwebjs.Client({
     // proxyAuthentication: { username: 'username', password: 'password' },
     puppeteer: {
         executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
-    // args: ['--proxy-server=proxy-server-that-requires-authentication.example.com'],
     // headless: false,
     },
 });
@@ -24,21 +23,41 @@ export function getClient() {
 
 client.initialize();
 
-client.on('ready', () => {
-    console.log('READY');
-});
+/**
+ * WWebJS Client Events
+ * @see https://docs.wwebjs.dev/Client.html
+ * 
+ */
+const events = [
+    'auth_failure',
+    'authenticated',
+    'change_battery',
+    'change_state',
+    'chat_archived',
+    'chat_removed',
+    'contact_changed',
+    'disconnected',
+    'group_admin_changed',
+    'group_join',
+    'group_leave',
+    'group_update',
+    'incoming_call',
+    'media_uploaded',
+    'message',
+    'message_ack',
+    'message_create',
+    'message_reaction',
+    'message_revoke_everyone',
+    'message_revoke_me',
+    'qr',
+    'ready'
+];
 
-client.on('message', async (msg) => {
-    const chat = await msg.getChat();
-    const chatId = chat.id._serialized;
-
-    if (msg.hasMedia) {
-        await msg.react('⏳');
-        return stickerQueue.set(msg.id, msg);
-    }
-
-    if (msg.body && msg.type === 'chat') {
-        await msg.react('⏳');
-        return stickerTextQueue.set(msg.id, msg);
+events.forEach(async event => {
+    try {
+        const eventModule = await import(`./services/events/${event}.js`);
+        client.on(event, eventModule.default);
+    } catch (error) {
+        // do nothing
     }
 });

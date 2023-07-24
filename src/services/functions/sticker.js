@@ -1,7 +1,7 @@
 import wwebjs from 'whatsapp-web.js';
 import Util from '../../utils/sticker.js';
 import sharp from 'sharp';
-import { getClient } from '../../index.js';
+import { createUrl } from '../../config/api.js';
 
 /**
  * Make sticker from media (image, video, gif)
@@ -15,9 +15,12 @@ export async function makeSticker(msg, crop = false) {
     let mediaBuffer = Buffer.from(stickerMedia.data, 'base64');
 
     // if message has body, add it to the sticker as subtitle
-    const subtitle = msg.body ? msg.body : undefined;
-    if(subtitle) {
-        const subtitleMedia = await wwebjs.MessageMedia.fromUrl(`https://v1.deadbyte.com.br/image-creator/ttp/1?message=${subtitle}&subtitle=true`, {
+    if(msg.body) {
+        const url = createUrl('image-creator', 'ttp', {
+            message: msg.body,
+            subtitle: true,
+        });
+        const subtitleMedia = await wwebjs.MessageMedia.fromUrl(url, {
             unsafeMime: true,
         });
         if (!subtitleMedia) return console.error('Error downloading media');
@@ -77,10 +80,18 @@ export async function makeSticker(msg, crop = false) {
  * @param {wwebjs.Message} msg
  */
 export async function makeStickerText(msg) {
-    const media = await wwebjs.MessageMedia.fromUrl(`https://v1.deadbyte.com.br/image-creator/ttp/1?message=${msg.body}`, {
+    const url = createUrl('image-creator', 'ttp', {
+        message: msg.body
+    });
+    console.log(url);
+    
+    const media = await wwebjs.MessageMedia.fromUrl(url, {
         unsafeMime: true,
     });
-    if (!media) return console.error('Error downloading media');
+    if (!media) {
+        console.error('Error downloading media');
+        return await msg.react('❌');
+    }
 
     const chat = await msg.getChat();
 
@@ -92,5 +103,5 @@ export async function makeStickerText(msg) {
         stickerCategories: ['💀', '🤖'],
     });
 
-    await msg.react('✅');
+    await msg.react('❌');
 }
