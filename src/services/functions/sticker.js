@@ -16,7 +16,7 @@ export async function makeSticker(msg, crop = false) {
 
     // if message has body, add it to the sticker as subtitle
     if(msg.body) {
-        const url = createUrl('image-creator', 'ttp', {
+        const url = createUrl('imageCreator', 'ttp', {
             message: msg.body,
             subtitle: true,
         });
@@ -80,7 +80,7 @@ export async function makeSticker(msg, crop = false) {
  * @param {wwebjs.Message} msg
  */
 export async function makeStickerText(msg) {
-    const url = createUrl('image-creator', 'ttp', {
+    const url = createUrl('imageCreator', 'ttp', {
         message: msg.body
     });
     console.log(url);
@@ -103,5 +103,5 @@ export async function makeStickerText(msg) {
         stickerCategories: ['💀', '🤖'],
     });
 
-    await msg.react('❌');
+    await msg.react('✅');
 }

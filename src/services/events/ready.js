@@ -3,6 +3,6 @@
  * @see https://docs.wwebjs.dev/Client.html#event:ready
  */
 
-export default async function ready() {
+export default async () => {
     console.log('READY');
-}
+};

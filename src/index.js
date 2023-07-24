@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import wwebjs from 'whatsapp-web.js';
+import fs from 'fs';
 /**
  * Whatsapp Web Client
  * @type {wwebjs.Client}
@@ -53,11 +54,10 @@ const events = [
     'ready'
 ];
 
-events.forEach(async event => {
-    try {
-        const eventModule = await import(`./services/events/${event}.js`);
-        client.on(event, eventModule.default);
-    } catch (error) {
-        // do nothing
-    }
+events.forEach(async event => {    
+    const exists = fs.existsSync(`./src/services/events/${event}.js`);
+    if (!exists) return;
+        
+    const eventModule = await import(`./services/events/${event}.js`);
+    client.on(event, eventModule.default);
 });

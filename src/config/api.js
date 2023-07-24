@@ -19,7 +19,6 @@ if (!apiKey) throw new Error('API_KEY not found! Grab one at https://api.deadbyt
  * @typedef {Object} EndpointParam
  * @property {string} type
  * @property {boolean} required
- * @property {string} default
  * @property {string} description
  * 
 */
@@ -34,7 +33,7 @@ const imageCreator = {
     description: 'Create images on the fly',
     endpoints: {
         ttp: {
-            path: 'ttp',
+            path: 'ttp/1',
             name: 'Text to Picture',
             description: 'Create a 512x512 image with text',
             params: {
@@ -46,7 +45,6 @@ const imageCreator = {
                 subtitle: {
                     type: 'boolean',
                     required: false,
-                    default: 'false',
                     description: 'If the text should be written on the bottom of the image',
                 },
             },
@@ -89,15 +87,16 @@ export function createUrl(category, endpoint, params) {
     if (extraParams.length > 0) throw new Error(`Extra params: ${extraParams.join(', ')}`);
 
     // create the url
-    const url = new URL(`${baseUrl}${category}/${endpoint}`);
+    const categoryPath = avaliableEndpoints[category].path;
+    const endpointPath = endpointObj.path;
+    const url = new URL(`${baseUrl}/${categoryPath}/${endpointPath}`);
 
     // add the api key
     url.searchParams.append('key', apiKey);
 
     // add the params, populating with default values if needed
     endpointParams.forEach(param => {
-        const value = params[param] || endpointObj.params[param].default;
-        url.searchParams.append(param, value);
+        if(params[param]) url.searchParams.append(param, params[param]);
     });
 
     return url.toString();

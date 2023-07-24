@@ -12,7 +12,7 @@ import { stickerQueue, stickerTextQueue } from '../queue.js';
  * @param {wwebjs.Message} msg
  * @see https://docs.wwebjs.dev/Client.html#event:message
  */
-export default async (msg) => {    
+export default async (msg) => {
     if (msg.hasMedia && (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker')) {
         await msg.react('⏳');
         return stickerQueue.set(msg.id, msg);
