@@ -2,7 +2,7 @@
 <div align="center">
   <div>
     <img src="https://deadbyte.com.br/logo_head.svg" alt="DeadByte"/>
-    <h1 align="center">DeadByte V3</h1>
+    <h1 align="center">DeadByte v3</h1>
   </div>
 	<p> Terceira versão do DeadByte, um bot de figurinhas para o WhatsApp </p>    
 	<a href="http://standardjs.com/"><img src="https://img.shields.io/badge/code style-standard-brightgreen?style=for-the-badge"></a>
