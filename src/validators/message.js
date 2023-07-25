@@ -1,3 +1,5 @@
+import importFresh from '../utils/importFresh.js'
+import fs from 'fs/promises'
 //
 // ================================ Variables =================================
 //
@@ -14,35 +16,69 @@ const commandless = (msg, chat, client) => {
 /**
  * Parse message and check if it is to respond
  * @param {import('whatsapp-web.js').Message} msg
- * @returns {commandObject} commandObject
+ * @returns {promise<commandObject|boolean>} commandObject if it is to respond, false if not
  *
  * @typedef {Object} commandObject
  * @property {String} type - The type of the command
  * @property {String} command - The command name
  */
-const isToRepond = async (msg) => {
-//   const client = (await import('../index.js')).getClient()
-//   const chat = await msg.getChat()
-//   const sender = await msg.getContact()
-//   const senderIsMe = sender.isMe
-//   const originalBody = msg.body
+export default async (msg) => {
+  const client = (await import('../index.js')).getClient()
+  const chat = await msg.getChat()
+  //   const sender = await msg.getContact()
+  //   const senderIsMe = sender.isMe
+  //   const originalBody = msg.body
 
-  // Check if the message is a command
-  const prefixes = await import('../config/bot.js').then(config => config.prefixes)
-  const functionRegex = new RegExp(`^(${prefixes.join('|')}) ?`, 'g')
-  console.log('functionRegex: ', functionRegex)
-  const isFunction = msg.body.match(functionRegex)
-  console.log('isFunction: ', isFunction)
+  // // Check if the message is a command
+  // const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
+  // const functionRegex = new RegExp(`^${prefixes.join(' ?|^')} ?`)
+  // const isFunction = msg.body.match(functionRegex)
 
-  if (isOneOf(commandless(msg))) {
-    return {
-      type: 'commandless',
-      command: getFirstMatch(commandless(msg))
+  try {
+    const commandFiles = await fs.readdir('./src/services/commands')
+    console.log('commandFiles: ', commandFiles)
+    const commandModules = await Promise.all(commandFiles.map(async command => {
+      const commandModule = await importFresh(`../services/commands/${command}`)
+      return {
+        name: command.split('.')[0],
+        module: commandModule.default
+      }
+    }))
+    console.log('commandModules: ', commandModules)
+
+    const commandObjects = await Promise.all(commandModules.map(async _command => {
+    // loop through all commands
+      for (const command of commandModules) {
+      // check if the message is compatible with the command
+        const commandObject = await command.module(msg, chat, client)
+        if (isOneOf(commandObject)) {
+          return {
+            type: command.name,
+            command: getFirstMatch(commandObject)
+          }
+        }
+      }
+      return false
+    }))
+
+    console.log('commandObjects: ', commandObjects)
+
+    if (commandObjects.length > 0) {
+      return commandObjects.find(command => command !== false)
     }
+
+    if (isOneOf(commandless(msg))) {
+      return {
+        type: 'commandless',
+        command: getFirstMatch(commandless(msg))
+      }
+    }
+
+    return false
+  } catch (error) {
+    console.log('error: ', error)
   }
 }
-
-export { isToRepond }
 //
 // ================================ Aux Functions =================================
 //
