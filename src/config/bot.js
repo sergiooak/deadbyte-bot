@@ -3,7 +3,7 @@
  * @type {string[]}
  * @example "!command" or .command etc...
  */
-export const prefixes = ['!', '.', '#', '/']
+export const prefixes = ['!', '\.', '#', '/']
 
 /**
  * If none command is found using this prefixes, the message will be treated as a commandless message
