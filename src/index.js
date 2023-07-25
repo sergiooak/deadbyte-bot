@@ -1,63 +1,35 @@
-import 'dotenv/config';
-import wwebjs from 'whatsapp-web.js';
-import fs from 'fs';
+import 'dotenv/config'
+import wwebjs from 'whatsapp-web.js'
+import fs from 'fs/promises'
 /**
  * Whatsapp Web Client
  * @type {wwebjs.Client}
  */
 const client = new wwebjs.Client({
-    authStrategy: new wwebjs.LocalAuth(),
-    // proxyAuthentication: { username: 'username', password: 'password' },
-    puppeteer: {
-        executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  authStrategy: new wwebjs.LocalAuth({
+    clientId: 'DeadByte'
+  }),
+
+  puppeteer: {
+    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe'
     // headless: false,
-    },
-});
+  }
+})
 
 /**
- * Get Whatsapp Web Client
+ * Grabs Whatsapp Web Client
  * @returns {wwebjs.Client}
  */
-export function getClient() {
-    return client;
+export function getClient () {
+  return client
 }
 
-client.initialize();
-
-/**
- * WWebJS Client Events
- * @see https://docs.wwebjs.dev/Client.html
- * 
- */
-const events = [
-    'auth_failure',
-    'authenticated',
-    'change_battery',
-    'change_state',
-    'chat_archived',
-    'chat_removed',
-    'contact_changed',
-    'disconnected',
-    'group_admin_changed',
-    'group_join',
-    'group_leave',
-    'group_update',
-    'incoming_call',
-    'media_uploaded',
-    'message',
-    'message_ack',
-    'message_create',
-    'message_reaction',
-    'message_revoke_everyone',
-    'message_revoke_me',
-    'qr',
-    'ready'
-];
-
-events.forEach(async event => {    
-    const exists = fs.existsSync(`./src/services/events/${event}.js`);
-    if (!exists) return;
-        
-    const eventModule = await import(`./services/events/${event}.js`);
-    client.on(event, eventModule.default);
-});
+// Auto load events
+(async () => {
+  const events = await fs.readdir('./src/services/events')
+  events.forEach(async event => {
+    const eventModule = await import(`./services/events/${event}`)
+    client.on(event.split('.')[0], eventModule.default)
+  })
+  client.initialize()
+})()

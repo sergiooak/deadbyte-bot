@@ -4,5 +4,5 @@
  */
 
 export default async () => {
-    console.log('READY');
-};
+  console.log('READY')
+}
