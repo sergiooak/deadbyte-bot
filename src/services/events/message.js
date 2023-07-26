@@ -1,5 +1,7 @@
-import { stickerQueue, stickerTextQueue } from '../queue.js'
+import { addToQueue } from '../queue.js'
 import importFresh from '../../utils/importFresh.js'
+import logger from '../../logger.js'
+
 //
 // ================================ Main Function =============================
 //
@@ -16,17 +18,7 @@ export default async (msg) => {
   const messageParser = await importFresh('../validators/message.js')
   const command = await messageParser.default(msg)
   if (command) {
-    console.log('command: ', command)
-    await msg.react('⏳')
-
-    if (command.type === 'sticker') {
-      if (command.command === 'sticker') {
-        return stickerQueue.set(msg.id, msg)
-      }
-
-      if (command.command === 'stickerText') {
-        return stickerTextQueue.set(msg.id, msg)
-      }
-    }
+    logger.info(`📥 - [${msg.from.split('@')[0]} - ${command.type}.${command.command}()`)
+    addToQueue(msg.from, command.type, command.command, msg)
   }
 }
