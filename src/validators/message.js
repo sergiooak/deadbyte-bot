@@ -36,7 +36,6 @@ export default async (msg) => {
 
   try {
     const commandFiles = await fs.readdir('./src/services/commands')
-    console.log('commandFiles: ', commandFiles)
     const commandModules = await Promise.all(commandFiles.map(async command => {
       const commandModule = await importFresh(`../services/commands/${command}`)
       return {
@@ -44,7 +43,6 @@ export default async (msg) => {
         module: commandModule.default
       }
     }))
-    console.log('commandModules: ', commandModules)
 
     const commandObjects = await Promise.all(commandModules.map(async _command => {
     // loop through all commands
@@ -60,8 +58,6 @@ export default async (msg) => {
       }
       return false
     }))
-
-    console.log('commandObjects: ', commandObjects)
 
     if (commandObjects.length > 0) {
       return commandObjects.find(command => command !== false)
