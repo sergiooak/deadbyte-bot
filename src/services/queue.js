@@ -1,54 +1,67 @@
-import { makeSticker, makeStickerText } from '../services/functions/sticker.js'
+import importFresh from '../utils/importFresh.js'
+import logger from '../logger.js'
+//
+// ===================================== Variables ======================================
+//
+const queue = []
+let waitTime = 2500 // 2.5 seconds
 
-/**
- * Sticker queue
- * @type {Map<wwebjs.MessageId, wwebjs.Message>}
- */
-const stickerQueue = new Map()
-setInterval(() => {
-  if (stickerQueue.size > 0) {
-    const firstKey = stickerQueue.keys().next()
-    const firstItem = stickerQueue.get(firstKey.value)
-
-    // get every other message from the same chat (msg.from)
-    const chat = firstItem.from
-    const chatMessages = [...stickerQueue.values()].filter(msg => msg.from === chat)
-
-    // move every message from the same chat to the end of the queue
-    chatMessages.forEach(msg => {
-      stickerQueue.delete(msg.id)
-      stickerQueue.set(msg.id, msg)
+//
+// ==================================== Main Function ====================================
+//
+function addToQueue (userId, moduleName, functionName, msg) {
+  const userIndex = queue.findIndex((user) => user.wid === userId)
+  if (userIndex !== -1) {
+    queue[userIndex].messagesQueue.push({ moduleName, functionName, message: msg })
+  } else {
+    queue.push({
+      wid: userId,
+      messagesQueue: [{ moduleName, functionName, message: msg }]
     })
-
-    stickerQueue.delete(firstKey.value)
-    makeSticker(firstItem, true)
-    makeSticker(firstItem, false)
   }
-}, 1000)
+}
+async function processQueue () {
+  // set the wait time for the next round based on the queue length
+  setWaitTime(Math.min(2500 - (queue.length * 100)), 500)
+  // with more items on the queue, the wait time will be smaller, but never less than 500ms
 
-/**
- * Sticker text queue
- * @type {Map<string, import('whatsapp-web.js').Message>}
- */
-const stickerTextQueue = new Map()
-setInterval(() => {
-  if (stickerTextQueue.size > 0) {
-    const firstKey = stickerTextQueue.keys().next()
-    const firstItem = stickerTextQueue.get(firstKey.value)
+  if (queue.length === 0) return setTimeout(processQueue, waitTime) // if the queue is empty, wait and try again
 
-    // get every other message from the same chat (msg.from)
-    const chat = firstItem.from
-    const chatMessages = [...stickerQueue.values()].filter(msg => msg.from === chat)
+  const user = queue.shift() // get the first user on the queue
+  const message = user.messagesQueue.shift() // get the first message of that user
+  const { moduleName, functionName, message: messageContent } = message
+  logger.info(`🛠️ - [${user.wid.split('@')[0]}] - ${'1/X'.replace('X', user.messagesQueue.length + 1)} | ${moduleName}.${functionName}()`)
 
-    // move every message from the same chat to the end of the queue
-    chatMessages.forEach(msg => {
-      stickerQueue.delete(msg.id)
-      stickerQueue.set(msg.id, msg)
+  try {
+    const module = await importFresh(`../services/functions/${moduleName}.js`) // import the module
+    logger.debug(module)
+
+    const fnPromisse = module[functionName](messageContent)
+    fnPromisse.then((_result) => {
+      if (user.messagesQueue.length > 0) {
+        queue.push(user) // if there are more messages on the user queue, push it back to the queue
+      }
+    }).catch((err) => {
+      logger.error(err)
     })
-
-    stickerTextQueue.delete(firstKey.value)
-    makeStickerText(firstItem)
+  } catch (err) {
+    console.log(err)
   }
-}, 1000)
 
-export { stickerQueue, stickerTextQueue }
+  setTimeout(processQueue, waitTime) // wait and process the next item on the queue
+}
+
+processQueue()
+
+//
+// ================================== Helper Functions ==================================
+//
+export function setWaitTime (time) {
+  waitTime = time
+}
+
+export function getWaitTime () {
+  return waitTime
+}
+
+export { addToQueue, processQueue }
