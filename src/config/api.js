@@ -1,9 +1,7 @@
 import fs from 'fs/promises'
 
-const baseUrl = process.env.API_URL || 'https://v1.deadbyte.com.br'
-const apiKey = process.env.API_KEY
-
-if (!apiKey) throw new Error('API_KEY not found! Grab one at https://api.deadbyte.com.br')
+export const baseUrl = process.env.API_URL || 'https://v1.deadbyte.com.br'
+export const apiKey = process.env.API_KEY
 
 /**
  * @typedef {Object} EndpointCategory

@@ -2,6 +2,8 @@ import 'dotenv/config'
 import wwebjs from 'whatsapp-web.js'
 import fs from 'fs/promises'
 import logger from './logger.js'
+import { apiKey } from './config/api.js'
+
 /**
  * Whatsapp Web Client
  * @type {wwebjs.Client}
@@ -33,6 +35,12 @@ export function getClient () {
     client.on(event.split('.')[0], eventModule.default)
   })
   client.initialize()
+
+  // if no API KEY, kill the process
+  if (!apiKey) {
+    logger.fatal('API_KEY not found! Grab one at https://api.deadbyte.com.br')
+    process.exit(1)
+  }
 })()
 
 // clear terminal
