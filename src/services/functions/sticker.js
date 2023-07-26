@@ -2,13 +2,16 @@ import wwebjs from 'whatsapp-web.js'
 import Util from '../../utils/sticker.js'
 import sharp from 'sharp'
 import { createUrl } from '../../config/api.js'
+import reactions from '../../config/reactions.js'
 
 /**
  * Make sticker from media (image, video, gif)
  * @param {wwebjs.Message} msg
  * @param {boolean} crop
  */
-export async function makeSticker (msg, crop = false) {
+export async function sticker (msg, crop = false) {
+  await msg.react(reactions.wait)
+
   let media = await msg.downloadMedia()
   if (!media) return console.error('Error downloading media')
   let stickerMedia = await Util.formatToWebpSticker(media, {}, crop)
@@ -60,7 +63,7 @@ export async function makeSticker (msg, crop = false) {
   // if still heavier than 1MB, throw error
   if (mediaBuffer.byteLength > 1_000_000) {
     console.error('sticker is still too heavy!', mediaBuffer.byteLength)
-    return await msg.react('⚓')
+    return await msg.react(reactions.heavy)
   }
 
   // send media as sticker back
@@ -71,25 +74,29 @@ export async function makeSticker (msg, crop = false) {
     stickerCategories: ['💀', '🤖']
   })
 
-  if (!crop) await msg.react('✅')
+  if (!crop) {
+    await sticker(msg, true) // make cropped version
+    await msg.react(reactions.success)
+  }
 }
 
 /**
  * Make sticker from text
  * @param {wwebjs.Message} msg
  */
-export async function makeStickerText (msg) {
+export async function stickerText (msg) {
+  await msg.react(reactions.wait)
+
   const url = await createUrl('image-creator', 'ttp', {
     message: msg.body
   })
-  console.log(url)
 
   const media = await wwebjs.MessageMedia.fromUrl(url, {
     unsafeMime: true
   })
   if (!media) {
     console.error('Error downloading media')
-    return await msg.react('❌')
+    return await msg.react(reactions.error)
   }
 
   const chat = await msg.getChat()
@@ -102,5 +109,5 @@ export async function makeStickerText (msg) {
     stickerCategories: ['💀', '🤖']
   })
 
-  await msg.react('✅')
+  await msg.react(reactions.success)
 }
