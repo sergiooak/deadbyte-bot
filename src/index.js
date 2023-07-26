@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import wwebjs from 'whatsapp-web.js'
 import fs from 'fs/promises'
+import logger from './logger.js'
 /**
  * Whatsapp Web Client
  * @type {wwebjs.Client}
@@ -11,8 +12,8 @@ const client = new wwebjs.Client({
   }),
 
   puppeteer: {
-    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe'
     // headless: false,
+    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe'
   }
 })
 
@@ -33,3 +34,14 @@ export function getClient () {
   })
   client.initialize()
 })()
+
+// clear terminal
+process.stdout.write('\x1B[2J\x1B[0f')
+
+// catch unhandled rejections and errors to avoid crashing
+process.on('unhandledRejection', (err) => {
+  logger.fatal(err)
+})
+process.on('uncaughtException', (err) => {
+  logger.fatal(err)
+})
