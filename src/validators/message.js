@@ -1,13 +1,14 @@
 import importFresh from '../utils/importFresh.js'
 import fs from 'fs/promises'
 import logger from '../logger.js'
+import reactions from '../config/reactions.js'
 //
 // ================================ Variables =================================
 //
 const commandless = (msg, chat, client) => {
   return {
-    sticker: msg.hasMedia && isMediaStickerCompatible(msg),
-    stickerText: msg.body && msg.type === 'chat'
+    stickerFNsticker: msg.hasMedia && isMediaStickerCompatible(msg),
+    stickerFNstickerText: msg.body && msg.type === 'chat'
   }
 }
 
@@ -24,50 +25,68 @@ const commandless = (msg, chat, client) => {
  * @property {String} command - The command name
  */
 export default async (msg) => {
-  const client = (await import('../index.js')).getClient()
-  const chat = await msg.getChat()
-  //   const sender = await msg.getContact()
-  //   const senderIsMe = sender.isMe
-  //   const originalBody = msg.body
+  const aux = {} // auxiliar variables
+  aux.client = (await import('../index.js')).getClient()
+  aux.chat = await msg.getChat()
+  aux.sender = await msg.getContact()
+  aux.senderIsMe = aux.sender.isMe
 
-  // // Check if the message is a command
-  // const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
-  // const functionRegex = new RegExp(`^${prefixes.join(' ?|^')} ?`)
-  // const isFunction = msg.body.match(functionRegex)
+  // Check if the message is a command
+  const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
+  const functionRegex = new RegExp(`^${prefixes.join(' ?|^')} ?`)
+  aux.isFunction = msg.body.match(functionRegex)
+  aux.prefix = msg.body.match(functionRegex)?.[0]
+  aux.function = msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
+
+  aux.originalBody = msg.body
+  msg.body = msg.body.replace(/^\S*/, '').trim()
+  console.log(msg.body)
 
   try {
-    const commandFiles = await fs.readdir('./src/services/commands')
-    const commandModules = await Promise.all(commandFiles.map(async command => {
-      const commandModule = await importFresh(`../services/commands/${command}`)
-      return {
-        name: command.split('.')[0],
-        module: commandModule.default
-      }
-    }))
+    msg.aux = aux
 
-    const commandObjects = await Promise.all(commandModules.map(async _command => {
-    // loop through all commands
-      for (const command of commandModules) {
-      // check if the message is compatible with the command
-        const commandObject = await command.module(msg, chat, client)
-        if (isOneOf(commandObject)) {
-          return {
-            type: command.name,
-            command: getFirstMatch(commandObject)
+    if (aux.isFunction) { // if it is a function, search in all of the command blocks
+      const allCommandFiles = await fs.readdir('./src/services/commands')
+      const commandFiles = allCommandFiles.filter(file => !file.startsWith('_') && file.endsWith('.js'))
+      const commandModules = await Promise.all(commandFiles.map(async command => {
+        const commandModule = await importFresh(`../services/commands/${command}`)
+        return {
+          name: command.split('.')[0],
+          module: commandModule.default
+        }
+      }))
+
+      const commandObjects = await Promise.all(commandModules.map(async _command => {
+        // loop through all commands
+        for (const command of commandModules) {
+          // check if the message is compatible with the command
+          const commandObject = await command.module(msg, aux)
+          if (isOneOf(commandObject)) {
+            // remove first word from body
+            return {
+              type: command.name,
+              command: getFirstMatch(commandObject)
+            }
           }
         }
-      }
-      return false
-    }))
+        const prefixesWithFallback = await importFresh('../config/bot.js').then(config => config.prefixesWithFallback)
+        if (prefixesWithFallback.includes(aux.prefix) === false) {
+          await msg.react(reactions.confused)
+          return false
+        }
+      }))
 
-    if (commandObjects.length > 0) {
-      return commandObjects.find(command => command !== false)
+      if (commandObjects.filter(command => command !== undefined).length > 0) {
+        return commandObjects.find(command => command !== false)
+      }
     }
 
+    msg.body = aux.originalBody
     if (isOneOf(commandless(msg))) {
+      const command = getFirstMatch(commandless(msg))
       return {
-        type: 'commandless',
-        command: getFirstMatch(commandless(msg))
+        type: command.split('FN')[0],
+        command: command.split('FN')[1]
       }
     }
 
