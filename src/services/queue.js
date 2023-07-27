@@ -65,7 +65,7 @@ async function processQueue () {
       logger.error(err)
     })
   } catch (err) {
-    logger.fail('Error executing module', moduleName, functionName)
+    logger.fatal('Error executing module', moduleName, functionName)
     logger.error(err)
   }
 
