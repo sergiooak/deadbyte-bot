@@ -3,6 +3,7 @@ import Util from '../../utils/sticker.js'
 import sharp from 'sharp'
 import { createUrl } from '../../config/api.js'
 import reactions from '../../config/reactions.js'
+import logger from '../../logger.js'
 
 /**
  * Make sticker from media (image, video, gif)
@@ -51,18 +52,18 @@ export async function sticker (msg, crop = false) {
   mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
 
   if (mediaBuffer.byteLength > 1_000_000) {
-    console.log('compressing sticker...', mediaBuffer.byteLength)
+    logger.debug('compressing sticker...', mediaBuffer.byteLength)
     const compressedBuffer = await sharp(mediaBuffer, { animated: true })
       .webp({ quality: 33 })
       .toBuffer()
     media = new wwebjs.MessageMedia('image/webp', compressedBuffer.toString('base64'), 'deadbyte.webp', true)
-    console.log('compressed sticker!', mediaBuffer.byteLength, '->', compressedBuffer.byteLength)
+    logger.debug('compressed sticker!', mediaBuffer.byteLength, '->', compressedBuffer.byteLength)
     mediaBuffer = Buffer.from(media.data, 'base64')
   }
 
   // if still heavier than 1MB, throw error
   if (mediaBuffer.byteLength > 1_000_000) {
-    console.error('sticker is still too heavy!', mediaBuffer.byteLength)
+    logger.warn('sticker is still too heavy!', mediaBuffer.byteLength)
     return await msg.react(reactions.heavy)
   }
 

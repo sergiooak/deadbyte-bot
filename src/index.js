@@ -35,6 +35,7 @@ export function getClient () {
     client.on(event.split('.')[0], eventModule.default)
   })
   client.initialize()
+  logger.info('Client initialized!')
 
   // if no API KEY, kill the process
   if (!apiKey) {

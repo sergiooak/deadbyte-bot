@@ -1,5 +1,6 @@
 import importFresh from '../utils/importFresh.js'
 import fs from 'fs/promises'
+import logger from '../logger.js'
 //
 // ================================ Variables =================================
 //
@@ -72,7 +73,8 @@ export default async (msg) => {
 
     return false
   } catch (error) {
-    console.log('error: ', error)
+    logger.fatal('Error parsing message')
+    logger.error(error)
   }
 }
 //
