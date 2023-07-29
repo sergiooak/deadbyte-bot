@@ -7,8 +7,8 @@ import reactions from '../config/reactions.js'
 //
 const commandless = (msg, aux) => {
   return {
-    stickerFNsticker: (!aux.chat.isGroup || (!aux.isFunction && aux.mentionedMe)) && msg.hasMedia && isMediaStickerCompatible(msg),
-    stickerFNstickerText: (!aux.chat.isGroup || (!aux.isFunction && aux.mentionedMe)) && msg.body && msg.type === 'chat'
+    stickerFNsticker: msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia),
+    stickerFNstickerText: msg.body && msg.type === 'chat'
   }
 }
 
@@ -33,6 +33,10 @@ export default async (msg) => {
   aux.mentionedMe = msg.mentionedIds.includes(aux.client.info.wid._serialized)
   if (aux.mentionedMe) {
     msg.body = msg.body.replace(new RegExp(`@${aux.client.info.wid.user}`, 'g'), '').trim()
+  }
+
+  if (msg.hasQuotedMsg) {
+    aux.quotedMsg = await msg.getQuotedMessage()
   }
 
   // Check if the message is a command
@@ -87,6 +91,8 @@ export default async (msg) => {
     }
 
     msg.body = aux.originalBody
+    if ((aux.chat.isGroup && !aux.mentionedMe) || aux.isFunction) return false
+
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))
       return {
@@ -124,13 +130,4 @@ function getFirstMatch (object) {
   const key = Object.keys(object).find(key => object[key] === true)
   if (!key) throw new Error('None of the values are true')
   return key
-}
-
-/**
- * Check if the message is compatible with a sticker creation
- * @param {wwebjs.Message} msg
- * @returns {Boolean}
- */
-function isMediaStickerCompatible (msg) {
-  return msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker'
 }

@@ -18,7 +18,7 @@ import FormData from 'form-data'
 export async function sticker (msg, crop = false, stickerAuthor, stickerPack) {
   await msg.react(reactions.wait)
 
-  const media = await msg.downloadMedia()
+  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
   if (!media) throw new Error('Error downloading media')
 
   let stickerMedia = await Util.formatToWebpSticker(media, {}, crop)
@@ -56,7 +56,7 @@ export async function stickerText (msg) {
 export async function removeBg (msg) {
   await msg.react(reactions.wait)
 
-  if (!msg.hasMedia) {
+  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
     await msg.react(reactions.error)
 
     const header = '☠️🤖'
@@ -68,7 +68,7 @@ export async function removeBg (msg) {
     return await msg.reply(message)
   }
 
-  const media = await msg.downloadMedia()
+  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
   if (!media) throw new Error('Error downloading media')
   if (!media.mimetype.includes('image')) {
     await msg.react(reactions.error)
