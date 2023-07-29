@@ -97,6 +97,38 @@ export async function stickerText (msg) {
   const chat = await msg.getChat()
 
   // send media as sticker back
+/**
+ * Resend the sticker with the given pack and author
+ * @param {wwebjs.Message} msg
+ *
+ */
+export async function stealSticker (msg) {
+  await msg.react(reactions.wait)
+
+  const quotedMsg = await msg.getQuotedMessage()
+
+  if (!msg.hasQuotedMsg || !quotedMsg.hasMedia) {
+    await msg.react(reactions.error)
+
+    const header = '☠️'
+    const part1 = 'Para usar o *{!|/|#|.}{roubar|steal}* você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {respondendo|mencionando} {um sticker|uma figurinha}'
+    const end = '{!|!!|!!!}'
+
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
+
+  const media = await quotedMsg.downloadMedia()
+  if (!media) return logger.error('Error downloading media')
+
+  const body = msg.body.split('|')
+
+  const stickerName = body[0]?.trim() || msg.aux.sender.pushname
+  const stickerAuthor = body[1]?.trim() || 'DeadByte.com.br'
+
+  await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
+}
 async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
   await chat.sendMessage(media, {
     sendMediaAsSticker: true,

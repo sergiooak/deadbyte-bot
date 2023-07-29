@@ -9,6 +9,7 @@ export default (msg, aux) => {
     sticker: /^(s|sticker|f|fig)$/.test(aux.function) && isMediaStickerCompatible(msg),
     removeBg: /^(bg|fundo|nobg)$/.test(aux.function),
     stickerText: /^(ttp|ttp1|s|sticker|f|fig)$/.test(aux.function) && msg.type === 'chat',
+    stealSticker: /^(steal|roubar)$/.test(aux.function)
   }
 }
 
