@@ -13,7 +13,7 @@ import FormData from 'form-data'
  * @param {wwebjs.Message} msg
  * @param {boolean} crop
  */
-export async function sticker (msg, crop = false) {
+export async function sticker (msg, crop = false, stickerAuthor, stickerPack) {
   await msg.react(reactions.wait)
 
   let media = await msg.downloadMedia()
@@ -46,7 +46,7 @@ export async function sticker (msg, crop = false) {
     return await msg.react(reactions.heavy)
   }
 
-  await sendMediaAsSticker(chat, media)
+  await sendMediaAsSticker(chat, media, stickerAuthor, stickerPack)
 
   if (!crop) {
     await sticker(msg, true) // make cropped version
@@ -161,7 +161,16 @@ export async function stealSticker (msg) {
 
   const quotedMsg = await msg.getQuotedMessage()
 
+  const messageParts = msg.body.split('|')
+  const stickerName = messageParts[0]?.trim() || msg.aux.sender.pushname
+  const stickerAuthor = messageParts[1]?.trim() || 'DeadByte.com.br'
+
   if (!msg.hasQuotedMsg || !quotedMsg.hasMedia) {
+    if (msg.hasMedia && (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker')) {
+      msg.body = ''
+      return await sticker(msg, undefined, stickerName, stickerAuthor)
+    }
+
     await msg.react(reactions.error)
 
     const header = '☠️'
@@ -175,11 +184,6 @@ export async function stealSticker (msg) {
 
   const media = await quotedMsg.downloadMedia()
   if (!media) return logger.error('Error downloading media')
-
-  const body = msg.body.split('|')
-
-  const stickerName = body[0]?.trim() || msg.aux.sender.pushname
-  const stickerAuthor = body[1]?.trim() || 'DeadByte.com.br'
 
   await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
 }
