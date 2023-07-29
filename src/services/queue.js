@@ -63,6 +63,7 @@ async function processQueue () {
       }
     }).catch((err) => {
       logger.error(err)
+      msg.react('❌')
     })
   } catch (err) {
     logger.fatal('Error executing module', moduleName, functionName)
