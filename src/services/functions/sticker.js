@@ -11,7 +11,9 @@ import FormData from 'form-data'
 /**
  * Make sticker from media (image, video, gif)
  * @param {wwebjs.Message} msg
- * @param {boolean} crop
+ * @param {boolean} [crop=false] - crop the image to a square
+ * @param {string} StickerAuthor - sticker author name
+ * @param {string} StickerPack - sticker pack name
  */
 export async function sticker (msg, crop = false, stickerAuthor, stickerPack) {
   await msg.react(reactions.wait)
@@ -188,10 +190,22 @@ export async function stealSticker (msg) {
   await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
 }
 
-// ====
+//
+// ================================== Helper Functions ==================================
+//
 
+/**
+ * Sends a media file as a sticker to a given chat.
+ * @async
+ * @function sendMediaAsSticker
+ * @param {import ('whatsapp-web.js').Chat} chat - The chat to send the sticker to (can be group or private chat
+ * @param {import ('whatsapp-web.js').MessageMedia} media - The media to send as a sticker.
+ * @param {string} [stickerName='DeadByte.com.br'] - The name of the sticker.
+ * @param {string} [stickerAuthor='bot de figurinhas'] - The author of the sticker.
+ * @returns {Promise<import ('whatsapp-web.js').Message>} A Promise that resolves with the Message object of the sent sticker.
+ */
 async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
-  await chat.sendMessage(media, {
+  return await chat.sendMessage(media, {
     sendMediaAsSticker: true,
     stickerName: stickerName || 'DeadByte.com.br',
     stickerAuthor: stickerAuthor || 'bot de figurinhas',
@@ -205,7 +219,7 @@ async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
  * @function overlaySubtitle
  * @param {string} text - The subtitle text to overlay.
  * @param {Buffer} mediaBuffer - The media buffer to overlay the subtitle on.
- * @returns {Promise<wwebjs.MessageMedia>} A Promise that resolves with a new MessageMedia object containing the media with the subtitle overlayed.
+ * @returns {Promise<import ('whatsapp-web.js').MessageMedia>} A Promise that resolves with a new MessageMedia object containing the media with the subtitle overlayed.
  * @throws {Error} If there was an error downloading the subtitle media.
  */
 async function overlaySubtitle (text, mediaBuffer) {
