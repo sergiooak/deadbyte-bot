@@ -41,6 +41,7 @@ export default async (msg) => {
   aux.isFunction = functionRegex.test(msg.body)
   aux.prefix = msg.body.match(functionRegex)?.[0]
   aux.function = msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
+  aux.function = aux.function.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() // FüÑçTíõÑ => funcion
 
   aux.originalBody = msg.body
   msg.body = msg.body.replace(/^\S*/, '').trim()
@@ -86,8 +87,8 @@ export default async (msg) => {
     }
 
     msg.body = aux.originalBody
-    if (isOneOf(commandless(msg))) {
-      const command = getFirstMatch(commandless(msg))
+    if (isOneOf(commandless(msg, aux))) {
+      const command = getFirstMatch(commandless(msg, aux))
       return {
         type: command.split('FN')[0],
         command: command.split('FN')[1]
