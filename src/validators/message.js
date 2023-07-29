@@ -44,7 +44,6 @@ export default async (msg) => {
 
   aux.originalBody = msg.body
   msg.body = msg.body.replace(/^\S*/, '').trim()
-  console.log(msg.body)
 
   try {
     msg.aux = aux
@@ -59,7 +58,6 @@ export default async (msg) => {
           module: commandModule.default
         }
       }))
-
       const commandObjects = await Promise.all(commandModules.map(async _command => {
         // loop through all commands
         for (const command of commandModules) {
