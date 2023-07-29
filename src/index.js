@@ -16,7 +16,8 @@ const client = new wwebjs.Client({
 
   puppeteer: {
     // headless: false,
-    executablePath: bot.chromePath
+    executablePath: bot.chromePath,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   }
 })
 
