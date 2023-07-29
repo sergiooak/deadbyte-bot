@@ -7,8 +7,9 @@
  */
 export default (msg, chat, client) => {
   return {
-    sticker: msg.hasMedia && isMediaStickerCompatible(msg),
-    stickerText: msg.body && msg.type === 'chat'
+    sticker: /^(s|sticker|f|fig)$/.test(aux.function) && isMediaStickerCompatible(msg),
+    removeBg: /^(bg|fundo|nobg)$/.test(aux.function),
+    stickerText: /^(ttp|ttp1|s|sticker|f|fig)$/.test(aux.function) && msg.type === 'chat',
   }
 }
 

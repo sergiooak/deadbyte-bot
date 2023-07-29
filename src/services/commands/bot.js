@@ -6,7 +6,7 @@
  */
 export default (msg, aux) => {
   return {
-    uptime: aux.function === 'uptime',
-    react: aux.function === 'react'
+    uptime: /^(uptime|online|up|tempo)$/.test(aux.function),
+    react: /^(react|reacao)$/.test(aux.function) || aux.function === ''
   }
 }
