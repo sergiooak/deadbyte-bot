@@ -22,31 +22,7 @@ export async function sticker (msg, crop = false) {
   let mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
 
   // if message has body, add it to the sticker as subtitle
-  if (msg.body) {
-    const url = await createUrl('image-creator', 'ttp', {
-      message: msg.body,
-      subtitle: true
-    })
-    const subtitleMedia = await wwebjs.MessageMedia.fromUrl(url, {
-      unsafeMime: true
-    })
-    if (!subtitleMedia) return logger.error('Error downloading media')
-    const subtitleBuffer = Buffer.from(subtitleMedia.data, 'base64')
-
-    // using sharp, overlay the subtitleBuffer on top of the mediaBuffer, compress to be smaller than 1MB
-    const finalBuffer = await sharp(mediaBuffer, { animated: true })
-      .composite([{
-        input: subtitleBuffer,
-        gravity: 'south',
-        animated: true,
-        tile: true
-      }])
-      .webp()
-      .toBuffer()
-
-    // replace media data with the new data from sharp
-    stickerMedia = new wwebjs.MessageMedia('image/webp', finalBuffer.toString('base64'), 'deadbyte.webp', true)
-  }
+  if (msg.body) stickerMedia = await overlaySubtitle(msg.body, mediaBuffer).catch((e) => logger.error(e)) || stickerMedia
 
   const chat = await msg.getChat()
 
@@ -215,4 +191,38 @@ async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
     stickerAuthor: stickerAuthor || 'bot de figurinhas',
     stickerCategories: ['💀', '🤖']
   })
+}
+
+/**
+ * Overlays a subtitle on top of a media buffer.
+ * @async
+ * @function overlaySubtitle
+ * @param {string} text - The subtitle text to overlay.
+ * @param {Buffer} mediaBuffer - The media buffer to overlay the subtitle on.
+ * @returns {Promise<wwebjs.MessageMedia>} A Promise that resolves with a new MessageMedia object containing the media with the subtitle overlayed.
+ * @throws {Error} If there was an error downloading the subtitle media.
+ */
+async function overlaySubtitle (text, mediaBuffer) {
+  const url = await createUrl('image-creator', 'ttp', {
+    message: text,
+    subtitle: true
+  })
+  const subtitleMedia = await wwebjs.MessageMedia.fromUrl(url, {
+    unsafeMime: true
+  })
+  if (!subtitleMedia) throw new Error('Error downloading subtitle media')
+
+  const subtitleBuffer = Buffer.from(subtitleMedia.data, 'base64')
+  const finalBuffer = await sharp(mediaBuffer, { animated: true })
+    .composite([{
+      input: subtitleBuffer,
+      gravity: 'south',
+      animated: true,
+      tile: true
+    }])
+    .webp()
+    .toBuffer()
+
+  // replace media data with the new data from sharp
+  return new wwebjs.MessageMedia('image/webp', finalBuffer.toString('base64'), 'deadbyte.webp', true)
 }
