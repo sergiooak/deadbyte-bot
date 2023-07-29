@@ -7,8 +7,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "chcp 65001 && node src/index.js",
-    "dev": "chcp 65001 && nodemon src/index.js",
+    "start": "node src/index.js",
+    "dev": "chcp 65001 && node src/index.js",
     "lint": "eslint src"
   },
   "license": "unlicense",
