@@ -4,6 +4,9 @@ import sharp from 'sharp'
 import { createUrl } from '../../config/api.js'
 import reactions from '../../config/reactions.js'
 import logger from '../../logger.js'
+import spintax from '../../utils/spintax.js'
+import fetch from 'node-fetch'
+import FormData from 'form-data'
 
 /**
  * Make sticker from media (image, video, gif)
