@@ -3,6 +3,7 @@ import wwebjs from 'whatsapp-web.js'
 import fs from 'fs/promises'
 import logger from './logger.js'
 import { apiKey } from './config/api.js'
+import bot from './config/bot.js'
 
 /**
  * Whatsapp Web Client
@@ -10,12 +11,12 @@ import { apiKey } from './config/api.js'
  */
 const client = new wwebjs.Client({
   authStrategy: new wwebjs.LocalAuth({
-    clientId: 'DeadByte'
+    clientId: bot.name
   }),
 
   puppeteer: {
     // headless: false,
-    executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+    executablePath: bot.chromePath
   }
 })
 
