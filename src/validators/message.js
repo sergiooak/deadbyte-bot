@@ -30,6 +30,10 @@ export default async (msg) => {
   aux.chat = await msg.getChat()
   aux.sender = await msg.getContact()
   aux.senderIsMe = aux.sender.isMe
+  aux.mentionedMe = msg.mentionedIds.includes(aux.client.info.wid._serialized)
+  if (aux.mentionedMe) {
+    msg.body = msg.body.replace(new RegExp(`@${aux.client.info.wid.user}`, 'g'), '').trim()
+  }
 
   // Check if the message is a command
   const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
