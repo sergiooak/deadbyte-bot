@@ -5,10 +5,10 @@ import reactions from '../config/reactions.js'
 //
 // ================================ Variables =================================
 //
-const commandless = (msg, chat, client) => {
+const commandless = (msg, aux) => {
   return {
-    stickerFNsticker: msg.hasMedia && isMediaStickerCompatible(msg),
-    stickerFNstickerText: msg.body && msg.type === 'chat'
+    stickerFNsticker: (!aux.chat.isGroup || (!aux.isFunction && aux.mentionedMe)) && msg.hasMedia && isMediaStickerCompatible(msg),
+    stickerFNstickerText: (!aux.chat.isGroup || (!aux.isFunction && aux.mentionedMe)) && msg.body && msg.type === 'chat'
   }
 }
 
@@ -34,7 +34,7 @@ export default async (msg) => {
   // Check if the message is a command
   const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
   const functionRegex = new RegExp(`^${prefixes.join(' ?|^')} ?`)
-  aux.isFunction = msg.body.match(functionRegex)
+  aux.isFunction = functionRegex.test(msg.body)
   aux.prefix = msg.body.match(functionRegex)?.[0]
   aux.function = msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
 
@@ -73,6 +73,8 @@ export default async (msg) => {
         if (prefixesWithFallback.includes(aux.prefix) === false) {
           await msg.react(reactions.confused)
           return false
+        } else {
+          aux.isFunction = false
         }
       }))
 
