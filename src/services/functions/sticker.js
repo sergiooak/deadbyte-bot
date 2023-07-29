@@ -14,7 +14,7 @@ export async function sticker (msg, crop = false) {
   await msg.react(reactions.wait)
 
   let media = await msg.downloadMedia()
-  if (!media) return console.error('Error downloading media')
+  if (!media) return logger.error('Error downloading media')
   let stickerMedia = await Util.formatToWebpSticker(media, {}, crop)
   let mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
 
@@ -27,7 +27,7 @@ export async function sticker (msg, crop = false) {
     const subtitleMedia = await wwebjs.MessageMedia.fromUrl(url, {
       unsafeMime: true
     })
-    if (!subtitleMedia) return console.error('Error downloading media')
+    if (!subtitleMedia) return logger.error('Error downloading media')
     const subtitleBuffer = Buffer.from(subtitleMedia.data, 'base64')
 
     // using sharp, overlay the subtitleBuffer on top of the mediaBuffer, compress to be smaller than 1MB
@@ -90,7 +90,7 @@ export async function stickerText (msg) {
     unsafeMime: true
   })
   if (!media) {
-    console.error('Error downloading media')
+    logger.error('Error downloading media')
     return await msg.react(reactions.error)
   }
 
