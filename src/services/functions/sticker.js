@@ -100,6 +100,16 @@ export async function stickerText (msg) {
   const chat = await msg.getChat()
 
   // send media as sticker back
+  await sendMediaAsSticker(chat, media)
+
+  await msg.react(reactions.success)
+}
+
+/**
+ * Create a sticker of an image without background
+ * @param {wwebjs.Message} msg
+ *
+ */
 export async function removeBg (msg) {
   await msg.react(reactions.wait)
 
@@ -162,6 +172,7 @@ export async function removeBg (msg) {
     await sendMediaAsSticker(chat, stickerMedia)
   }
 }
+
 /**
  * Resend the sticker with the given pack and author
  * @param {wwebjs.Message} msg
@@ -194,6 +205,9 @@ export async function stealSticker (msg) {
 
   await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
 }
+
+// ====
+
 async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
   await chat.sendMessage(media, {
     sendMediaAsSticker: true,
