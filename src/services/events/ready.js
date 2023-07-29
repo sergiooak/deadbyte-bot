@@ -53,5 +53,7 @@ export default async () => {
         chat.sendMessage(message)
       }
     }
+
+    await chat.sendSeen()
   }
 }
