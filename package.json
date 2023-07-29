@@ -16,6 +16,7 @@
     "dotenv": "^16.3.1",
     "eslint-config-standard": "^17.1.0",
     "filenamify": "^6.0.0",
+    "form-data": "^4.0.0",
     "glob": "^10.2.7",
     "mime-types": "^2.1.35",
     "pino": "^8.14.1",
