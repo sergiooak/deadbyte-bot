@@ -67,13 +67,7 @@ export async function sticker (msg, crop = false) {
     return await msg.react(reactions.heavy)
   }
 
-  // send media as sticker back
-  await chat.sendMessage(media, {
-    sendMediaAsSticker: true,
-    stickerAuthor: 'bot de figurinhas',
-    stickerName: 'DeadByte.com.br',
-    stickerCategories: ['💀', '🤖']
-  })
+  await sendMediaAsSticker(chat, media)
 
   if (!crop) {
     await sticker(msg, true) // make cropped version
@@ -103,12 +97,11 @@ export async function stickerText (msg) {
   const chat = await msg.getChat()
 
   // send media as sticker back
+async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
   await chat.sendMessage(media, {
     sendMediaAsSticker: true,
-    stickerAuthor: 'bot de figurinhas',
-    stickerName: 'DeadByte.com.br',
+    stickerName: stickerName || 'DeadByte.com.br',
+    stickerAuthor: stickerAuthor || 'bot de figurinhas',
     stickerCategories: ['💀', '🤖']
   })
-
-  await msg.react(reactions.success)
 }
