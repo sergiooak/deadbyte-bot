@@ -26,10 +26,10 @@ export async function sticker (msg, crop = false) {
 
   const chat = await msg.getChat()
 
-  // if heavier than 1MB, compress it
   media = new wwebjs.MessageMedia('image/webp', stickerMedia.data, 'deadbyte.webp', true)
   mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
 
+  // if heavier than 1MB, compress it
   if (mediaBuffer.byteLength > 1_000_000) {
     logger.debug('compressing sticker...', mediaBuffer.byteLength)
     const compressedBuffer = await sharp(mediaBuffer, { animated: true })
@@ -136,17 +136,19 @@ export async function removeBg (msg) {
   // send image as sticker back
   const chat = await msg.getChat()
 
-  await Promise.all([sendStickerBg()])
+  const url = 'https://v1.deadbyte.com.br/image-processing/removebg?img=' + tempUrl + '&trim=true'
+  const bgMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', {
+    unsafeMime: true
+  })
 
+  let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})
+  const mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
+
+  // if message has body, add it to the sticker as subtitle
+  if (msg.body) stickerMedia = await overlaySubtitle(msg.body, mediaBuffer).catch((e) => logger.error(e)) || stickerMedia
+
+  await sendMediaAsSticker(chat, stickerMedia)
   await msg.react(reactions.success)
-
-  async function sendStickerBg (model) {
-    const url = 'https://v1.deadbyte.com.br/image-processing/removebg?img=' + tempUrl + '&trim=true'
-    const stickerMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', {
-      unsafeMime: true
-    })
-    await sendMediaAsSticker(chat, stickerMedia)
-  }
 }
 
 /**
