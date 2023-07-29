@@ -97,6 +97,68 @@ export async function stickerText (msg) {
   const chat = await msg.getChat()
 
   // send media as sticker back
+export async function removeBg (msg) {
+  await msg.react(reactions.wait)
+
+  if (!msg.hasMedia) {
+    await msg.react(reactions.error)
+
+    const header = '☠️🤖'
+    const part1 = 'Para usar o {remove.bg|removedor de fundo|*!bg*} você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {junto com|na legenda de} uma {imagem|foto}'
+    const end = '{!|!!|!!!}'
+
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
+
+  const media = await msg.downloadMedia()
+  if (!media) return logger.error('Error downloading media')
+  if (!media.mimetype.includes('image')) {
+    await msg.react(reactions.error)
+    return await msg.reply('❌ Só consigo remover o fundo de imagens')
+  }
+
+  // upload image to get temporary url
+  const formData = new FormData()
+  const buffer = Buffer.from(media.data, 'base64')
+  formData.append('file', buffer, 'image.png')
+
+  const response = await fetch('https://v1.deadbyte.com.br/uploader/tempurl', {
+    method: 'POST',
+    body: formData
+  })
+
+  if (!response.ok) {
+    logger.error('Error uploading image to remove.bg')
+    return await msg.react(reactions.error)
+  }
+
+  const json = await response.json()
+  const tempUrl = json.result
+
+  // download image from temporary url
+  const image = await fetch(tempUrl)
+  if (!image.ok) {
+    logger.error('Error downloading image from remove.bg')
+    return await msg.react(reactions.error)
+  }
+
+  // send image as sticker back
+  const chat = await msg.getChat()
+
+  await Promise.all([sendStickerBg()])
+
+  await msg.react(reactions.success)
+
+  async function sendStickerBg (model) {
+    const url = 'https://v1.deadbyte.com.br/image-processing/removebg?img=' + tempUrl + '&trim=true'
+    const stickerMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', {
+      unsafeMime: true
+    })
+    await sendMediaAsSticker(chat, stickerMedia)
+  }
+}
 /**
  * Resend the sticker with the given pack and author
  * @param {wwebjs.Message} msg
