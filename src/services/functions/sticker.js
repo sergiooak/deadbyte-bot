@@ -22,6 +22,7 @@ export async function sticker (msg, crop = false, stickerAuthor, stickerPack) {
   if (!media) throw new Error('Error downloading media')
 
   let stickerMedia = await Util.formatToWebpSticker(media, {}, crop)
+  if (msg.type === 'document') msg.body = '' // remove file name from caption
   if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
 
   await sendMediaAsSticker(msg.aux.chat, stickerMedia, stickerAuthor, stickerPack)
