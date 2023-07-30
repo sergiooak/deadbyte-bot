@@ -18,6 +18,7 @@
     "filenamify": "^6.0.0",
     "form-data": "^4.0.0",
     "mime-types": "^2.1.35",
+    "openai": "^3.3.0",
     "pino": "^8.14.2",
     "pino-pretty": "^10.2.0",
     "qrcode-terminal": "^0.12.0",

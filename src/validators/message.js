@@ -39,16 +39,38 @@ export default async (msg) => {
     aux.quotedMsg = await msg.getQuotedMessage()
   }
 
+  let msgCurrent = msg
+  const msgPrevious = []
+  while (msgCurrent.hasQuotedMsg) {
+    msgPrevious.push(msgCurrent)
+    msgCurrent = await msgCurrent.getQuotedMessage()
+  }
+  aux.originalMsg = msgCurrent
+  msgPrevious.push(aux.originalMsg)
+  aux.history = msgPrevious.reverse()
+
   // Check if the message is a command
   const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
   const functionRegex = new RegExp(`^${prefixes.join(' ?|^')} ?`)
-  aux.isFunction = functionRegex.test(msg.body)
-  aux.prefix = msg.body.match(functionRegex)?.[0]
-  aux.function = msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
+  aux.isFunction = functionRegex.test(msg.body) || functionRegex.test(aux.originalMsg.body)
+  aux.prefix = functionRegex.test(msg.body)
+    ? msg.body.match(functionRegex)?.[0]
+    : aux.originalMsg.body.match(functionRegex)?.[0]
+
+  aux.function = functionRegex.test(msg.body)
+    ? msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
+    : aux.originalMsg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
   aux.function = aux.function.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() // FüÑçTíõÑ => funcion
 
-  aux.originalBody = msg.body
-  msg.body = msg.body.replace(/^\S*/, '').trim()
+  aux.originalBody = functionRegex.test(msg.body)
+    ? msg.body
+    : aux.originalMsg.body
+
+  if (functionRegex.test(msg.body)) {
+    msg.body = msg.body.replace(/^\S*/, '').trim()
+  } else {
+    aux.originalMsg.body = aux.originalMsg.body.replace(/^\S*/, '').trim()
+  }
 
   aux.me = aux.client.info.wid._serialized ? aux.client.info.wid._serialized : aux.client.info.wid
   aux.mentions = msg.mentionedIds
