@@ -44,6 +44,14 @@ export async function react (msg) {
   await msg.aux.chat.sendSeen()
 }
 
+export async function dice (msg) {
+  const max = parseInt(msg.aux.function.replace('d', ''))
+  const min = 1
+  let message = `🎲 - Você rolou *${Math.floor(Math.random() * (max - min + 1)) + min}*`
+  message += `\n\nEm um dado de ${max} lados`
+  await msg.reply(message)
+}
+
 //
 // ================================== Helper Functions ==================================
 //
