@@ -50,6 +50,19 @@ export default async (msg) => {
   aux.originalBody = msg.body
   msg.body = msg.body.replace(/^\S*/, '').trim()
 
+  aux.me = aux.client.info.wid._serialized ? aux.client.info.wid._serialized : aux.client.info.wid
+  aux.mentions = msg.mentionedIds
+  if (typeof aux.mentions[0] !== 'string') {
+    // sometimes is an array of objects, sometimes is an array of strings
+    aux.mentions = aux.mentions.map((mention) => mention._serialized) // convert to array of strings
+  }
+
+  aux.amIMentioned = aux.mentions.includes(aux.me)
+  aux.participants = aux.chat.isGroup ? aux.chat.participants.map((p) => p) : []
+  aux.admins = aux.chat.isGroup ? aux.participants.filter((p) => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized) : []
+  aux.isSenderAdmin = aux.admins.includes(msg.author)
+  aux.isBotAdmin = aux.admins.includes(aux.me)
+
   try {
     msg.aux = aux
 
