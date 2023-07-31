@@ -96,6 +96,10 @@ export async function giveaway (msg) {
  * @param {import('whatsapp-web.js').Message} msg
  */
 export async function markAllMembers (msg) {
+  if (!msg.aux.isSenderAdmin) {
+    return await msg.reply('para usar o !todos *você* precisa ser admin')
+  }
+
   msg.body = msg.body.charAt(0).toUpperCase() + msg.body.slice(1)
 
   const participants = msg.aux.participants.map((p) => p.id._serialized)
