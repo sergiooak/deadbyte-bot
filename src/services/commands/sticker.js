@@ -10,6 +10,6 @@ export default (msg, aux) => {
     removeBg: /^(bg|fundo|nobg)$/.test(aux.function),
     stickerText: /^(ttp|ttp1|s|sticker|f|fig)$/.test(aux.function) && msg.type === 'chat',
     stealSticker: /^(steal|roubar)$/.test(aux.function),
-    stickerly: /^(stickerly|ly|lu)$/.test(aux.function)
+    stickerly: /^(stickerly|ly|lu)\d*$/.test(aux.function)
   }
 }
