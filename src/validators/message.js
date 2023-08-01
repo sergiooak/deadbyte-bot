@@ -52,24 +52,22 @@ export default async (msg) => {
   // Check if the message is a command
   const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
   const functionRegex = new RegExp(`^${prefixes.join(' ?|^')} ?`)
-  aux.isFunction = functionRegex.test(msg.body) || functionRegex.test(aux.originalMsg.body)
-  aux.prefix = functionRegex.test(msg.body)
-    ? msg.body.match(functionRegex)?.[0]
-    : aux.originalMsg.body.match(functionRegex)?.[0]
-
-  aux.function = functionRegex.test(msg.body)
-    ? msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
-    : aux.originalMsg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
-  aux.function = aux.function.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() // FüÑçTíõÑ => funcion
-
-  aux.originalBody = functionRegex.test(msg.body)
-    ? msg.body
-    : aux.originalMsg.body
-
-  if (functionRegex.test(msg.body)) {
-    msg.body = msg.body.replace(/^\S*/, '').trim()
-  } else {
-    aux.originalMsg.body = aux.originalMsg.body.replace(/^\S*/, '').trim()
+  aux.isFunction = functionRegex.test(msg.body)
+  aux.originalBody = msg.body
+  if (aux.isFunction) {
+    aux.prefix = msg.body.match(functionRegex)?.[0]
+    aux.function = msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
+    msg.body = msg.body.replace(aux.prefix, '').replace(aux.function, '').trim()
+    aux.function = aux.function.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() // FüÑçTíõÑ => funcion
+  }
+  if (aux.history.length > 1) { // handle original message
+    aux.hasOriginalFunction = functionRegex.test(aux.history.at(0).body)
+    if (aux.hasOriginalFunction) {
+      aux.prefix = aux.history.at(0).body.match(functionRegex)?.[0]
+      aux.originalFunction = aux.history.at(0).body.replace(functionRegex, '').trim().match(/^\S*/)[0]
+      aux.history.at(0).body = aux.history.at(0).body.replace(aux.prefix, '').replace(aux.originalFunction, '').trim()
+      aux.originalFunction = aux.originalFunction.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() // FüÑçTíõÑ => funcion
+    }
   }
 
   aux.me = aux.client.info.wid._serialized ? aux.client.info.wid._serialized : aux.client.info.wid
@@ -80,7 +78,7 @@ export default async (msg) => {
   }
 
   aux.amIMentioned = aux.mentions.includes(aux.me)
-  aux.participants = aux.chat.isGroup ? aux.chat.participants.map((p) => p) : []
+  aux.participants = aux.chat.isGroup ? aux.chat.participants : []
   aux.admins = aux.chat.isGroup ? aux.participants.filter((p) => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized) : []
   aux.isSenderAdmin = aux.admins.includes(msg.author)
   aux.isBotAdmin = aux.admins.includes(aux.me)
@@ -88,7 +86,7 @@ export default async (msg) => {
   try {
     msg.aux = aux
 
-    if (aux.isFunction) { // if it is a function, search in all of the command blocks
+    if (aux.isFunction || aux.hasOriginalFunction) { // if it is a function, search in all of the command blocks
       const allCommandFiles = await fs.readdir('./src/services/commands')
       const commandFiles = allCommandFiles.filter(file => !file.startsWith('_') && file.endsWith('.js'))
       const commandModules = await Promise.all(commandFiles.map(async command => {
