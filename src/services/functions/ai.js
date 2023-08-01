@@ -28,7 +28,6 @@ export async function gpt (msg) {
   })
 
   const response = completion.data.choices[0]?.message?.content
-  console.log(response)
   await msg.reply(response)
   await msg.react('🧠')
 }
@@ -40,14 +39,14 @@ export async function gpt (msg) {
 export async function emojify (msg) {
   await msg.react(reactions.wait)
 
-  if (!msg.body) return msg.reply('Para utilizar o *!emojify* mande uma mensagem junto com o comando.')
+  if (!msg.body && !msg.hasQuotedMsg) return msg.reply('Para utilizar o *!emojify* mande uma mensagem junto com o comando.\nOu responda a uma mensagem com o comando.')
 
-  const messages = msg.aux.history.map(msg => {
-    return {
-      role: msg._data.self === 'out' ? 'assistant' : 'user',
-      content: msg.body
+  const messages = [
+    {
+      role: 'user',
+      content: msg.hasQuotedMsg ? msg.aux.quotedMsg.body : msg.body
     }
-  })
+  ]
 
   const prompt = {
     role: 'system',
@@ -90,12 +89,12 @@ export async function translate (msg) {
     `
   }
 
+  const messageToTranslate = msg.hasQuotedMsg ? msg.aux.quotedMsg.body : msg.body
+
   const messages = [prompt, {
     role: 'user',
-    content: `translate "${msg.aux.history.lenght > 1 ? msg.body + msg.aux.history.at(-2).body : msg.body}"`
+    content: `translate ${msg.body ? msg.body + ' ' : ''}"${messageToTranslate}"`
   }]
-
-  console.log(messages)
 
   const completion = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
@@ -104,7 +103,6 @@ export async function translate (msg) {
   })
 
   const response = completion.data.choices[0]?.message?.content
-  console.log(response)
   await msg.reply(response)
   await msg.react('🌐')
 }
