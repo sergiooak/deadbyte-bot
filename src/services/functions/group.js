@@ -70,9 +70,9 @@ export async function demote (msg) {
  */
 export async function giveaway (msg) {
   const hasText = msg.body.split(' ').length > 1
-  const text = hasText ? msg.body.split(' ').slice(1).join(' ') : ''
+  const text = hasText ? msg.body : ''
 
-  let participants = await msg.aux.chat.participants
+  let participants = await msg.aux.participants
   const botId = msg.aux.client.info.wid._serialized
   participants = participants.filter((p) => p.id._serialized !== botId)
 
@@ -80,7 +80,32 @@ export async function giveaway (msg) {
   const winner = participants[random]
 
   const winnerContact = await msg.aux.client.getContactById(winner.id._serialized)
-  console.log('winnerContact', winnerContact)
+
+  let message = `🎉 - @${winnerContact.id.user} parabéns! Você ganhou o sorteio`
+  message = hasText ? `${message} *${text.trim()}*!` : message + '!'
+  await msg.aux.chat.sendMessage(message, {
+    mentions: [winnerContact]
+  })
+
+  await msg.react('🎉')
+}
+
+/**
+ * Draw a adm from group
+ * @param {import('whatsapp-web.js').Message} msg
+ */
+export async function giveawayAdminsOnly (msg) {
+  const hasText = msg.body.split(' ').length > 1
+  const text = hasText ? msg.body : ''
+
+  let participants = await msg.aux.participants.filter((p) => p.isAdmin || p.isSuperAdmin)
+  const botId = msg.aux.client.info.wid._serialized
+  participants = participants.filter((p) => p.id._serialized !== botId)
+
+  const random = Math.floor(Math.random() * (participants.length))
+  const winner = participants[random]
+
+  const winnerContact = await msg.aux.client.getContactById(winner.id._serialized)
 
   let message = `🎉 - @${winnerContact.id.user} parabéns! Você ganhou o sorteio`
   message = hasText ? `${message} *${text.trim()}*!` : message + '!'
@@ -107,7 +132,8 @@ export async function markAllMembers (msg) {
   for (let i = 0; i < participants.length; i++) {
     contactArray.push(await msg.aux.client.getContactById(participants[i]))
   }
-  await msg.aux.chat.sendMessage(`📣 - ${msg.body}`, { mentions: contactArray })
+
+  await msg.aux.chat.sendMessage(msg.body ? `📣 - ${msg.body}` : '📣', { mentions: contactArray })
   await msg.react('📣')
 }
 
