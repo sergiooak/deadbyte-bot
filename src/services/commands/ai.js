@@ -6,9 +6,16 @@
  */
 export default (msg, aux) => {
   return {
-    gpt: /^(gpt|got)$/.test(aux.function),
-    emojify: /^(emojify)$/.test(aux.function),
-    translate: /^(translate|traduzir|traduz)$/.test(aux.function),
-    calculate: /^(calculate|calcular|calc)$/.test(aux.function)
+    gpt: /^(gpt|got)$/.test(aux.function) ||
+    (!aux.isFunction && aux.hasOriginalFunction && /^(gpt|got)$/.test(aux.originalFunction)),
+
+    emojify: /^(emojify)$/.test(aux.function) ||
+    (!aux.isFunction && aux.hasOriginalFunction && /^(emojify)$/.test(aux.originalFunction)),
+
+    translate: /^(translate|traduzir|traduz)$/.test(aux.function) ||
+    (!aux.isFunction && aux.hasOriginalFunction && /^(translate|traduzir|traduz)$/.test(aux.originalFunction)),
+
+    calculate: /^(calculate|calcular|calc)$/.test(aux.function) ||
+    (!aux.isFunction && aux.hasOriginalFunction && /^(calculate|calcular|calc)$/.test(aux.originalFunction))
   }
 }
