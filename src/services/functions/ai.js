@@ -1,11 +1,9 @@
-import { Configuration, OpenAIApi } from 'openai'
+import OpenAI from 'openai'
 import reactions from '../../config/reactions.js'
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
-
-const openai = new OpenAIApi(configuration)
 
 /**
  * Use chat gpt
@@ -22,12 +20,13 @@ export async function gpt (msg) {
     }
   })
 
-  const completion = await openai.createChatCompletion({
+  const completion = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
+    max_tokens: 4096 / 4,
     messages
   })
 
-  const response = completion.data.choices[0]?.message?.content
+  const response = completion.choices[0]?.message?.content
   await msg.reply(response)
   await msg.react('🧠')
 }
@@ -55,13 +54,14 @@ export async function emojify (msg) {
 
   messages.unshift(prompt) // Add prompt object at the beginning of messages array
 
-  const completion = await openai.createChatCompletion({
+  const completion = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
-    messages,
-    temperature: 0
+    max_tokens: 4096 / 8,
+    temperature: 0,
+    messages
   })
 
-  const response = completion.data.choices[0]?.message?.content
+  const response = completion.choices[0]?.message?.content
 
   await msg.reply(response)
   await msg.react('😀')
@@ -96,13 +96,14 @@ export async function translate (msg) {
     content: `translate ${msg.body ? msg.body + ' ' : ''}"${messageToTranslate}"`
   }]
 
-  const completion = await openai.createChatCompletion({
+  const completion = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
-    messages,
-    temperature: 0
+    max_tokens: 4096 / 4,
+    temperature: 0,
+    messages
   })
 
-  const response = completion.data.choices[0]?.message?.content
+  const response = completion.choices[0]?.message?.content
   await msg.reply(response)
   await msg.react('🌐')
 }
@@ -141,13 +142,14 @@ export async function calculate (msg) {
 
   messages.unshift(prompt) // Add prompt object at the beginning of messages array
 
-  const completion = await openai.createChatCompletion({
+  const completion = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
-    messages,
-    temperature: 0
+    max_tokens: 4096 / 8,
+    temperature: 0,
+    messages
   })
 
-  const response = completion.data.choices[0]?.message?.content
+  const response = completion.choices[0]?.message?.content
 
   await msg.reply(response)
   await msg.react('😀')
