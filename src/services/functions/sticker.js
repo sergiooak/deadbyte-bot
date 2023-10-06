@@ -55,36 +55,38 @@ export async function stickerText (msg) {
  *
  */
 export async function removeBg (msg) {
-  await msg.react(reactions.wait)
+  await msg.react(reactions.spam)
+  return await msg.reply('❌ Comando desativado temporariamente')
+  // await msg.react(reactions.wait)
 
-  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
-    await msg.react(reactions.error)
+  // if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
+  //   await msg.react(reactions.error)
 
-    const header = '☠️🤖'
-    const part1 = 'Para usar o {remove.bg|removedor de fundo|*!bg*} você {precisa|tem que}'
-    const part2 = '{enviar|mandar} {esse|o} comando {junto com|na legenda de} uma {imagem|foto}'
-    const end = '{!|!!|!!!}'
+  //   const header = '☠️🤖'
+  //   const part1 = 'Para usar o {remove.bg|removedor de fundo|*!bg*} você {precisa|tem que}'
+  //   const part2 = '{enviar|mandar} {esse|o} comando {junto com|na legenda de} uma {imagem|foto}'
+  //   const end = '{!|!!|!!!}'
 
-    const message = spintax(`${header} - ${part1} ${part2}${end}`)
-    return await msg.reply(message)
-  }
+  //   const message = spintax(`${header} - ${part1} ${part2}${end}`)
+  //   return await msg.reply(message)
+  // }
 
-  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  if (!media) throw new Error('Error downloading media')
-  if (!media.mimetype.includes('image')) {
-    await msg.react(reactions.error)
-    return await msg.reply('❌ Só consigo remover o fundo de imagens')
-  }
+  // const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
+  // if (!media) throw new Error('Error downloading media')
+  // if (!media.mimetype.includes('image')) {
+  //   await msg.react(reactions.error)
+  //   return await msg.reply('❌ Só consigo remover o fundo de imagens')
+  // }
 
-  const tempUrl = await getTempUrl(media)
-  const url = 'https://v1.deadbyte.com.br/image-processing/removebg?img=' + tempUrl + '&trim=true'
-  const bgMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', { unsafeMime: true })
+  // const tempUrl = await getTempUrl(media)
+  // const url = 'https://v1.deadbyte.com.br/image-processing/removebg?img=' + tempUrl + '&trim=true'
+  // const bgMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', { unsafeMime: true })
 
-  let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})
-  if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
+  // let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})
+  // if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
 
-  await sendMediaAsSticker(msg.aux.chat, stickerMedia)
-  await msg.react(reactions.success)
+  // await sendMediaAsSticker(msg.aux.chat, stickerMedia)
+  // await msg.react(reactions.success)
 }
 
 /**
