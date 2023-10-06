@@ -58,7 +58,7 @@ export default async (msg) => {
     aux.prefix = msg.body.match(functionRegex)?.[0]
     aux.function = msg.body.replace(functionRegex, '').trim().match(/^\S*/)[0]
     msg.body = msg.body.replace(aux.prefix, '').replace(aux.function, '').trim()
-    aux.function = aux.function.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() // FüÑçTíõÑ => funcion
+    aux.function = aux.function.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() // FüÑçTíõÑ => function
   }
   if (aux.history.length > 1) { // handle original message
     aux.hasOriginalFunction = functionRegex.test(aux.history.at(0).body)
