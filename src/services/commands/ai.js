@@ -9,6 +9,9 @@ export default (msg, aux) => {
     gpt: /^(gpt|got)$/.test(aux.function) ||
     (!aux.isFunction && aux.hasOriginalFunction && /^(gpt|got)$/.test(aux.originalFunction)),
 
+    bot: /^(bot|dead)$/.test(aux.function) ||
+    (!aux.isFunction && aux.hasOriginalFunction && /^(bot|dead)$/.test(aux.originalFunction)),
+
     emojify: /^(emojify)$/.test(aux.function) ||
     (!aux.isFunction && aux.hasOriginalFunction && /^(emojify)$/.test(aux.originalFunction)),
 
