@@ -7,8 +7,8 @@
 export default (msg, aux) => {
   return {
     ban: aux.chat.isGroup && /^(ban)$/.test(aux.function),
-    promote: aux.chat.isGroup && /^(promote|promove)$/.test(aux.function),
-    demote: aux.chat.isGroup && /^(demote|rebaixa)$/.test(aux.function),
+    promote: aux.chat.isGroup && /^(promote|promove|promover)$/.test(aux.function),
+    demote: aux.chat.isGroup && /^(demote|rebaixa|rebaixar)$/.test(aux.function),
     giveaway: aux.chat.isGroup && /^(sorteio|sortear)$/.test(aux.function),
     giveawayAdminsOnly: aux.chat.isGroup && /^(sorteioadm|sortearadm)$/.test(aux.function),
     markAllMembers: aux.chat.isGroup && /^(todos|all|hiddenmention)$/.test(aux.function),
