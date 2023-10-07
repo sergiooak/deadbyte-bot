@@ -1,6 +1,7 @@
 import importFresh from '../utils/importFresh.js'
 import logger from '../logger.js'
 import { getClient } from '../index.js'
+import { camelCase } from 'change-case'
 
 //
 // ===================================== Variables ======================================
@@ -50,13 +51,14 @@ async function processQueue () {
   const { moduleName, functionName, message: msg } = currentMessage
 
   const number = await client.getFormattedNumber(msg.from)
-  logger.info(`🛫 - ${number} - ${moduleName}.${functionName}()`)
+  const camelCaseFunctionName = camelCase(functionName)
+  logger.info(`🛫 - ${number} - ${moduleName}.${camelCaseFunctionName}()`)
 
   try {
     const module = await importFresh(`../services/functions/${moduleName}.js`) // import the module
     logger.debug(module)
 
-    const fnPromisse = module[functionName](msg)
+    const fnPromisse = module[camelCaseFunctionName](msg)
     fnPromisse.then((_result) => {
       if (user.messagesQueue.length > 0) {
         queue.push(user) // if there are more messages on the user queue, push it back to the queue
@@ -66,7 +68,7 @@ async function processQueue () {
       msg.react('❌')
     })
   } catch (err) {
-    logger.fatal('Error executing module', moduleName, functionName)
+    logger.fatal('Error executing module', moduleName, camelCaseFunctionName)
     logger.error(err)
   }
 

@@ -28,7 +28,7 @@ export async function stickerCreator (msg, crop = false, stickerAuthor, stickerP
   await sendMediaAsSticker(msg.aux.chat, stickerMedia, stickerAuthor, stickerPack)
 
   if (!crop) {
-    await sticker(msg, true) // make cropped version
+    await stickerCreator(msg, true) // make cropped version
     await msg.react(reactions.success)
   }
 }
@@ -104,7 +104,7 @@ export async function stealSticker (msg) {
   if (!msg.hasQuotedMsg || !quotedMsg.hasMedia) {
     if (msg.hasMedia && (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker')) {
       msg.body = ''
-      return await sticker(msg, undefined, stickerName, stickerAuthor)
+      return await stickerCreator(msg, undefined, stickerName, stickerAuthor)
     }
 
     await msg.react(reactions.error)
