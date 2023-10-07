@@ -7,8 +7,8 @@ import reactions from '../config/reactions.js'
 //
 const commandless = (msg, aux) => {
   return {
-    stickerFNsticker: msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia),
-    stickerFNstickerText: msg.body && msg.type === 'chat'
+    stickerFNstickerCreator: msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia),
+    stickerFNtextSticker: msg.body && msg.type === 'chat'
   }
 }
 
