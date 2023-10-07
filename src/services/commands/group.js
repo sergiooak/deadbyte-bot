@@ -10,10 +10,10 @@ export default (msg, aux) => {
     promote: aux.chat.isGroup && /^(promote|promove|promover)$/.test(aux.function),
     demote: aux.chat.isGroup && /^(demote|rebaixa|rebaixar)$/.test(aux.function),
     giveaway: aux.chat.isGroup && /^(sorteio|sortear)$/.test(aux.function),
-    giveawayAdminsOnly: aux.chat.isGroup && /^(sorteioadm|sortearadm)$/.test(aux.function),
-    markAllMembers: aux.chat.isGroup && /^(todos|all|hiddenmention)$/.test(aux.function),
-    callAdmins: aux.chat.isGroup && /^(adm|adms|admins)$/.test(aux.function),
-    closeGroup: aux.chat.isGroup && /^(close|fechar)$/.test(aux.function),
-    openGroup: aux.chat.isGroup && /^(open|abrir)$/.test(aux.function)
+    'giveaway-admins-only': aux.chat.isGroup && /^(sorteioadm|sortearadm)$/.test(aux.function),
+    'mark-all-members': aux.chat.isGroup && /^(todos|all|hiddenmention)$/.test(aux.function),
+    'call-admins': aux.chat.isGroup && /^(adm|adms|admins)$/.test(aux.function),
+    'close-group': aux.chat.isGroup && /^(close|fechar)$/.test(aux.function),
+    'open-group': aux.chat.isGroup && /^(open|abrir)$/.test(aux.function)
   }
 }

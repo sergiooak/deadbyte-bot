@@ -1,5 +1,5 @@
 /**
- * Sticker creation, modification etc
+ * Miscelanius Bot Commands
  * @param {import('whatsapp-web.js').Message} msg
  * @param {object} aux
  * @returns {Object}

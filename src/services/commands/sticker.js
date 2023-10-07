@@ -6,10 +6,10 @@
  */
 export default (msg, aux) => {
   return {
-    sticker: /^(s|sticker|f|fig)$/.test(aux.function),
-    removeBg: /^(bg|fundo|nobg)$/.test(aux.function),
-    stickerText: /^(ttp|ttp1|s|sticker|f|fig)$/.test(aux.function) && msg.type === 'chat',
-    stealSticker: /^(steal|roubar)$/.test(aux.function),
-    stickerly: /^(stickerly|ly|lu)\d*$/.test(aux.function)
+    'sticker-creator': /^(s|sticker|f|fig)$/.test(aux.function),
+    'remove-bg': /^(bg|fundo|nobg)$/.test(aux.function),
+    'text-sticker': /^(ttp|ttp1|s|sticker|f|fig)$/.test(aux.function) && msg.type === 'chat',
+    'steal-sticker': /^(steal|roubar)$/.test(aux.function),
+    'sticker-ly-search': /^(stickerly|ly|lu)\d*$/.test(aux.function)
   }
 }
