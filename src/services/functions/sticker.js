@@ -15,7 +15,7 @@ import FormData from 'form-data'
  * @param {string} StickerAuthor - sticker author name
  * @param {string} StickerPack - sticker pack name
  */
-export async function sticker (msg, crop = false, stickerAuthor, stickerPack) {
+export async function stickerCreator (msg, crop = false, stickerAuthor, stickerPack) {
   await msg.react(reactions.wait)
 
   const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
@@ -37,7 +37,7 @@ export async function sticker (msg, crop = false, stickerAuthor, stickerPack) {
  * Make sticker from text
  * @param {wwebjs.Message} msg
  */
-export async function stickerText (msg) {
+export async function textSticker (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp', { message: msg.body })
@@ -124,7 +124,7 @@ export async function stealSticker (msg) {
   await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
 }
 
-export async function stickerly (msg) {
+export async function stickerLySearch (msg) {
   if (!msg.body) {
     await msg.reply('🤖 - Para usar o *!ly* você precisa enviar um termo para a pesquisa.\nEx: *!ly pior que é*')
     throw new Error('No search term')
