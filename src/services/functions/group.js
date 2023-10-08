@@ -1,3 +1,4 @@
+import spintax from '../../utils/spintax.js'
 /**
  * Ban user from group
  * @param {import('whatsapp-web.js').Message} msg
@@ -69,8 +70,8 @@ export async function demote (msg) {
  * @param {import('whatsapp-web.js').Message} msg
  */
 export async function giveaway (msg) {
-  const hasText = msg.body.split(' ').length > 1
-  const text = hasText ? msg.body : ''
+  const hasText = !!msg.body.trim()
+  console.log('hasText', hasText, msg.body.trim())
 
   let participants = await msg.aux.participants
   const botId = msg.aux.client.info.wid._serialized
@@ -81,13 +82,13 @@ export async function giveaway (msg) {
 
   const winnerContact = await msg.aux.client.getContactById(winner.id._serialized)
 
-  let message = `🎉 - @${winnerContact.id.user} parabéns! Você ganhou o sorteio`
-  message = hasText ? `${message} *${text.trim()}*!` : message + '!'
-  await msg.aux.chat.sendMessage(message, {
+  let message = `{🎉|🎊|🥳|✨|🌟} - {@${winnerContact.id.user} parabéns| {Meus p|P}arabéns @${winnerContact.id.user}}! {Você|Tu|Vc} {ganhou|venceu|acaba de ganhar} o {incrível |super |magnífico |maravilhoso |fantástico |excepcional |}{sorteio|concurso|prêmio}`
+  message = hasText ? `${message} de *${msg.body.trim()}*!` : message + '!'
+  await msg.aux.chat.sendMessage(spintax(message), {
     mentions: [winnerContact]
   })
 
-  await msg.react('🎉')
+  await msg.react(spintax('{🎉|🎊|🥳}'))
 }
 
 /**
