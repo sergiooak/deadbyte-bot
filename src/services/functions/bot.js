@@ -1,5 +1,6 @@
 import spintax from '../../utils/spintax.js'
 import fetch from 'node-fetch'
+import { getCommands } from '../../db.js'
 
 //
 // ================================ Main Functions =================================
@@ -49,6 +50,37 @@ export async function dice (msg) {
   const min = 1
   let message = `🎲 - Você rolou *${Math.floor(Math.random() * (max - min + 1)) + min}*`
   message += `\n\nEm um dado de ${max} lados`
+  await msg.reply(message)
+}
+
+export async function menu (msg) {
+  const commands = await getCommands()
+  const lang = 'pt'
+  const prefix = msg.aux.prefix || '!'
+
+  const groupsArray = commands.map(c => c.name[lang])
+  const commandsArray = commands.map(c => c.commands.filter(c => c.enabled).map(c => {
+    return {
+      name: c.name[lang],
+      command: prefix + (c.alternatives[0] || c.slug),
+      description: c.description[lang],
+      enabled: c.enabled,
+      alternatives: c.alternatives.slice(1)
+    }
+  }))
+
+  let message = `🤖 - No momento o DeadByte possui ${commandsArray.reduce((acc, c) => acc + c.length, 0)} comandos divididos em ${commandsArray.length} categorias\n\n`
+  commandsArray.forEach((c, i) => {
+    message += `*${groupsArray[i].toUpperCase()}:*\n\n`
+    c.forEach(c => {
+      message += `*${c.command}* - _${c.description}_\n${c.alternatives.length ? '<' + prefix + c.alternatives.join(' ' + prefix) + '>' : ''}\n\n`.replace(prefix + '.', '.')
+    })
+    message += '\n'
+  })
+
+  // remove the last \n
+  message = message.trim().replace(/\n$/, '').trim()
+  // await msg.reply(JSON.stringify(msg.aux, null, 2))
   await msg.reply(message)
 }
 
