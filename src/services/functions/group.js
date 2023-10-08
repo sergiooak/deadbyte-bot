@@ -71,7 +71,6 @@ export async function demote (msg) {
  */
 export async function giveaway (msg) {
   const hasText = !!msg.body.trim()
-  console.log('hasText', hasText, msg.body.trim())
 
   let participants = await msg.aux.participants
   const botId = msg.aux.client.info.wid._serialized

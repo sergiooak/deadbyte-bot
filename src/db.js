@@ -115,7 +115,6 @@ export async function loadCommands () {
       command.alternatives = command.alternatives.map(a => a.name)
     })
   })
-  console.log(groups.data[0].commands[0])
   commands = groups.data
 }
 
