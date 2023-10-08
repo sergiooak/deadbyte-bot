@@ -4,6 +4,7 @@ import fs from 'fs/promises'
 import logger from './logger.js'
 import { apiKey } from './config/api.js'
 import bot from './config/bot.js'
+import './db.js'
 
 /**
  * Whatsapp Web Client
