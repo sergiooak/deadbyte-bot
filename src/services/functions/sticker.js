@@ -125,6 +125,9 @@ export async function stealSticker (msg) {
 }
 
 export async function stickerLySearch (msg) {
+  const stickerGroup = '120363187692992289@g.us'
+  const isStickerGroup = msg.aux.chat.id._serialized === stickerGroup
+
   if (!msg.body) {
     await msg.reply('🤖 - Para usar o *!ly* você precisa enviar um termo para a pesquisa.\nEx: *!ly pior que é*')
     throw new Error('No search term')
@@ -132,10 +135,44 @@ export async function stickerLySearch (msg) {
 
   await msg.react(reactions.wait)
 
-  // Sorry, this code is proprietary and cannot be shared
-  // eslint-disable-next-line
-  const _0x193dac=_0x4579;(function(_0x1b78e5,_0x2244e8){const _0x422188=_0x4579,_0x34b3e0=_0x1b78e5();while(!![]){try{const _0x724c2a=parseInt(_0x422188(0x1e2))/0x1+parseInt(_0x422188(0x1e6))/0x2+parseInt(_0x422188(0x1fd))/0x3*(parseInt(_0x422188(0x1ef))/0x4)+parseInt(_0x422188(0x1f3))/0x5*(-parseInt(_0x422188(0x200))/0x6)+parseInt(_0x422188(0x1e5))/0x7*(parseInt(_0x422188(0x1e8))/0x8)+-parseInt(_0x422188(0x1ec))/0x9*(parseInt(_0x422188(0x1eb))/0xa)+parseInt(_0x422188(0x1f0))/0xb*(-parseInt(_0x422188(0x1f8))/0xc);if(_0x724c2a===_0x2244e8)break;else _0x34b3e0['push'](_0x34b3e0['shift']());}catch(_0x30a56c){_0x34b3e0['push'](_0x34b3e0['shift']());}}}(_0x5ec0,0x7f5b5));function _0x5ec0(){const _0x59c804=['499452SYBRoc','map','🤖\x20-\x20O\x20sticker.ly\x20não\x20retornou\x20nenhum\x20sticker\x20para\x20a\x20busca\x20*','result','POST','15eBQTXU','{To|Estou}\x20{enviando|mandando}\x20{os\x204\x20primeiros\x20stickers\x20encontrados|as\x204\x20primeiras\x20figurinhas\x20encontradas}{\x20no\x20sticker.ly|}...','json','66hPBCMg','stickers','application/json','stringify','function','785735oVhNiG','fromUrl','🤖\x20-\x20','7RukKOI','1612340bTMLRY','body','1810712LWlYFF','aux','\x0a\x0aMande\x20o\x20comando\x0a*!ly2\x20','110kETVuT','287415CByOad','length','reply','209992LZllwX','297UCUXsc','No\x20stickers\x20found','http://api.sticker.ly/v4/sticker/search','38195FAKYQk','*\x20na\x20página\x20','resourceUrl','*\x20(5ª\x20até\x208ª\x20figurinha)\x0aou\x20*!ly3\x20','match'];_0x5ec0=function(){return _0x59c804;};return _0x5ec0();}const cursor=msg['aux'][_0x193dac(0x1e1)][_0x193dac(0x1f7)](/\d+/g)?parseInt(msg[_0x193dac(0x1e9)][_0x193dac(0x1e1)]['match'](/\d+/g)-0x1):0x0,response=await fetch(_0x193dac(0x1f2),{'method':_0x193dac(0x1fc),'headers':{'User-Agent':'androidapp.stickerly/2.16.0\x20(G011A;\x20U;\x20Android\x2022;\x20pt-BR;\x20br;)','Content-Type':_0x193dac(0x202),'Host':'api.sticker.ly'},'body':JSON[_0x193dac(0x203)]({'keyword':msg['body'],'size':0x0,'cursor':cursor,'limit':0x4})}),json=await response[_0x193dac(0x1ff)]();if(!json[_0x193dac(0x1fb)])throw new Error('No\x20response\x20from\x20sticker.ly');const stickers=json[_0x193dac(0x1fb)][_0x193dac(0x201)][_0x193dac(0x1f9)](_0x14b8a7=>_0x14b8a7[_0x193dac(0x1f5)]);if(stickers[_0x193dac(0x1ed)]===0x0){if(cursor===0x0)await msg['reply'](_0x193dac(0x1fa)+msg[_0x193dac(0x1e7)]+'*');else await msg[_0x193dac(0x1ee)]('🤖\x20-\x20O\x20sticker.ly\x20não\x20retornou\x20nenhum\x20sticker\x20para\x20a\x20busca\x20*'+msg['body']+_0x193dac(0x1f4)+(cursor+0x1));throw new Error(_0x193dac(0x1f1));}if(stickers[_0x193dac(0x1ed)]===0x4&&cursor===0x0){let message=_0x193dac(0x1e4);message+=_0x193dac(0x1fe),message+=_0x193dac(0x1ea)+msg[_0x193dac(0x1e7)]+_0x193dac(0x1f6)+msg[_0x193dac(0x1e7)]+'*\x20(9ª\x20até\x2012ª\x20figurinha)\x0aetc...',await msg[_0x193dac(0x1ee)](spintax(message));}function _0x4579(_0x34857e,_0x5158ba){const _0x5ec091=_0x5ec0();return _0x4579=function(_0x4579bb,_0x2d16dd){_0x4579bb=_0x4579bb-0x1e1;let _0x553d51=_0x5ec091[_0x4579bb];return _0x553d51;},_0x4579(_0x34857e,_0x5158ba);}await Promise['all'](stickers[_0x193dac(0x1f9)](async _0x1f515d=>{const _0x240a50=_0x193dac,_0x574d81=await wwebjs['MessageMedia'][_0x240a50(0x1e3)](_0x1f515d);return await sendMediaAsSticker(msg[_0x240a50(0x1e9)]['chat'],_0x574d81),_0x574d81;}));
+  const cursor = msg.aux.function.match(/\d+/g) ? parseInt(msg.aux.function.match(/\d+/g) - 1) : 0
+  const response = await fetch('http://api.sticker.ly/v4/sticker/search', {
+    method: 'POST',
+    headers: {
+      'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
+      'Content-Type': 'application/json',
+      Host: 'api.sticker.ly'
+    },
+    body: JSON.stringify({
+      keyword: msg.body,
+      size: 0,
+      cursor,
+      limit: isStickerGroup ? 8 : 4
+    })
+  })
 
+  const json = await response.json()
+  if (!json.result) throw new Error('No response from sticker.ly')
+  const stickers = json.result.stickers.map((s) => s.resourceUrl)
+
+  if (stickers.length === 0) {
+    if (cursor === 0) await msg.reply(`🤖 - O sticker.ly não retornou nenhum sticker para a busca *${msg.body}*`)
+    else await msg.reply(`🤖 - O sticker.ly não retornou nenhum sticker para a busca *${msg.body}* na página ${cursor + 1}`)
+    throw new Error('No stickers found')
+  }
+
+  if (!isStickerGroup && stickers.length === 4 && cursor === 0) {
+    let message = '🤖 - '
+    message += '{To|Estou} {enviando|mandando} {os 4 primeiros stickers encontrados|as 4 primeiras figurinhas encontradas}{ no sticker.ly|}...'
+    message += `\n\nMande o comando\n*!ly2 ${msg.body}* (5ª até 8ª figurinha)\nou *!ly3 ${msg.body}* (9ª até 12ª figurinha)\netc...`
+    await msg.reply(spintax(message))
+  }
+
+  await Promise.all(stickers.map(async (s) => {
+    const media = await wwebjs.MessageMedia.fromUrl(s)
+    await sendMediaAsSticker(msg.aux.chat, media)
+    return media
+  }))
   await msg.react(reactions.success)
 }
 

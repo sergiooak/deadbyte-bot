@@ -7,8 +7,9 @@ import reactions from '../config/reactions.js'
 //
 const commandless = (msg, aux) => {
   return {
-    stickerFNstickerCreator: msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia),
-    stickerFNtextSticker: msg.body && msg.type === 'chat'
+    stickerFNstickerCreator: (msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia)) &&
+      ((aux.isStickerGroup && ['video', 'image', 'document'].includes(msg.type)) || !aux.isStickerGroup),
+    stickerFNtextSticker: msg.body && msg.type === 'chat' && !aux.isStickerGroup
   }
 }
 
@@ -83,6 +84,9 @@ export default async (msg) => {
   aux.isSenderAdmin = aux.admins.includes(msg.author)
   aux.isBotAdmin = aux.admins.includes(aux.me)
 
+  const stickerGroup = '120363187692992289@g.us'
+  aux.isStickerGroup = aux.chat.isGroup ? aux.chat.id._serialized === stickerGroup : false
+
   try {
     msg.aux = aux
 
@@ -124,7 +128,7 @@ export default async (msg) => {
     }
 
     msg.body = aux.originalBody
-    if ((aux.chat.isGroup && !aux.mentionedMe) || aux.isFunction) return false
+    if (((aux.chat.isGroup && !aux.isStickerGroup) && !aux.mentionedMe) || aux.isFunction) return false
 
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))
