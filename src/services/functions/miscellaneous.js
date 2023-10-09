@@ -1,6 +1,11 @@
 import spintax from '../../utils/spintax.js'
 import fetch from 'node-fetch'
 import { getCommands } from '../../db.js'
+import dayjs from 'dayjs'
+import 'dayjs/locale/pt-br.js'
+import relativeTime from 'dayjs/plugin/relativeTime.js'
+dayjs.locale('pt-br')
+dayjs.extend(relativeTime)
 
 //
 // ================================ Main Functions =================================
@@ -46,6 +51,7 @@ export async function react (msg) {
 }
 
 export async function dice (msg) {
+  await msg.react('🎲')
   const max = parseInt(msg.aux.function.replace('d', ''))
   const min = 1
   let message = `🎲 - Você rolou *${Math.floor(Math.random() * (max - min + 1)) + min}*`
@@ -85,7 +91,16 @@ export async function menu (msg) {
 }
 
 export async function debug (msg) {
-  await msg.reply(JSON.stringify(msg.aux.db, null, 2))
+  const actions = msg.aux.db.contact.attributes.actions.data
+  const totalCount = actions.length
+  // const firstTime = new Date(actions[0].attributes.createdAt)
+  const firstTime = dayjs(actions[0].attributes.createdAt)
+  const firstTimeRelative = firstTime.fromNow()
+
+  let message = `🤖 - Você já usou o DeadByte ${totalCount} vezes!\n`
+  message += `A primeira vez foi ${firstTimeRelative}`
+
+  await msg.reply(message)
 }
 
 //

@@ -143,12 +143,10 @@ export async function markAllMembers (msg) {
  */
 export async function callAdmins (msg) {
   const admins = msg.aux.admins
-  console.log('admins', admins)
   const contactArray = []
   for (let i = 0; i < admins.length; i++) {
     contactArray.push(await msg.aux.client.getContactById(admins[i]))
   }
-  console.log('contactArray', contactArray)
   await msg.aux.chat.sendMessage('👑 - Atenção administradores!', { mentions: contactArray })
   await msg.react('👑')
 }
