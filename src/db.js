@@ -272,7 +272,7 @@ export async function saveActionToDB (moduleName, functionName, msg) {
   const chat = await findOrCreateChat(msg.aux.chat)
   const chatID = chat.id
 
-  const action = await createAction(commandGroupID, commandID, contactID, chatID)
+  const action = await createAction(commandGroupID, commandID, chatID, contactID)
   const actionID = action.id
 
   return { action, actionID, commandGroup, commandGroupID, command, commandID, contact, contactID, chat, chatID }
