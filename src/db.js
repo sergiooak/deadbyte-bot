@@ -134,13 +134,6 @@ export function getCommands () {
  * @param {import('whatsapp-web.js').Contact} contact
  */
 export async function findOrCreateContact (contact) {
-  // 1 - Check if contact.id._serialized is on the cache
-  if (contactsCache[contact.id._serialized]) {
-    contactsCache[contact.id._serialized].lastSeen = new Date()
-    return contactsCache[contact.id._serialized]
-  }
-
-  // 2 - If not, fetch from the database
   const response = await fetch(`${dbUrl}/contacts/${contact.id._serialized}`, {
     method: 'POST',
     headers: {
@@ -159,22 +152,8 @@ export async function findOrCreateContact (contact) {
   })
   const data = await response.json()
 
-  // 3 - Save on the cache
-  contactsCache[contact.id._serialized] = data
-  contactsCache[contact.id._serialized].lastSeen = new Date()
-  return contactsCache[contact.id._serialized]
+  return data
 }
-
-// mini cache system for contacts, every minute filter out the contacts that haven't been seen in the last 5 minutes
-const contactsCache = {}
-setInterval(() => {
-  const now = new Date()
-  Object.keys(contactsCache).forEach(key => {
-    if (now - contactsCache[key].lastSeen > 300000) {
-      delete contactsCache[key]
-    }
-  })
-}, 60_000)
 
 /**
  * Find or create a chat on the database
@@ -182,13 +161,6 @@ setInterval(() => {
  * @param {import('whatsapp-web.js').Chat} chat
  */
 export async function findOrCreateChat (chat) {
-  // 1 - Check if chat.id._serialized is on the cache
-  if (chatsCache[chat.id._serialized]) {
-    chatsCache[chat.id._serialized].lastSeen = new Date()
-    return chatsCache[chat.id._serialized]
-  }
-
-  // 2 - If not, fetch from the database
   const response = await fetch(`${dbUrl}/chats/${chat.id._serialized}`, {
     method: 'POST',
     headers: {
@@ -205,23 +177,8 @@ export async function findOrCreateChat (chat) {
   })
   const data = await response.json()
 
-  // 3 - Save on the cache
-  chatsCache[chat.id._serialized] = data
-  chatsCache[chat.id._serialized].lastSeen = new Date()
-
   return data
 }
-
-// mini cache system for chats, every minute filter out the chats that haven't been seen in the last 5 minutes
-const chatsCache = {}
-setInterval(() => {
-  const now = new Date()
-  Object.keys(chatsCache).forEach(key => {
-    if (now - chatsCache[key].lastSeen > 300000) {
-      delete chatsCache[key]
-    }
-  })
-}, 60_000)
 
 /**
  * Create a new action on the database
