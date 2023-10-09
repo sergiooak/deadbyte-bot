@@ -85,10 +85,7 @@ export async function menu (msg) {
 }
 
 export async function debug (msg) {
-  const stickerGroup = '120363187692992289@g.us'
-  const isStickerGroup = msg.aux.chat.id._serialized === stickerGroup
-
-  await msg.reply(`Is sticker group: ${isStickerGroup}`)
+  await msg.reply(JSON.stringify(msg.aux.db, null, 2))
 }
 
 //
