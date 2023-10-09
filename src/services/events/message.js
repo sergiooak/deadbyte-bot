@@ -2,6 +2,7 @@ import { addToQueue } from '../queue.js'
 import importFresh from '../../utils/importFresh.js'
 import logger from '../../logger.js'
 import { getClient } from '../../index.js'
+import { saveActionToDB } from '../../db.js'
 
 const client = getClient()
 
@@ -25,6 +26,7 @@ export default async (msg) => {
 
   if (!handlerModule) return logger.debug('handlerModule is undefined')
 
+  msg.aux.db = await saveActionToDB(handlerModule.type, handlerModule.command, msg)
   const [queueLength, userQueueLength] = addToQueue(msg.from, handlerModule.type, handlerModule.command, msg)
   const number = await client.getFormattedNumber(msg.from)
   if (queueLength === 1) return

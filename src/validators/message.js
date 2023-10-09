@@ -7,9 +7,9 @@ import reactions from '../config/reactions.js'
 //
 const commandless = (msg, aux) => {
   return {
-    stickerFNstickerCreator: (msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia)) &&
+    stickersFNstickerCreator: (msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia)) &&
       ((aux.isStickerGroup && ['video', 'image', 'document'].includes(msg.type)) || !aux.isStickerGroup),
-    stickerFNtextSticker: msg.body && msg.type === 'chat' && !aux.isStickerGroup
+    stickersFNtextSticker: msg.body && msg.type === 'chat' && !aux.isStickerGroup
   }
 }
 
@@ -30,7 +30,7 @@ export default async (msg) => {
   aux.client = (await import('../index.js')).getClient()
   aux.chat = await msg.getChat()
   aux.sender = await msg.getContact()
-  aux.senderIsMe = aux.sender.isMe
+  aux.senderIsMe = msg.fromMe
   aux.mentionedMe = msg.mentionedIds.includes(aux.client.info.wid._serialized)
   if (aux.mentionedMe) {
     msg.body = msg.body.replace(new RegExp(`@${aux.client.info.wid.user}`, 'g'), '').trim()

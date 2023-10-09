@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import logger from './logger.js'
+import { kebabCase } from 'change-case'
 import qs from 'qs'
 //
 // ===================================== Variables ======================================
@@ -125,4 +126,154 @@ export async function loadCommands () {
  */
 export function getCommands () {
   return commands
+}
+
+/**
+ * Find or create a contact on the database
+ *
+ * @param {import('whatsapp-web.js').Contact} contact
+ */
+export async function findOrCreateContact (contact) {
+  // 1 - Check if contact.id._serialized is on the cache
+  if (contactsCache[contact.id._serialized]) {
+    contactsCache[contact.id._serialized].lastSeen = new Date()
+    return contactsCache[contact.id._serialized]
+  }
+
+  // 2 - If not, fetch from the database
+  const response = await fetch(`${dbUrl}/contacts/${contact.id._serialized}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      data: {
+        name: contact.name,
+        number: contact.id.user,
+        pushname: contact.pushname,
+        isMyContact: contact.isMyContact,
+        wid: contact.id._serialized
+      }
+    })
+  })
+  const data = await response.json()
+
+  // 3 - Save on the cache
+  contactsCache[contact.id._serialized] = data
+  contactsCache[contact.id._serialized].lastSeen = new Date()
+  return contactsCache[contact.id._serialized]
+}
+
+// mini cache system for contacts, every minute filter out the contacts that haven't been seen in the last 5 minutes
+const contactsCache = {}
+setInterval(() => {
+  const now = new Date()
+  Object.keys(contactsCache).forEach(key => {
+    if (now - contactsCache[key].lastSeen > 300000) {
+      delete contactsCache[key]
+    }
+  })
+}, 60_000)
+
+/**
+ * Find or create a chat on the database
+ *
+ * @param {import('whatsapp-web.js').Chat} chat
+ */
+export async function findOrCreateChat (chat) {
+  // 1 - Check if chat.id._serialized is on the cache
+  if (chatsCache[chat.id._serialized]) {
+    chatsCache[chat.id._serialized].lastSeen = new Date()
+    return chatsCache[chat.id._serialized]
+  }
+
+  // 2 - If not, fetch from the database
+  const response = await fetch(`${dbUrl}/chats/${chat.id._serialized}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      data: {
+        name: chat.name,
+        isGroup: chat.isGroup,
+        wid: chat.id._serialized
+      }
+    })
+  })
+  const data = await response.json()
+
+  // 3 - Save on the cache
+  chatsCache[chat.id._serialized] = data
+  chatsCache[chat.id._serialized].lastSeen = new Date()
+
+  return data
+}
+
+// mini cache system for chats, every minute filter out the chats that haven't been seen in the last 5 minutes
+const chatsCache = {}
+setInterval(() => {
+  const now = new Date()
+  Object.keys(chatsCache).forEach(key => {
+    if (now - chatsCache[key].lastSeen > 300000) {
+      delete chatsCache[key]
+    }
+  })
+}, 60_000)
+
+/**
+ * Create a new action on the database
+ * @param Number commandGroupId
+ * @param Number commandId
+ * @param Number chatId
+ * @param Number contactId
+ */
+export async function createAction (commandGroupId, commandId, chatId, contactId) {
+  const response = await fetch(`${dbUrl}/actions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      data: {
+        commandGroup: commandGroupId,
+        command: commandId,
+        chat: chatId,
+        contact: contactId
+      }
+    })
+  })
+  const data = await response.json()
+  return data.data
+}
+
+/**
+ * Saves an action to the database.
+ * @async
+ * @function saveActionToDB
+ * @param {string} moduleName - The name of the module the function belongs to.
+ * @param {string} functionName - The name of the function being executed.
+ * @param {object} msg - The message object containing information about the sender and chat.
+ * @returns {object} - An object containing information about the saved action.
+ */
+export async function saveActionToDB (moduleName, functionName, msg) {
+  const actions = getCommands()
+  const commandGroup = actions.find((group) => group.slug === kebabCase(moduleName))
+  if (!commandGroup) return { error: 'Command group not found' }
+  const commandGroupID = commandGroup.id
+  const command = commandGroup.commands.find((command) => command.slug === kebabCase(functionName))
+  if (!command) return { error: 'Command not found' }
+  const commandID = command.id
+  const contact = await findOrCreateContact(msg.aux.sender)
+  const contactID = contact.id
+  const chat = await findOrCreateChat(msg.aux.chat)
+  const chatID = chat.id
+
+  const action = await createAction(commandGroupID, commandID, contactID, chatID)
+  const actionID = action.id
+
+  return { action, actionID, commandGroup, commandGroupID, command, commandID, contact, contactID, chat, chatID }
 }

@@ -3,6 +3,7 @@ import { getClient } from '../../index.js'
 import { addToQueue } from '../queue.js'
 import importFresh from '../../utils/importFresh.js'
 import spintax from '../../utils/spintax.js'
+import { saveActionToDB } from '../../db.js'
 
 /**
  * Emitted when the client has initialized and is ready to receive messages.
@@ -18,6 +19,7 @@ export default async () => {
 
   for await (const chat of chats) {
     const unreadMessages = await chat.fetchMessages({ limit: 10 })
+    await wait(250) // wait 250ms to prevent flood
     let unreadMessagesCount = 0
     let hasRevokedMessages = false
     for (const msg of unreadMessages.reverse()) { // reverse to get the earliest messages first
@@ -33,6 +35,7 @@ export default async () => {
       const command = await messageParser.default(msg)
       if (command) {
         logger.info(`📥 - [${msg.from.split('@')[0]} - ${command.type}.${command.command}()`)
+        msg.aux.db = await saveActionToDB(command.type, command.command, msg)
         addToQueue(msg.from, command.type, command.command, msg)
       }
       unreadMessagesCount++
@@ -56,4 +59,10 @@ export default async () => {
 
     await chat.sendSeen()
   }
+}
+
+async function wait (ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
 }

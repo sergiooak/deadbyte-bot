@@ -24,6 +24,8 @@ let waitTime = 5000 // 2.5 seconds
  *
  */
 function addToQueue (userId, moduleName, functionName, msg) {
+  console.log(msg.aux.db)
+
   const userIndex = queue.findIndex((user) => user.wid === userId)
   if (userIndex !== -1) {
     queue[userIndex].messagesQueue.push({ moduleName, functionName, message: msg })
