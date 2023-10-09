@@ -15,7 +15,6 @@
   "dependencies": {
     "change-case": "^5.0.2",
     "dotenv": "^16.3.1",
-    "eslint-config-standard": "^17.1.0",
     "filenamify": "^6.0.0",
     "form-data": "^4.0.0",
     "mime-types": "^2.1.35",
@@ -30,6 +29,7 @@
   },
   "devDependencies": {
     "eslint": "^8.50.0",
+    "eslint-config-standard": "^17.1.0",
     "jsdoc": "^4.0.2"
   }
 }
