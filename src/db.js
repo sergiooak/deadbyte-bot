@@ -255,6 +255,7 @@ export async function createAction (commandGroupId, commandId, chatId, contactId
     })
   })
   const data = await response.json()
+  console.log(data)
   return data.data
 }
 
