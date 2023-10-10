@@ -281,7 +281,12 @@ export async function saveActionToDB (moduleName, functionName, msg) {
   const chatID = chat.id
 
   const action = await createAction(commandGroupID, commandID, contactID, chatID)
-  const actionID = action.id
 
-  return { action, actionID, commandGroup, commandGroupID, command, commandID, contact, contactID, chat, chatID }
+  try {
+    const actionID = action.id
+    return { action, actionID, commandGroup, commandGroupID, command, commandID, contact, contactID, chat, chatID }
+  } catch (error) {
+    console.log(error)
+    console.log(action)
+  }
 }
