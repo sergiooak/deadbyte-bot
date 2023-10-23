@@ -19,6 +19,23 @@ export default {
           description: 'If the text should be written on the bottom of the image'
         }
       }
+    },
+    ttp2: {
+      path: 'ttp/2',
+      name: 'Text to Picture 2',
+      description: 'Create a 512x512 image with text',
+      params: {
+        message: {
+          type: 'string',
+          required: true,
+          description: 'Text to be written on the image'
+        },
+        subtitle: {
+          type: 'boolean',
+          required: false,
+          description: 'If the text should be written on the bottom of the image'
+        }
+      }
     }
   }
 }

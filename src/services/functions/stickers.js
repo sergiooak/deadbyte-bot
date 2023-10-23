@@ -50,6 +50,22 @@ export async function textSticker (msg) {
 }
 
 /**
+ * Make sticker from text
+ * @param {wwebjs.Message} msg
+ */
+export async function textSticker2 (msg) {
+  await msg.react(reactions.wait)
+
+  const url = await createUrl('image-creator', 'ttp2', { message: msg.body })
+
+  const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
+  if (!media) throw new Error('Error downloading media')
+
+  await sendMediaAsSticker(msg.aux.chat, media)
+  await msg.react(reactions.success)
+}
+
+/**
  * Create a sticker of an image without background
  * @param {wwebjs.Message} msg
  *
