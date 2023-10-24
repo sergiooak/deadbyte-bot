@@ -132,5 +132,5 @@ export async function qrReader (msg) {
   clearTimeout(timeout) // stop the timeout
 
   await reply.edit(`✅ - ${qrData.result}`)
-  return await msg.react(reactions.success)
+  await msg.react(reactions.success)
 }
