@@ -11,6 +11,8 @@ import sharp from 'sharp'
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 //
 // ================================ Main Functions =================================
 //
@@ -102,13 +104,13 @@ export async function qrReader (msg) {
     await reply.edit(`${spinner[spinnerIndex]} - Lendo QR code da imagem`) // edit the message
   }, 1000)
 
-  // auto cancel if the process takes more than 15 seconds
+  // auto cancel if the process takes more than 30 seconds
   const timeout = setTimeout(async () => {
     clearInterval(interval)
     await msg.react(reactions.error)
     await reply.edit('❌ - Tempo limite excedido')
     throw new Error('Timeout')
-  }, 15000)
+  }, 30_000)
 
   const buffer = Buffer.from(media.data, 'base64')
 
@@ -131,6 +133,8 @@ export async function qrReader (msg) {
   clearInterval(interval) // stop the interval
   clearTimeout(timeout) // stop the timeout
 
+  await reply.edit(`✅ - ${qrData.result}`)
+  await wait(1000)
   await reply.edit(`✅ - ${qrData.result}`)
   await msg.react(reactions.success)
 }
