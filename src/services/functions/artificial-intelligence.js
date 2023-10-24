@@ -1,6 +1,8 @@
 import OpenAI from 'openai'
 import reactions from '../../config/reactions.js'
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
@@ -11,6 +13,7 @@ const openai = new OpenAI({
  */
 export async function gpt (msg) {
   await msg.react(reactions.wait)
+  await msg.aux.chat.sendStateTyping()
   if (!msg.body) return msg.reply('Para utilizar o *!gpt* mande uma mensagem junto com o comando.')
 
   const messages = msg.aux.history.map(msg => {
@@ -23,11 +26,31 @@ export async function gpt (msg) {
   const completion = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
     max_tokens: 4096 / 4,
-    messages
+    messages,
+    stream: true
   })
 
-  const response = completion.choices[0]?.message?.content
-  await msg.reply(response)
+  let response = ''
+  const reply = await msg.reply('💬')
+
+  const msBetweenChunks = 1500 // 1.5s
+  let readyForNextChunk = true
+
+  const interval = setInterval(() => {
+    readyForNextChunk = true
+  }, msBetweenChunks)
+
+  for await (const chunk of completion) {
+    if (chunk.choices[0].delta.content) { response += chunk.choices[0].delta.content }
+    if (!readyForNextChunk) continue
+    if (reply) await reply.edit(response + ' ...')
+    readyForNextChunk = false
+  }
+  await msg.aux.chat.clearState()
+  clearInterval(interval)
+
+  await wait(msBetweenChunks)
+  await reply.edit(response)
   await msg.react('🧠')
 }
 
@@ -37,6 +60,7 @@ export async function gpt (msg) {
  */
 export async function bot (msg) {
   await msg.react(reactions.wait)
+  await msg.aux.chat.sendStateTyping()
   if (!msg.body) return msg.reply('Para utilizar o *!bot* mande uma mensagem junto com o comando.')
 
   const messages = msg.aux.history.map(msg => {
@@ -69,11 +93,31 @@ export async function bot (msg) {
   const completion = await openai.chat.completions.create({
     model: 'gpt-3.5-turbo',
     max_tokens: 4096 / 4,
-    messages
+    messages,
+    stream: true
   })
 
-  const response = completion.choices[0]?.message?.content
-  await msg.reply(response)
+  let response = ''
+  const reply = await msg.reply('💬')
+
+  const msBetweenChunks = 1500 // 1.5s
+  let readyForNextChunk = true
+
+  const interval = setInterval(() => {
+    readyForNextChunk = true
+  }, msBetweenChunks)
+
+  for await (const chunk of completion) {
+    if (chunk.choices[0].delta.content) { response += chunk.choices[0].delta.content }
+    if (!readyForNextChunk) continue
+    if (reply) await reply.edit(response + ' ...')
+    readyForNextChunk = false
+  }
+  await msg.aux.chat.clearState()
+  clearInterval(interval)
+
+  await wait(msBetweenChunks)
+  await reply.edit(response)
   await msg.react('🧠')
 }
 
