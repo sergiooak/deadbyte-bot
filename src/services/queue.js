@@ -24,6 +24,11 @@ let waitTime = 5000 // 2.5 seconds
  *
  */
 function addToQueue (userId, moduleName, functionName, msg) {
+  // if is a group, bypass the queue
+  if (msg.aux.chat.isGroup) {
+    bypassQueue(moduleName, functionName, msg)
+    return [0, 0]
+  }
   const userIndex = queue.findIndex((user) => user.wid === userId)
   if (userIndex !== -1) {
     queue[userIndex].messagesQueue.push({ moduleName, functionName, message: msg })
@@ -36,6 +41,13 @@ function addToQueue (userId, moduleName, functionName, msg) {
   })
   return [getQueueLength(), 1]
 }
+
+async function bypassQueue (moduleName, functionName, msg) {
+  const module = await importFresh(`../services/functions/${moduleName}.js`)
+  const camelCaseFunctionName = camelCase(functionName)
+  module[camelCaseFunctionName](msg)
+}
+
 async function processQueue () {
   // set the wait time for the next round based on the queue length
   setWaitTime(Math.min(2500 - (queue.length * 100)), 1000)
