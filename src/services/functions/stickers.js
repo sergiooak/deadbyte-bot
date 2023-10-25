@@ -109,7 +109,6 @@ export async function removeBg (msg) {
   }
 
   const tempUrl = await getTempUrl(media)
-  // const url = 'https://v1.deadbyte.com.br/image-processing/removebg?img=' + tempUrl + '&trim=true'
   const url = await createUrl('image-processing', 'removebg', { url: tempUrl, trim: true })
   const bgMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', { unsafeMime: true })
 
@@ -310,7 +309,7 @@ async function getTempUrl (media) {
   const formData = new FormData()
   formData.append('file', Buffer.from(media.data, 'base64'), media.filename || 'sticker.png')
 
-  const url = await createUrl('uploader', 'tempurl')
+  const url = await createUrl('uploader', 'tempurl', {})
   const response = await fetch(url, {
     method: 'POST',
     body: formData
