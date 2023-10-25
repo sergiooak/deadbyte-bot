@@ -80,6 +80,35 @@ export default {
           description: 'Width/height of the QR Code'
         }
       }
+    },
+    e360list: {
+      path: 'ephoto360/list',
+      name: 'ePhoto360 List',
+      description: 'Get a list of all ePhoto360 templates',
+      params: {
+      }
+    },
+    e360: {
+      path: 'ephoto360/{{name}}',
+      name: 'ePhoto360',
+      description: 'Create an ePhoto360 image',
+      params: {
+        text1: {
+          type: 'string',
+          required: true,
+          description: 'Text 1'
+        },
+        text2: {
+          type: 'string',
+          required: true,
+          description: 'Text 2'
+        },
+        text3: {
+          type: 'string',
+          required: true,
+          description: 'Text 3'
+        }
+      }
     }
   }
 }
