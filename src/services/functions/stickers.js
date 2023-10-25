@@ -109,7 +109,7 @@ export async function removeBg (msg) {
   }
 
   const tempUrl = await getTempUrl(media)
-  const url = await createUrl('image-processing', 'removebg', { url: tempUrl, trim: true })
+  const url = await createUrl('image-processing', 'removebg', { img: tempUrl, trim: true })
   const bgMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', { unsafeMime: true })
 
   let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})

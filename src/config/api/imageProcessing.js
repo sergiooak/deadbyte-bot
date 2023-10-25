@@ -8,7 +8,7 @@ export default {
       name: 'Remove Background',
       description: 'Remove the background of an static image',
       params: {
-        url: {
+        img: {
           type: 'string',
           required: true,
           description: 'URL of the image'
