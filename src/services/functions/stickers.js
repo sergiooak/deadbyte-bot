@@ -108,9 +108,16 @@ export async function removeBg (msg) {
     return await msg.reply('❌ Só consigo remover o fundo de imagens')
   }
 
-  const tempUrl = await getTempUrl(media)
+  // use shapr to convert to a max 512 (bigger side) jpg image, crank up the contrast
+  const buffer = Buffer.from(media.data, 'base64')
+  const resizedBuffer = await sharp(buffer)
+    .resize(1024, 1024, { fit: 'inside' })
+    .jpeg()
+    .toBuffer()
+
+  const tempUrl = await getTempUrl(resizedBuffer)
   const url = await createUrl('image-processing', 'removebg', { img: tempUrl, trim: true })
-  const bgMedia = await wwebjs.MessageMedia.fromUrl(url + tempUrl + '&trim=true', { unsafeMime: true })
+  const bgMedia = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
 
   let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})
   if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
@@ -305,9 +312,9 @@ async function compressMediaBuffer (mediaBuffer) {
  * @param {import ('whatsapp-web.js').MessageMedia} media - The media to upload
  * @returns {promise<string>} A Promise that resolves with the temporary URL of the uploaded image.
  */
-async function getTempUrl (media) {
+async function getTempUrl (buffer) {
   const formData = new FormData()
-  formData.append('file', Buffer.from(media.data, 'base64'), media.filename || 'sticker.png')
+  formData.append('file', buffer, 'sticker.png')
 
   const url = await createUrl('uploader', 'tempurl', {})
   const response = await fetch(url, {
