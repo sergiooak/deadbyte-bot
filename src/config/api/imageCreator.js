@@ -36,6 +36,7 @@ export default {
           description: 'If the text should be written on the bottom of the image'
         }
       },
+    },
       ttp3: {
         path: 'ttp/3',
         name: 'Text to Picture 3',
@@ -52,7 +53,7 @@ export default {
             description: 'If the text should be written on the bottom of the image'
           }
         }
-      }
+      },
     },
     qr: {
       path: 'qr',
