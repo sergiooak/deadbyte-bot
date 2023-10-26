@@ -17,9 +17,13 @@ export default async () => {
   const client = getClient()
   const chats = await client.getChats()
 
+  handleUnreadMessages(chats)
+}
+
+async function handleUnreadMessages (chats) {
   for await (const chat of chats) {
     const unreadMessages = await chat.fetchMessages({ limit: 10 })
-    await wait(250) // wait 250ms to prevent flood
+    await wait(2_500) // wait 250ms to prevent flood
     let unreadMessagesCount = 0
     let hasRevokedMessages = false
     for (const msg of unreadMessages.reverse()) { // reverse to get the earliest messages first
