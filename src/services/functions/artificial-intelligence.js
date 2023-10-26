@@ -12,6 +12,9 @@ const openai = new OpenAI({
  * @param {import('whatsapp-web.js').Message} msg
  */
 export async function gpt (msg) {
+  await msg.react('⚠️')
+  return msg.reply('O comando *!gpt* está temporariamente desativado.')
+
   await msg.react(reactions.wait)
   await msg.aux.chat.sendStateTyping()
   if (!msg.body) return msg.reply('Para utilizar o *!gpt* mande uma mensagem junto com o comando.')
@@ -59,6 +62,10 @@ export async function gpt (msg) {
  * @param {import('whatsapp-web.js').Message} msg
  */
 export async function bot (msg) {
+  // temporary disabled
+  await msg.react('⚠️')
+  return msg.reply('O comando *!bot* está temporariamente desativado.')
+
   await msg.react(reactions.wait)
   await msg.aux.chat.sendStateTyping()
   if (!msg.body) return msg.reply('Para utilizar o *!bot* mande uma mensagem junto com o comando.')
