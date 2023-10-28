@@ -9,6 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
     "dev": "chcp 65001 && node src/index.js",
+    "sticker": "set BOT_TYPE=sticker&& node src/index.js",
+    "full": "set BOT_TYPE=full&& node src/index.js",
     "lint": "eslint src"
   },
   "license": "unlicense",

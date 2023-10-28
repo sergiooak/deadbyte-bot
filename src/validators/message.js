@@ -93,13 +93,22 @@ export default async (msg) => {
     if (aux.isFunction || aux.hasOriginalFunction) { // if it is a function, search in all of the command blocks
       const allCommandFiles = await fs.readdir('./src/services/commands')
       const commandFiles = allCommandFiles.filter(file => !file.startsWith('_') && file.endsWith('.js'))
-      const commandModules = await Promise.all(commandFiles.map(async command => {
+      let commandModules = await Promise.all(commandFiles.map(async command => {
         const commandModule = await importFresh(`../services/commands/${command}`)
         return {
           name: command.split('.')[0],
           module: commandModule.default
         }
       }))
+
+      const isStickerOnly = process.env.BOT_TYPE === 'sticker'
+      const stickerOnlyCommands = ['stickers', 'menu']
+
+      // filter commands that are not sticker only
+      if (isStickerOnly) {
+        commandModules = commandModules.filter(command => stickerOnlyCommands.includes(command.name))
+      }
+
       const commandObjects = await Promise.all(commandModules.map(async _command => {
         // loop through all commands
         for (const command of commandModules) {
