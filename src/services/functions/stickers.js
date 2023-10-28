@@ -161,6 +161,7 @@ export async function stealSticker (msg) {
   if (!media) throw new Error('Error downloading media')
 
   await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
+  await msg.react(reactions.success)
 }
 
 export async function stickerLySearch (msg) {
