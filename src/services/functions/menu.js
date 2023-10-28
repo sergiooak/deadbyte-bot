@@ -14,7 +14,7 @@ export async function menu (msg) {
   const lang = 'pt'
   const prefix = msg.aux.prefix || '!'
 
-  const isStickerOnly = process.env.BOT_TYPE === 'sticker' || true
+  const isStickerOnly = process.env.BOT_TYPE === 'sticker'
   const stickerOnlyCommands = ['stickers']
 
   // filter commands that are not sticker only
