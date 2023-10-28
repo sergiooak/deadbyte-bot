@@ -9,8 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
     "dev": "chcp 65001 && node src/index.js",
-    "sticker": "set BOT_TYPE=sticker&&set BOT_NAME=DeadByteFigurinhas&& node src/index.js",
-    "full": "set BOT_TYPE=full&&set BOT_NAME=DeadByteFull&& node src/index.js",
+    "sticker": "cross-env BOT_TYPE=sticker BOT_NAME=DeadByteFigurinhas node src/index.js",
+    "full": "cross-env BOT_TYPE=full BOT_NAME=DeadByteFull node src/index.js",
     "lint": "eslint src"
   },
   "license": "unlicense",
