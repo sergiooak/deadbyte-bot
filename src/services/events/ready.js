@@ -3,7 +3,7 @@ import { getClient } from '../../index.js'
 import { addToQueue } from '../queue.js'
 import importFresh from '../../utils/importFresh.js'
 import spintax from '../../utils/spintax.js'
-import { saveActionToDB } from '../../db.js'
+import { saveActionToDB, findCurrentBot } from '../../db.js'
 
 /**
  * Emitted when the client has initialized and is ready to receive messages.
@@ -13,10 +13,10 @@ import { saveActionToDB } from '../../db.js'
 export default async () => {
   logger.info('Client is ready!')
 
-  // check for unread messages
   const client = getClient()
-  const chats = await client.getChats()
+  await findCurrentBot(client)
 
+  const chats = await client.getChats()
   handleUnreadMessages(chats)
 }
 

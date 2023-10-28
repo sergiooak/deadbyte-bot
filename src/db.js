@@ -8,6 +8,7 @@ import qs from 'qs'
 
 let isApiOnline = false
 let token = null
+let bot = null
 const dbUrl = process.env.DB_URL
 const dbUsername = process.env.DB_USERNAME
 const dbPassword = process.env.DB_PASSWORD
@@ -231,6 +232,11 @@ setInterval(() => {
  * @param Number contactId
  */
 export async function createAction (commandGroupId, commandId, chatId, contactId) {
+  // eslint-disable-next-line no-unmodified-loop-condition
+  while (!bot) { // wait bot to be populated
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+
   const query = qs.stringify(
     {
       populate: '*'
@@ -250,7 +256,8 @@ export async function createAction (commandGroupId, commandId, chatId, contactId
         commandGroup: commandGroupId,
         command: commandId,
         chat: chatId,
-        contact: contactId
+        contact: contactId,
+        bot: bot || undefined
       }
     })
   })
@@ -289,4 +296,54 @@ export async function saveActionToDB (moduleName, functionName, msg) {
     console.log(error)
     console.log(action)
   }
+}
+
+export async function findCurrentBot (client) {
+  // 1 - Check if bot already exists on db
+
+  const findQuery = qs.stringify(
+    {
+      filters: {
+        wid: {
+          $eq: client.info.wid._serialized
+        }
+      }
+    },
+    {
+      encodeValuesOnly: true // prettify URL
+    }
+  )
+  const find = await fetch(`${dbUrl}/bots?${findQuery}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  const { data: findData } = await find.json()
+
+  if (findData.length) {
+    bot = findData[0].id
+    return
+  }
+
+  // 2 - If not, create it
+
+  const create = await fetch(`${dbUrl}/bots`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      data: {
+        wid: client.info.wid._serialized,
+        pushname: client.info.pushname,
+        platform: client.info.platform
+      }
+    })
+  })
+  const { data: createData } = await create.json()
+  bot = createData.id
 }
