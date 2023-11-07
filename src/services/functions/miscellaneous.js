@@ -1,9 +1,15 @@
-import spintax from '../../utils/spintax.js'
-import fetch from 'node-fetch'
-import { getCommands } from '../../db.js'
-import dayjs from 'dayjs'
-import 'dayjs/locale/pt-br.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import reactions from '../../config/reactions.js'
+import { createUrl } from '../../config/api.js'
+import spintax from '../../utils/spintax.js'
+import { getCommands } from '../../db.js'
+import logger from '../../logger.js'
+import FormData from 'form-data'
+import 'dayjs/locale/pt-br.js'
+import fetch from 'node-fetch'
+import sharp from 'sharp'
+import dayjs from 'dayjs'
+import mime from 'mime-types'
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
 
@@ -104,7 +110,79 @@ export async function debug (msg) {
 }
 
 export async function toFile (msg) {
-  const fileEmoji = '🗂️'
+  if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
+    await msg.react(reactions.error)
+
+    const header = '☠️🤖'
+    const part1 = 'Para usar o *{!toFile|!arquivo}* você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
+    const end = '{!|!!|!!!}'
+
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
+  await msg.react('🗂️')
+  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
+  if (!media) throw new Error('Error downloading media')
+
+  // the last 10 chars of the timestamp
+  const timestampish = Date.now().toString().slice(-10)
+  const filename = `deadbyte-${timestampish}.${mime.extension(media.mimetype)}`
+  media.filename = media.filename || filename
+
+  const buffer = Buffer.from(media.data, 'base64')
+
+  let message = ''
+  message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
+  message += 'o arquivo{ que você {me |}{pediu|enviou}|}!\n\n'
+
+  const isImage = media.mimetype.includes('image')
+  const isVideo = media.mimetype.includes('video')
+  // use sharp to check if the image is animated
+  const isAnimated = isImage ? await sharp(buffer).metadata().then(m => parseInt(m.pages) > 1) : false
+
+  const finalExtension = isImage ? isAnimated ? 'webp' : 'png' : mime.extension(media.mimetype)
+
+  message += `É ${isImage ? 'uma imagem' : isVideo ? 'um vídeo' : 'um arquivo'} ${finalExtension.toUpperCase()}`
+  message += isImage && isAnimated ? ' animada' : ''
+
+  if (isImage && !isAnimated) {
+    const converted = await sharp(buffer).toFormat('png').toBuffer()
+    media.data = converted.toString('base64')
+    media.mimetype = 'image/png'
+    media.filename = media.filename.split('.').slice(0, -1).join('.') + '.png'
+    return await msg.reply(media, undefined, { sendMediaAsDocument: false, caption: spintax(message) })
+  }
+  await msg.reply(media, undefined, { sendMediaAsDocument: true, caption: spintax(message) })
+
+  // TODO convert to webp if animated to mp4 and send as "gif"
+}
+
+export async function toUrl (msg) {
+  if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
+    await msg.react(reactions.error)
+
+    const header = '☠️🤖'
+    const part1 = 'Para usar o *{!toUrl|!url}* você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
+    const end = '{!|!!|!!!}'
+
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
+
+  await msg.react('🔗')
+  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
+  if (!media) throw new Error('Error downloading media')
+  const tempUrl = await getTempUrl(media)
+
+  let message = '🔗 - '
+  message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
+  message += '{a url temporária|o link temporário|o endereço temporário} '
+  message += '{para {o|esse}|desse} arquivo: '
+  message += `${tempUrl}\n\n`
+  message += '{Válido por {apenas|}|Com {validade|vigência} de|Por um período de} {3|03|três} dias'
+  await msg.reply(spintax(message))
 }
 
 //
@@ -116,4 +194,32 @@ function secondsToDhms (seconds) {
   const m = Math.floor(seconds % 3600 / 60)
   const s = Math.floor(seconds % 60)
   return `${d}:${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`
+}
+
+/**
+ * Uploads an image to get a temporary URL
+ * @param {import ('whatsapp-web.js').MessageMedia} media - The media to upload
+ * @returns {promise<string>} A Promise that resolves with the temporary URL of the uploaded image.
+ */
+async function getTempUrl (media) {
+  const buffer = Buffer.from(media.data, 'base64')
+  const formData = new FormData()
+  const filename = `file.${mime.extension(media.mimetype)}`
+  formData.append('file', buffer, filename)
+
+  const url = await createUrl('uploader', 'tempurl', {})
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData
+  })
+
+  if (!response.ok) {
+    logger.error('Error uploading file to server')
+    throw new Error('Error uploading file to server')
+  }
+
+  const json = await response.json()
+  const tempUrl = json.result
+
+  return tempUrl
 }
