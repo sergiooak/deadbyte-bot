@@ -103,6 +103,10 @@ export async function debug (msg) {
   await msg.reply(message)
 }
 
+export async function toFile (msg) {
+  const fileEmoji = '🗂️'
+}
+
 //
 // ================================== Helper Functions ==================================
 //

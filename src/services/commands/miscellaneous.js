@@ -9,6 +9,8 @@ export default (msg, aux) => {
     uptime: /^(uptime|online|up|tempo)$/.test(aux.function),
     react: /^(react|reacao)$/.test(aux.function) || aux.function === '',
     dice: /^d\d+$/.test(aux.function),
-    debug: /^(debug)$/.test(aux.function)
+    debug: /^(debug)$/.test(aux.function),
+    toFile: /^(tofile|arquivo)$/.test(aux.function),
+    toUrl: /^(toUrl|url)$/.test(aux.function)
   }
 }
