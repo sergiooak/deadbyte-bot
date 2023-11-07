@@ -174,7 +174,7 @@ export async function toUrl (msg) {
   await msg.react('🔗')
   const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
   if (!media) throw new Error('Error downloading media')
-  const tempUrl = await getTempUrl(media)
+  const tempUrl = (await getTempUrl(media)).replace('http://', 'https://')
 
   let message = '🔗 - '
   message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
