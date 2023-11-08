@@ -1,9 +1,10 @@
-import logger from '../../logger.js'
-import { getClient } from '../../index.js'
-import { addToQueue } from '../queue.js'
+import { saveActionToDB, findCurrentBot } from '../../db.js'
 import importFresh from '../../utils/importFresh.js'
 import spintax from '../../utils/spintax.js'
-import { saveActionToDB, findCurrentBot } from '../../db.js'
+import { getClient } from '../../index.js'
+import { addToQueue } from '../queue.js'
+import logger from '../../logger.js'
+import cron from 'node-cron'
 
 /**
  * Emitted when the client has initialized and is ready to receive messages.
@@ -18,6 +19,11 @@ export default async () => {
 
   const chats = await client.getChats()
   handleUnreadMessages(chats)
+
+  // every minute, send available presence
+  cron.schedule('* * * * *', async () => {
+    await client.sendPresenceAvailable()
+  })
 }
 
 async function handleUnreadMessages (chats) {
