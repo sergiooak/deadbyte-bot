@@ -11,6 +11,7 @@ export default (msg, aux) => {
     dice: /^d\d+$/.test(aux.function),
     debug: /^(debug)$/.test(aux.function),
     toFile: /^(tofile|file|arquivo)$/.test(aux.function),
-    toUrl: /^(tourl|url)$/.test(aux.function)
+    toUrl: /^(tourl|url)$/.test(aux.function),
+    ping: /^(ping|pong)$/.test(aux.function)
   }
 }

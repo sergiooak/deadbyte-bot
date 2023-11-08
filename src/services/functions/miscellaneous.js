@@ -3,13 +3,15 @@ import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
 import { getCommands } from '../../db.js'
+import { getWaitTime } from '../queue.js'
 import logger from '../../logger.js'
 import FormData from 'form-data'
 import 'dayjs/locale/pt-br.js'
 import fetch from 'node-fetch'
+import mime from 'mime-types'
 import sharp from 'sharp'
 import dayjs from 'dayjs'
-import mime from 'mime-types'
+
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
 
@@ -182,6 +184,25 @@ export async function toUrl (msg) {
   message += '{para {o|esse}|desse} arquivo: '
   message += `${tempUrl}\n\n`
   message += '{Válido por {apenas|}|Com {validade|vigência} de|Por um período de} {3|03|três} dias'
+  await msg.reply(spintax(message))
+}
+
+export async function ping (msg) {
+  await msg.react('🏓')
+
+  let message = '🏓 - Pong!\n\n'
+
+  const currentQueueWaitTime = getWaitTime()
+  const waitTimeInSecs = Math.floor(currentQueueWaitTime / 1000).toFixed(1).replace('.', ',').replace(',0', '')
+  const name = msg.aux.sender.pushname
+  message += `{Oi|Olá|Eai|Eae} *${name}* {no momento|atualmente|nesse momento} o bot está respondendo uma {mensagem|comando} a cada *${waitTimeInSecs} segundos*\n\n`
+
+  const ping = Date.now() - msg.startedAt
+  // remove zero at the end
+  const pingInSecs = (ping / 1000).toFixed(2).replace('.', ',').replace(/0*0$/, '')
+  const isSingular = parseFloat(pingInSecs.replace(',', '.')) > 1
+  message += `Essa mensagem demorou *${pingInSecs} ${isSingular ? 'segundos' : 'segundo'}* para ser respondida!`
+
   await msg.reply(spintax(message))
 }
 
