@@ -1,9 +1,11 @@
 import 'dotenv/config'
-import wwebjs from 'whatsapp-web.js'
-import fs from 'fs/promises'
-import logger from './logger.js'
+
 import { apiKey } from './config/api.js'
+import { snakeCase } from 'change-case'
+import wwebjs from 'whatsapp-web.js'
 import bot from './config/bot.js'
+import logger from './logger.js'
+import fs from 'fs/promises'
 import './db.js'
 
 /**
@@ -35,7 +37,9 @@ export function getClient () {
   const events = await fs.readdir('./src/services/events')
   events.forEach(async event => {
     const eventModule = await import(`./services/events/${event}`)
-    client.on(event.split('.')[0], eventModule.default)
+    const eventName = snakeCase(event.split('.')[0])
+    console.log(`Loading event ${eventName} from file ${event}`)
+    client.on(eventName, eventModule.default)
   })
   client.initialize()
   logger.info('Client initialized!')
