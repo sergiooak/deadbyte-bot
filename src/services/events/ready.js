@@ -35,7 +35,7 @@ async function handleUnreadMessages (chats) {
         hasRevokedMessages = true
         msg.react('🚮')
       }
-      const messageParser = await importFresh('../validators/message.js')
+      const messageParser = await importFresh('validators/message.js')
       const command = await messageParser.default(msg)
       if (command) {
         logger.info(`📥 - [${msg.from.split('@')[0]} - ${command.type}.${command.command}()`)

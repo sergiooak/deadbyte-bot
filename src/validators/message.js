@@ -12,7 +12,6 @@ const commandless = (msg, aux) => {
     stickersFNtextSticker: msg.body && msg.type === 'chat' && !aux.isStickerGroup
   }
 }
-
 //
 // ================================ Main Functions =================================
 //
@@ -51,7 +50,7 @@ export default async (msg) => {
   aux.history = msgPrevious.reverse()
 
   // Check if the message is a command
-  const prefixes = await importFresh('../config/bot.js').then(config => config.prefixes)
+  const prefixes = await importFresh('config/bot.js').then(config => config.prefixes)
   const functionRegex = new RegExp(`^${prefixes.join(' ?|^')} ?`)
   aux.isFunction = functionRegex.test(msg.body)
   aux.originalBody = msg.body
@@ -94,7 +93,7 @@ export default async (msg) => {
       const allCommandFiles = await fs.readdir('./src/services/commands')
       const commandFiles = allCommandFiles.filter(file => !file.startsWith('_') && file.endsWith('.js'))
       let commandModules = await Promise.all(commandFiles.map(async command => {
-        const commandModule = await importFresh(`../services/commands/${command}`)
+        const commandModule = await importFresh(`services/commands/${command}`)
         return {
           name: command.split('.')[0],
           module: commandModule.default
@@ -122,7 +121,7 @@ export default async (msg) => {
             }
           }
         }
-        const prefixesWithFallback = await importFresh('../config/bot.js').then(config => config.prefixesWithFallback)
+        const prefixesWithFallback = await importFresh('config/bot.js').then(config => config.prefixesWithFallback)
         if (prefixesWithFallback.includes(aux.prefix) === false) {
           await msg.react(reactions.confused)
           return false

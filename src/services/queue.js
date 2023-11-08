@@ -43,7 +43,7 @@ function addToQueue (userId, moduleName, functionName, msg) {
 }
 
 async function bypassQueue (moduleName, functionName, msg) {
-  const module = await importFresh(`../services/functions/${moduleName}.js`)
+  const module = await importFresh(`services/functions/${moduleName}.js`)
   const camelCaseFunctionName = camelCase(functionName)
   module[camelCaseFunctionName](msg)
 }
@@ -67,7 +67,7 @@ async function processQueue () {
   logger.info(`🛫 - ${number} - ${moduleName}.${camelCaseFunctionName}()`)
 
   try {
-    const module = await importFresh(`../services/functions/${moduleName}.js`) // import the module
+    const module = await importFresh(`services/functions/${moduleName}.js`) // import the module
     logger.debug(module)
 
     const fnPromisse = module[camelCaseFunctionName](msg)

@@ -20,7 +20,7 @@ export default async (msg) => {
    * Parse message and check if it is to respond, module is imported fresh to force it to be reloaded from disk.
    * @type {import('../../validators/message.js')}
    */
-  const messageParser = await importFresh('../validators/message.js')
+  const messageParser = await importFresh('validators/message.js')
   const handlerModule = await messageParser.default(msg)
   logger.trace('handlerModule: ', handlerModule)
 
