@@ -6,6 +6,8 @@ import { addToQueue } from '../queue.js'
 import logger from '../../logger.js'
 import cron from 'node-cron'
 
+const logsGroup = '120363197109329521@g.us'
+
 /**
  * Emitted when the client has initialized and is ready to receive messages.
  * @see https://docs.wwebjs.dev/Client.html#event:ready
@@ -20,9 +22,18 @@ export default async () => {
   const chats = await client.getChats()
   handleUnreadMessages(chats)
 
-  // every minute, send available presence
   cron.schedule('* * * * *', async () => {
     await client.sendPresenceAvailable()
+  })
+
+  cron.schedule('0 * * * *', async () => {
+    const chat = await client.getChatById(logsGroup)
+    await chat.sendMessage('Estou online ainda!')
+  })
+
+  cron.schedule('0 22 * * *', async () => {
+    const chat = await client.getChatById(logsGroup)
+    await chat.sendMessage('Estou online o dia todo!')
   })
 }
 
