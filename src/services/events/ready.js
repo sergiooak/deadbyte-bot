@@ -22,16 +22,16 @@ export default async () => {
   const chats = await client.getChats()
   handleUnreadMessages(chats)
 
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('* * * * *', async () => { // every minute
     await client.sendPresenceAvailable()
   })
 
-  cron.schedule('0 * * * *', async () => {
+  cron.schedule('0 * * * *', async () => { // every hour
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage('Estou online ainda!')
   })
 
-  cron.schedule('0 22 * * *', async () => {
+  cron.schedule('0 22 * * *', async () => { // every day at 22:00
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage('Estou online o dia todo!')
   })
