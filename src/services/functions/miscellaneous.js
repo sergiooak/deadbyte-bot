@@ -1,9 +1,9 @@
+import { getWaitTime, getQueueLength } from '../queue.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
 import { getCommands } from '../../db.js'
-import { getWaitTime } from '../queue.js'
 import logger from '../../logger.js'
 import FormData from 'form-data'
 import 'dayjs/locale/pt-br.js'
@@ -195,13 +195,25 @@ export async function ping (msg) {
   const currentQueueWaitTime = getWaitTime()
   const waitTimeInSecs = Math.floor(currentQueueWaitTime / 1000).toFixed(1).replace('.', ',').replace(',0', '')
   const name = msg.aux.sender.pushname
-  message += `{Oi|Olá|Eai|Eae} *${name}* {no momento|atualmente|nesse momento} o bot está respondendo uma {mensagem|comando} a cada *${waitTimeInSecs} segundos*\n\n`
+  message += `{Oi|Olá|Eai|Eae} *${name}* {no momento|atualmente|{nesse|neste}{ exato|} momento} o {bot|DeadByte|Dead} está respondendo {uma mensagem|um comando} a cada *${waitTimeInSecs} segundos*`
+
+  const usersInQueue = getQueueLength('user')
+  const messagesInQueue = getQueueLength('messages')
+  if (usersInQueue || messagesInQueue) {
+    message += `\n\n{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!`
+  }
+
+  const nowInUnix = Date.now().toString().slice(0, -3)
+  const lag = Math.floor(nowInUnix - msg.timestamp) // time in seconds that the message took to be delivered
 
   const ping = Date.now() - msg.startedAt
-  // remove zero at the end
-  const pingInSecs = (ping / 1000).toFixed(2).replace('.', ',').replace(/0*0$/, '')
+  const pingInSecs = (ping / 1000 + lag).toFixed(2).replace('.', ',').replace(/0*0$/, '')
   const isSingular = parseFloat(pingInSecs.replace(',', '.')) > 1
-  message += `Essa mensagem demorou *${pingInSecs} ${isSingular ? 'segundos' : 'segundo'}* para ser respondida!`
+  message += `\n\nEssa mensagem demorou *${pingInSecs} ${isSingular ? 'segundos' : 'segundo'}* para ser respondida`
+
+  if (lag > 0) {
+    message += `\nO WhatsApp demorou *${lag} ${lag > 1 ? 'segundos' : 'segundo'}* para entregar essa mensagem pra mim!`
+  }
 
   await msg.reply(spintax(message))
 }
