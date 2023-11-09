@@ -28,7 +28,7 @@ export default async () => {
 
   cron.schedule('0 * * * *', async () => { // every hour
     const chat = await client.getChatById(logsGroup)
-    await chat.sendMessage('Estou online ainda!')
+    await chat.sendMessage('!ping')
   })
 
   cron.schedule('0 22 * * *', async () => { // every day at 22:00
