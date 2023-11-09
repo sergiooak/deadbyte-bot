@@ -203,9 +203,9 @@ export async function ping (msg) {
     message += `\n\n{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!`
   }
 
-  const nowInUnix = Date.now().toString().slice(0, -3)
-  let lag = Math.floor(nowInUnix - msg.timestamp) // time in seconds that the message took to be delivered
-  lag = lag <= 6 ? 0 : lag // if the lag is less than 5 seconds, consider it 0
+  let lag = msg.lag
+  lag = Math.max(lag, 0) // if lag is negative, set it to 0
+  lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
 
   const ping = Date.now() - msg.startedAt
   const pingInSecs = (ping / 1000 + lag).toFixed(2).replace('.', ',').replace(/0*0$/, '')

@@ -17,6 +17,8 @@ const client = getClient()
 export default async (msg) => {
   logger.trace(msg)
   msg.startedAt = Date.now()
+  const nowInUnix = Math.floor(Date.now() / 1000)
+  msg.lag = Math.floor(nowInUnix - msg.timestamp) // time in seconds since message was sent
   /**
    * Parse message and check if it is to respond, module is imported fresh to force it to be reloaded from disk.
    * @type {import('../../validators/message.js')}
