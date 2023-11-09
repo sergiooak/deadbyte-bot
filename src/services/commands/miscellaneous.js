@@ -10,7 +10,7 @@ export default (msg, aux) => {
     react: /^(react|reacao)$/.test(aux.function) || aux.function === '',
     dice: /^d\d+$/.test(aux.function),
     debug: /^(debug)$/.test(aux.function),
-    toFile: /^(tofile|file|arquivo)$/.test(aux.function),
+    toFile: /^(tofile|file|arquivo|imagem|img|togif|image)$/.test(aux.function),
     toUrl: /^(tourl|url)$/.test(aux.function),
     ping: /^(ping|pong)$/.test(aux.function)
   }
