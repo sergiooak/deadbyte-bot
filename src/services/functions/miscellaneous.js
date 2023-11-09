@@ -204,7 +204,8 @@ export async function ping (msg) {
   }
 
   const nowInUnix = Date.now().toString().slice(0, -3)
-  const lag = Math.floor(nowInUnix - msg.timestamp) // time in seconds that the message took to be delivered
+  let lag = Math.floor(nowInUnix - msg.timestamp) // time in seconds that the message took to be delivered
+  lag = lag <= 6 ? 0 : lag // if the lag is less than 5 seconds, consider it 0
 
   const ping = Date.now() - msg.startedAt
   const pingInSecs = (ping / 1000 + lag).toFixed(2).replace('.', ',').replace(/0*0$/, '')
