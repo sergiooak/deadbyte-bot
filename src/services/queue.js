@@ -9,7 +9,7 @@ import { camelCase } from 'change-case'
 
 const client = getClient()
 const queue = []
-let waitTime = 5000 // 2.5 seconds
+let waitTime = 2500 // 2.5 seconds
 
 //
 // ==================================== Main Function ====================================
@@ -50,7 +50,7 @@ async function bypassQueue (moduleName, functionName, msg) {
 
 async function processQueue () {
   // set the wait time for the next round based on the queue length
-  setWaitTime(Math.min(2500 - (queue.length * 100)), 1000)
+  setWaitTime(Math.max(2500 - (queue.length * 100), 1000))
   // with more items on the queue, the wait time will be smaller, but never less than 500ms
 
   if (queue.length === 0) return setTimeout(processQueue, waitTime) // if the queue is empty, wait and try again
