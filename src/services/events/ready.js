@@ -27,13 +27,21 @@ export default async () => {
   })
 
   cron.schedule('59 * * * *', async () => { // every end of hour
-    const chat = await client.getChatById(logsGroup)
-    await chat.sendMessage('!ping')
+    try {
+      const chat = await client.getChatById(logsGroup)
+      await chat.sendMessage('!ping')
+    } catch (err) {
+      logger.error(err)
+    }
   })
 
   cron.schedule('0 22 * * *', async () => { // every day at 22:00
-    const chat = await client.getChatById(logsGroup)
-    await chat.sendMessage('Estou online o dia todo!')
+    try {
+      const chat = await client.getChatById(logsGroup)
+      await chat.sendMessage('Estou online o dia todo!')
+    } catch (err) {
+      logger.error(err)
+    }
   })
 }
 
