@@ -1,18 +1,28 @@
-import { saveActionToDB, findCurrentBot } from '../../db.js'
+import { fetchStats, formatCommands } from '../../services/functions/statistics.js'
+import { saveActionToDB, getBot, findCurrentBot } from '../../db.js'
+import relativeTime from 'dayjs/plugin/relativeTime.js'
 import importFresh from '../../utils/importFresh.js'
 import spintax from '../../utils/spintax.js'
 import { getClient } from '../../index.js'
 import { addToQueue } from '../queue.js'
 import logger from '../../logger.js'
+import 'dayjs/locale/pt-br.js'
 import cron from 'node-cron'
+import dayjs from 'dayjs'
+//
+// ================================ Variables =================================
+//
+dayjs.locale('pt-br')
+dayjs.extend(relativeTime)
 
 const logsGroup = '120363197109329521@g.us'
-
+//
+// ================================ Main Functions =================================
+//
 /**
  * Emitted when the client has initialized and is ready to receive messages.
  * @see https://docs.wwebjs.dev/Client.html#event:ready
  */
-
 export default async () => {
   logger.info('Client is ready!')
 
@@ -27,24 +37,16 @@ export default async () => {
   })
 
   cron.schedule('59 * * * *', async () => { // every end of hour
-    try {
-      const chat = await client.getChatById(logsGroup)
-      await chat.sendMessage('!ping')
-    } catch (err) {
-      logger.error(err)
-    }
+    await sendHourlyStats(client)
   })
 
-  cron.schedule('0 22 * * *', async () => { // every day at 22:00
-    try {
-      const chat = await client.getChatById(logsGroup)
-      await chat.sendMessage('Estou online o dia todo!')
-    } catch (err) {
-      logger.error(err)
-    }
+  cron.schedule('0 16 * * *', async () => { // every day at 22:00
+    await sendDailyStats(client)
   })
 }
-
+//
+// ================================== Helper Functions ==================================
+//
 async function handleUnreadMessages (chats) {
   for await (const chat of chats) {
     const unreadMessages = await chat.fetchMessages({ limit: 10 })
@@ -94,4 +96,86 @@ async function wait (ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
+}
+
+/**
+ * Send hourly stats to logs group
+ * @param {import('whatsapp-web.js').Client} client
+ */
+async function sendHourlyStats (client) {
+  try {
+    const botID = getBot()
+    const stats = await fetchStats(undefined, 'hour', botID)
+
+    const botInfo = client.info
+    const botName = botInfo.pushname
+    const botNumber = await client.getFormattedNumber(botInfo.wid.user)
+
+    let message = ''
+
+    message += `Nesta última hora o {bot|Dead|DeadByte} com o nome *"${botName}"* e o número *${botNumber}* já {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+    // Nesta última hora o bot com o nome "DeadByte" e o número +55 11 99999-9999 já foi usado 100 vezes!
+    // Por 10 usuários diferentes!
+
+    message += `{{A|Sua} primeira vez|Seu primeiro uso} foi {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
+    // Sua primeira vez foi há 2 dias em 01/01/2021 às 12:00:00
+
+    const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
+    const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
+    message += `{Foram criadas|Foram feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nesta última hora!`
+    // Foram criadas 100 figurinhas!
+    // 10% do total de interações com o bot!
+
+    message += '\n\n```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
+
+    const commands = stats.commands.reduce((acc, command) => {
+      return acc.concat(command.commands)
+    }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
+
+    message += `*{Foram usados|Foram utilizados|Foram executados|Foram acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+    // Foram usados 10 comandos diferentes:
+
+    message = formatCommands(commands, null, message)
+
+    const chat = await client.getChatById(logsGroup)
+    await chat.sendMessage(message)
+  } catch (err) {
+    logger.error(err)
+  }
+}
+
+async function sendDailyStats (client) {
+  try {
+    const botID = getBot()
+    const stats = await fetchStats(undefined, 'day', botID)
+
+    let message = ''
+
+    message += `*Nas últimas 24 horas* eu {fui usado|fui utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+    // Nas últimas 24 horas eu fui usado 100 vezes!
+    // Por 10 usuários diferentes!
+
+    const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
+    const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
+    message += `{Foram criadas|Foram feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nas últimas 24 horas!`
+    // Foram criadas 100 figurinhas!
+    // 10% do total de interações com o bot!
+
+    message += '\n\n```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
+
+    const commands = stats.commands.reduce((acc, command) => {
+      return acc.concat(command.commands)
+    }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
+
+    message += `*{Foram usados|Foram utilizados|Foram executados|Foram acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+
+    message = formatCommands(commands, null, message)
+
+    const chat = await client.getChatById(logsGroup)
+    await chat.sendMessage(message)
+
+    // TODO: send daily stats to anoucements group if current bot is admin of it
+  } catch (err) {
+    logger.error(err)
+  }
 }
