@@ -1,4 +1,3 @@
-import { fetchStats, formatCommands } from '../../services/functions/statistics.js'
 import { saveActionToDB, getBot, findCurrentBot } from '../../db.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import importFresh from '../../utils/importFresh.js'
@@ -40,7 +39,7 @@ export default async () => {
     await sendHourlyStats(client)
   })
 
-  cron.schedule('0 16 * * *', async () => { // every day at 22:00
+  cron.schedule('00 22 * * *', async () => { // every day at 22:00
     await sendDailyStats(client)
   })
 }
@@ -103,9 +102,13 @@ async function wait (ms) {
  * @param {import('whatsapp-web.js').Client} client
  */
 async function sendHourlyStats (client) {
+  const statistics = await importFresh('services/functions/statistics.js')
+  const { fetchStats, formatCommands } = statistics
   try {
     const botID = getBot()
     const stats = await fetchStats(undefined, 'hour', botID)
+
+    console.log(stats)
 
     const botInfo = client.info
     const botName = botInfo.pushname
@@ -138,13 +141,15 @@ async function sendHourlyStats (client) {
     message = formatCommands(commands, null, message)
 
     const chat = await client.getChatById(logsGroup)
-    await chat.sendMessage(message)
+    await chat.sendMessage(spintax(message))
   } catch (err) {
     logger.error(err)
   }
 }
 
 async function sendDailyStats (client) {
+  const statistics = await importFresh('services/functions/statistics.js')
+  const { fetchStats, formatCommands } = statistics
   try {
     const botID = getBot()
     const stats = await fetchStats(undefined, 'day', botID)
@@ -172,7 +177,7 @@ async function sendDailyStats (client) {
     message = formatCommands(commands, null, message)
 
     const chat = await client.getChatById(logsGroup)
-    await chat.sendMessage(message)
+    await chat.sendMessage(spintax(message))
 
     // TODO: send daily stats to anoucements group if current bot is admin of it
   } catch (err) {
