@@ -208,7 +208,9 @@ export async function ping (msg) {
   lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
 
   const ping = Date.now() - msg.startedAt
-  const pingInSecs = (ping / 1000 + lag).toFixed(2).replace('.', ',').replace(/0*0$/, '')
+  let pingInSecs = (ping / 1000 + lag).toFixed(2) // 2.50
+  pingInSecs = pingInSecs.replace('.', ',') // 2,50
+  pingInSecs = pingInSecs.replace(/0+$/, '').replace(/,$/, '') // 2,50 => 2,5 | 2,00 => 2
   const isSingular = parseFloat(pingInSecs.replace(',', '.')) > 1
   message += `\n\nEssa mensagem demorou *${pingInSecs} ${isSingular ? 'segundos' : 'segundo'}* para ser respondida`
 
