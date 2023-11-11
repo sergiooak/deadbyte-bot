@@ -52,7 +52,6 @@ export async function stats (msg) {
   }, {
     encodeValuesOnly: true // prettify URL
   })
-  console.log(query)
   const response = await fetch(`${dbUrl}/actions/stats/new?${query}`, {
     method: 'GET',
     headers: {
