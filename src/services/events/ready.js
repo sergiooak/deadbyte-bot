@@ -26,7 +26,7 @@ export default async () => {
     await client.sendPresenceAvailable()
   })
 
-  cron.schedule('0 * * * *', async () => { // every hour
+  cron.schedule('59 * * * *', async () => { // every end of hour
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage('!ping')
   })
