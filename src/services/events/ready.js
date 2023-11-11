@@ -126,7 +126,7 @@ async function sendHourlyStats (client) {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
 
-    message += `*Foram{usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+    message += `*Foram {usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
     // Foram usados 10 comandos diferentes:
 
     message = formatCommands(commands, null, message)
@@ -163,7 +163,7 @@ async function sendDailyStats (client) {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
 
-    message += `*Foram{usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+    message += `*Foram {usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
 
     message = formatCommands(commands, null, message)
 
@@ -199,7 +199,7 @@ async function sendDailyStatsToAnnounceGroup (client) {
 
   const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
   const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
-  message += `{Foram criadas|Foram feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nas últimas 24 horas!!`
+  message += `Foram {criadas|feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nas últimas 24 horas!!`
   // Foram criadas 100 figurinhas!
   // 10% do total de interações com o bot!
 
