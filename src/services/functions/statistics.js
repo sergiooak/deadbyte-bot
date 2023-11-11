@@ -63,7 +63,7 @@ export async function stats (msg) {
   const stats = await response.json()
   const emojiMessage = '{📊|📈|📉|🔍|🔬|📚}'
   let message = `${emojiMessage} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
-  message += '```✎﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏```\n\n'
+  message += '```━━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━━```\n\n'
   message += `{Você|Tu|Vc} já {usou|utilizou|executou|acessou|interagiu com|solicitou serviços do} o bot *${stats.total.toLocaleString('pt-BR')}* {vezes|ocasiões|momentos}!\n`
   message += `A primeira vez foi ${dayjs(stats.first).fromNow()} em *${dayjs(stats.first).format('DD/MM/YYYY')}* ás *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
 
@@ -79,15 +79,17 @@ export async function stats (msg) {
   const mostUsedCommand = commands[0]
   const mostUsedCommandCharLength = mostUsedCommand.total.toString().length
 
-  message += '```✎﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏```\n\n'
+  message += '```━━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━━```\n\n'
 
   message += `*Você já usou ${commands.length} comandos diferentes:*\n\n`
+
+  const prefix = msg.aux.prefix || '!'
   message += commands.map(command => {
     let string = ''
     string += '```'
-    string += '‎ '
+    string += '‎ ' // invisible char
     // string += `*!${command.alternatives[0]}* - ${command.total.toLocaleString('pt-BR')}`
-    string += rPad(`!${command.alternatives[0]}`, 29 - mostUsedCommandCharLength)
+    string += rPad(`${prefix}${command.alternatives[0]}`, 29 - mostUsedCommandCharLength)
     string += lPad(command.total, mostUsedCommandCharLength)
     string += '```'
     return string
