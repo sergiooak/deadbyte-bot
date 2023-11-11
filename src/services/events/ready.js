@@ -114,8 +114,8 @@ async function sendHourlyStats (client) {
 
     let message = ''
 
-    message += `Nesta última hora o {bot|Dead|DeadByte} com o nome *"${botName}"* e o número *${botNumber}* já {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
-    // Nesta última hora o bot com o nome "DeadByte" e o número +55 11 99999-9999 já foi usado 100 vezes!
+    message += `Nesta última hora o {bot|Dead|DeadByte} com o nome *"${botName}"* e o número *${botNumber}* {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+    // Nesta última hora o bot com o nome "DeadByte" e o número +55 11 99999-9999 foi usado 100 vezes!
     // Por 10 usuários diferentes!
 
     message += `{{A|Sua} primeira vez|Seu primeiro uso} foi {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
@@ -198,8 +198,8 @@ async function sendDailyStatsToAnnounceGroup (client) {
 
   const stats = await fetchStats(undefined, 'day')
 
-  let message = `Nas últimas 24 horas o {bot|Dead|DeadByte} já {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
-  // O bot com o nome *DeadByte* e o número *+55 11 99999-9999* já foi usado *100* vezes!
+  let message = `Nas últimas 24 horas o {bot|Dead|DeadByte} {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+  // O bot com o nome *DeadByte* e o número *+55 11 99999-9999* foi usado *100* vezes!
 
   message += `{{A|Sua} primeira vez|Seu primeiro uso} foi ${dayjs(stats.first).fromNow()} {em|no dia} *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
   // Sua primeira vez foi há 2 dias em 01/01/2021 às 12:00:00
@@ -207,7 +207,7 @@ async function sendDailyStatsToAnnounceGroup (client) {
   const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
   const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
   message += `{Foram criadas|Foram feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nas últimas 24 horas!!`
-  // Já foram criadas 100 figurinhas!
+  // Foram criadas 100 figurinhas!
   // 10% do total de interações com o bot!
 
   message += '\n\n```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
@@ -217,7 +217,7 @@ async function sendDailyStatsToAnnounceGroup (client) {
   }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
 
   message += `*{Foram usados|Foram utilizados|Foram executados} ${commands.length} {comandos|funções} diferentes:*\n\n`
-  // Já foram usados 100 comandos diferentes:
+  // Foram usados 100 comandos diferentes:
 
   message = formatCommands(commands, null, message)
 
