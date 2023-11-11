@@ -39,7 +39,10 @@ export async function stats (msg) {
 
   let initialMessage = `{⏳|⌛|🕰️|🕛|🕒|🕞} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
   initialMessage += '{Espere|Espera|Péra} um {pouco|pouquinho|momento|segundo} enquanto eu {pego|busco|procuro} as {suas |}estatísticas...'
-  const reply = await msg.reply(spintax(initialMessage))
+  let reply = null
+  if (!msg.aux.chat.isGroup) {
+    reply = await msg.reply(spintax(initialMessage))
+  }
   const startedAt = Date.now()
 
   // const botID = getBot()
@@ -75,7 +78,6 @@ export async function stats (msg) {
   const mostUsedCommand = commands[0]
   const mostUsedCommandCharLength = mostUsedCommand.total.toString().length
 
-  // await msg.reply(JSON.stringify(commands, null, 2))
   message += `Você já usou ${commands.length} comandos diferentes!\n\n`
   message += commands.map(command => {
     let string = ''
@@ -92,8 +94,9 @@ export async function stats (msg) {
     await new Promise(resolve => setTimeout(resolve, 100))
   }
 
-  await reply.edit(spintax(message))
   await msg.react(spintax(emojiMessage))
+  if (reply) { return await reply.edit(spintax(message)) }
+  await msg.reply(spintax(message))
 }
 
 /**
