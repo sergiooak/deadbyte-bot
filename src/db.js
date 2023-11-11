@@ -130,6 +130,22 @@ export function getCommands () {
 }
 
 /**
+ * Get the database url
+ * @returns {string} dbUrl
+ */
+export function getDBUrl () {
+  return dbUrl
+}
+
+/**
+ * Get the bot id
+ * @returns {string} bot
+ */
+export function getBot () {
+  return bot
+}
+
+/**
  * Find or create a contact on the database
  *
  * @param {import('whatsapp-web.js').Contact} contact
