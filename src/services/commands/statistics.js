@@ -7,7 +7,7 @@
 export default (msg, aux) => {
   return {
     stats: /^(stats|estatisticas|estatistica|statistics|stat)$/.test(aux.function),
-    fullStats: /^(fstats|fullstats|estatisticascompleta|fullstatistics|fstat)$/.test(aux.function),
+    botStats: /^(bstats|botstats|estatisticasbot|botstatistics|bstat)$/.test(aux.function),
     weekStats: /^(wstats|weekstats|estatisticassemana|weekstatistics|wstat)$/.test(aux.function),
     hourStats: /^(hstats|hourstats|estatisticashora|hourstatistics|hstat)$/.test(aux.function)
   }
