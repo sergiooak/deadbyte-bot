@@ -43,7 +43,7 @@ export async function menu (msg) {
   message += '*Para criar figurinhas básicas, você NÃO precisa de comandos, basta enviar o seu arquivo ou texto!!!*\n\n'
 
   const menuEmojis = '{📋|🗒️|📜}'
-  message += '```━━━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━━━```\n\n' // divider
+  message += '```━━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━━```\n\n' // divider
 
   // Tell About prefix
   message += 'Os seguintes prefixos são aceitos para os comandos: *! . # /*\n\n'
