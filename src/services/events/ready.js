@@ -108,8 +108,6 @@ async function sendHourlyStats (client) {
     const botID = getBot()
     const stats = await fetchStats(undefined, 'hour', botID)
 
-    console.log(stats)
-
     const botInfo = client.info
     const botName = botInfo.pushname
     const botNumber = await client.getFormattedNumber(botInfo.wid.user)
