@@ -63,12 +63,13 @@ export async function stats (msg) {
   const stats = await response.json()
   const emojiMessage = '{📊|📈|📉|🔍|🔬|📚}'
   let message = `${emojiMessage} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
-  message += `Você já {usou|utilizou|executou|usou} o bot *${stats.total.toLocaleString('pt-BR')}* vezes!\n`
-  message += `A primeira vez foi em *${dayjs(stats.first).format('DD/MM/YYYY')}* (há ${dayjs(stats.first).fromNow(true)})\n\n`
+  message += '```✎﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏```\n\n'
+  message += `{Você|Tu|Vc} já {usou|utilizou|executou|acessou|interagiu com|solicitou serviços do} o bot *${stats.total.toLocaleString('pt-BR')}* {vezes|ocasiões|momentos}!\n`
+  message += `A primeira vez foi ${dayjs(stats.first).fromNow()} em *${dayjs(stats.first).format('DD/MM/YYYY')}* ás *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
 
   const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
   const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
-  message += `Você já criou *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {suas interações com o {bot|Dead|DeadByte}|comandos executados}!\n\n`
+  message += `{Você|Tu|Vc} {já |}{criou|fez} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {suas interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas}!\n\n`
 
   // inside every commands the is a commands array, make a single array with all commands
   const commands = stats.commands.reduce((acc, command) => {
@@ -78,12 +79,15 @@ export async function stats (msg) {
   const mostUsedCommand = commands[0]
   const mostUsedCommandCharLength = mostUsedCommand.total.toString().length
 
-  message += `Você já usou ${commands.length} comandos diferentes!\n\n`
+  message += '```✎﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏﹏```\n\n'
+
+  message += `*Você já usou ${commands.length} comandos diferentes:*\n\n`
   message += commands.map(command => {
     let string = ''
     string += '```'
+    string += '‎ '
     // string += `*!${command.alternatives[0]}* - ${command.total.toLocaleString('pt-BR')}`
-    string += rPad(`!${command.alternatives[0]}`, 20)
+    string += rPad(`!${command.alternatives[0]}`, 29 - mostUsedCommandCharLength)
     string += lPad(command.total, mostUsedCommandCharLength)
     string += '```'
     return string
