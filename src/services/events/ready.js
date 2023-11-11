@@ -177,8 +177,54 @@ async function sendDailyStats (client) {
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage(spintax(message))
 
-    // TODO: send daily stats to anoucements group if current bot is admin of it
+    sendDailyStatsToAnnounceGroup(client)
   } catch (err) {
     logger.error(err)
   }
+}
+
+async function sendDailyStatsToAnnounceGroup (client) {
+  const announceGroup = '120363094244463491@g.us'
+  const chat = await client.getChatById(announceGroup)
+  const admins = chat.participants.filter(p => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized)
+  const botIsAdmin = admins.includes(client.info.wid._serialized
+    ? client.info.wid._serialized
+    : client.info.wid)
+
+  if (!botIsAdmin) return
+
+  const statistics = await importFresh('services/functions/statistics.js')
+  const { fetchStats, formatCommands } = statistics
+
+  const stats = await fetchStats(undefined, 'day')
+
+  let message = `Nas últimas 24 horas o {bot|Dead|DeadByte} já {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+  // O bot com o nome *DeadByte* e o número *+55 11 99999-9999* já foi usado *100* vezes!
+
+  message += `{{A|Sua} primeira vez|Seu primeiro uso} foi ${dayjs(stats.first).fromNow()} {em|no dia} *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
+  // Sua primeira vez foi há 2 dias em 01/01/2021 às 12:00:00
+
+  const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
+  const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
+  message += `{Foram criadas|Foram feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nas últimas 24 horas!!`
+  // Já foram criadas 100 figurinhas!
+  // 10% do total de interações com o bot!
+
+  message += '\n\n```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
+
+  const commands = stats.commands.reduce((acc, command) => {
+    return acc.concat(command.commands)
+  }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
+
+  message += `*{Foram usados|Foram utilizados|Foram executados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+  // Já foram usados 100 comandos diferentes:
+
+  message = formatCommands(commands, null, message)
+
+  const siteEmojis = '{🌐|🌍|🌎|🌏}'
+  message += '\n\n```━━━━━━━━━━ ' + siteEmojis + ' ━━━━━━━━━━```\n\n' // divider
+
+  message += 'Veja as estatísticas completas em tempo real no site:\ndeadbyte.com.br/stats\n\n'
+
+  await chat.sendMessage(spintax(message))
 }

@@ -99,16 +99,15 @@ export async function menu (msg) {
 }
 
 export async function debug (msg) {
-  const actions = msg.aux.db.contact.attributes.actions.data
-  const totalCount = actions.length
-  // const firstTime = new Date(actions[0].attributes.createdAt)
-  const firstTime = dayjs(actions[0].attributes.createdAt)
-  const firstTimeRelative = firstTime.fromNow()
+  const debugEmoji = '🐛'
+  await msg.react(debugEmoji)
 
-  let message = `🤖 - Você já usou o DeadByte ${totalCount} vezes!\n`
-  message += `A primeira vez foi ${firstTimeRelative}`
+  const announceGroup = '120363094244463491@g.us'
+  const chat = await msg.aux.client.getChatById(announceGroup)
+  const admins = chat.participants.filter(p => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized)
+  const botIsAdmin = admins.includes(msg.aux.me)
 
-  await msg.reply(message)
+  await msg.reply(JSON.stringify(botIsAdmin, null, 2))
 }
 
 export async function toFile (msg) {
