@@ -108,18 +108,11 @@ async function sendHourlyStats (client) {
     const botID = getBot()
     const stats = await fetchStats(undefined, 'hour', botID)
 
-    const botInfo = client.info
-    const botName = botInfo.pushname
-    const botNumber = await client.getFormattedNumber(botInfo.wid.user)
-
     let message = ''
 
-    message += `Nesta última hora o {bot|Dead|DeadByte} com o nome *"${botName}"* e o número *${botNumber}* {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+    message += `Nesta última hora eu fui {usado|utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
     // Nesta última hora o bot com o nome "DeadByte" e o número +55 11 99999-9999 foi usado 100 vezes!
     // Por 10 usuários diferentes!
-
-    message += `{{A|Sua} primeira vez|Seu primeiro uso} foi {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
-    // Sua primeira vez foi há 2 dias em 01/01/2021 às 12:00:00
 
     const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
     const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
@@ -133,7 +126,7 @@ async function sendHourlyStats (client) {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
 
-    message += `*{Foram usados|Foram utilizados|Foram executados|Foram acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+    message += `*Foram{usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
     // Foram usados 10 comandos diferentes:
 
     message = formatCommands(commands, null, message)
@@ -154,7 +147,7 @@ async function sendDailyStats (client) {
 
     let message = ''
 
-    message += `*Nas últimas 24 horas* eu {fui usado|fui utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+    message += `*Nas últimas 24 horas* eu fu i{usado|utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
     // Nas últimas 24 horas eu fui usado 100 vezes!
     // Por 10 usuários diferentes!
 
@@ -170,7 +163,7 @@ async function sendDailyStats (client) {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
 
-    message += `*{Foram usados|Foram utilizados|Foram executados|Foram acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+    message += `*Foram{usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
 
     message = formatCommands(commands, null, message)
 

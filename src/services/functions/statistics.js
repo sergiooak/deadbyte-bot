@@ -35,7 +35,7 @@ export async function stats (msg) {
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
 
-  message += `{Você|Tu|Vc} já {usou|utilizou|executou|acessou|interagiu com|solicitou serviços do} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* {vezes|em ocasiões|em momentos}!\n`
+  message += `{Você|Tu|Vc} já {usou|utilizou|executou|acessou|interagiu com} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* vezes!\n`
   // Você já usou o bot *100* vezes!
 
   message += `{{A|Sua} primeira vez|Seu primeiro uso} foi ${dayjs(stats.first).fromNow()} {em|no dia} *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
@@ -127,10 +127,10 @@ export async function weekStats (msg) {
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
 
-  message += `Nessa última semana {você|tu|vc} já {usou|utilizou|executou|acessou|interagiu com|solicitou serviços do} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* {vezes|em ocasiões|em momentos}!\n`
+  message += `Nessa última semana {você|tu|vc} já {usou|utilizou|executou|acessou|interagiu com} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* vezes!\n`
   // Nessa última semana você já usou o bot *100* vezes!
 
-  message += `{A primeira vez} foi {em|no dia} *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
+  message += `{A primeira vez} foi no dia *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
   // A primeira vez foi em 01/01/2021 às 12:00:00
 
   const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
@@ -171,7 +171,7 @@ export async function dayStats (msg) {
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
 
-  message += `Nas últimas 24 horas {você|tu|vc} já {usou|utilizou|executou|acessou|interagiu com|solicitou serviços do} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* {vezes|em ocasiões|em momentos}!\n`
+  message += `Nas últimas 24 horas {você|tu|vc} já {usou|utilizou|executou|acessou|interagiu com} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* vezes!\n`
   // Nas últimas 24 horas você já usou o bot *100* vezes!
 
   message += `{A primeira vez} foi {em|no dia} *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
@@ -215,11 +215,8 @@ export async function hourStats (msg) {
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
 
-  message += `Nessa última hora {você|tu|vc} já {usou|utilizou|executou|acessou|interagiu com|solicitou serviços do} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* {vezes|em ocasiões|em momentos}!\n`
+  message += `Nessa última hora {você|tu|vc} já {usou|utilizou|executou|acessou|interagiu com} o {bot|Dead|DeadByte} *${stats.total.toLocaleString('pt-BR')}* vezes!\n`
   // Nessa última hora você já usou o bot *100* vezes!
-
-  message += `{A primeira vez} foi {em|no dia} *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
-  // A primeira vez foi em 01/01/2021 às 12:00:00
 
   const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
   const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
