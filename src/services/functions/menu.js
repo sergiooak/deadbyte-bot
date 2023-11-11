@@ -1,7 +1,9 @@
-import { getCommands } from '../../db.js'
-import dayjs from 'dayjs'
-import 'dayjs/locale/pt-br.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import spintax from '../../utils/spintax.js'
+import { getCommands } from '../../db.js'
+import 'dayjs/locale/pt-br.js'
+import dayjs from 'dayjs'
+
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
 
@@ -40,8 +42,8 @@ export async function menu (msg) {
   // Tell about commandless messages
   message += '*Para criar figurinhas básicas, você NÃO precisa de comandos, basta enviar o seu arquivo ou texto!!!*\n\n'
 
-  // divider
-  message += '```==============================```\n\n'
+  const menuEmojis = '{📋|🗒️|📜}'
+  message += '```━━━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━━━```\n\n' // divider
 
   // Tell About prefix
   message += 'Os seguintes prefixos são aceitos para os comandos: *! . # /*\n\n'
@@ -56,7 +58,7 @@ export async function menu (msg) {
   // remove the last \n
   message = message.trim().replace(/\n$/, '').trim()
   // await msg.reply(JSON.stringify(msg.aux, null, 2))
-  await msg.reply(message)
+  await msg.reply(spintax(message))
 }
 
 //
