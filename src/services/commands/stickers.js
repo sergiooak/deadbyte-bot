@@ -10,7 +10,7 @@ export default (msg) => {
     'text-sticker': /^(ttp|ttp1|s|sticker|f|fig)$/.test(msg.aux.function) && msg.type === 'chat',
     'text-sticker2': /^(ttp2)$/.test(msg.aux.function) && msg.type === 'chat',
     'text-sticker3': /^(ttp3)$/.test(msg.aux.function) && msg.type === 'chat',
-    'steal-sticker': /^(steal|roubar)$/.test(msg.aux.function),
+    'steal-sticker': /^(steal|roubar|rename|renomear)$/.test(msg.aux.function),
     'sticker-ly-search': /^(stickerly|ly|lu)\d*$/.test(msg.aux.function)
   }
 }
