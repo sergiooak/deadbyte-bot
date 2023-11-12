@@ -16,6 +16,32 @@ const commandless = (msg, aux) => {
 // ================================ Main Functions =================================
 //
 /**
+ * Auxiliar message data
+ * @typedef {Object} aux
+ * @property {import('whatsapp-web.js').Client} client - The client
+ * @property {import('whatsapp-web.js').Chat} chat - The chat
+ * @property {import('whatsapp-web.js').Contact} sender - The sender
+ * @property {Boolean} senderIsMe - If the sender is the bot
+ * @property {Boolean} mentionedMe - If the message mentions the bot
+ * @property {import('whatsapp-web.js').Message} originalMsg - The original message
+ * @property {import('whatsapp-web.js').Message[]} history - The message history
+ * @property {String} originalBody - The original message body
+ * @property {Boolean} isFunction - If the message is a function
+ * @property {String} prefix - The message prefix
+ * @property {String} function - The message function
+ * @property {Boolean} hasOriginalFunction - If the original message is a function
+ * @property {String} originalFunction - The original message function
+ * @property {String} me - The bot id
+ * @property {String[]} mentions - The mentions
+ * @property {Boolean} amIMentioned - If the bot is mentioned
+ * @property {import('whatsapp-web.js').GroupParticipant[]} participants - The chat participants
+ * @property {String[]} admins - The chat admins
+ * @property {Boolean} isSenderAdmin - If the sender is admin
+ * @property {Boolean} isBotAdmin - If the bot is admin
+ * @property {Boolean} isStickerGroup - If the chat is the sticker group
+ */
+
+/**
  * Parse message and check if it is to respond
  * @param {import('whatsapp-web.js').Message} msg
  * @returns {promise<commandObject|boolean>} commandObject if it is to respond, false if not
@@ -89,8 +115,8 @@ export default async (msg) => {
   try {
     msg.aux = aux
 
-    if (aux.isFunction || aux.hasOriginalFunction) { // if it is a function, search in all of the command blocks
-      const allCommandFiles = await fs.readdir('./src/services/commands')
+    const allCommandFiles = await fs.readdir('./src/services/commands')
+    if (aux.isFunction || aux.hasOriginalFunction) {
       const commandFiles = allCommandFiles.filter(file => !file.startsWith('_') && file.endsWith('.js'))
       let commandModules = await Promise.all(commandFiles.map(async command => {
         const commandModule = await importFresh(`services/commands/${command}`)
@@ -123,7 +149,9 @@ export default async (msg) => {
         }
         const prefixesWithFallback = await importFresh('config/bot.js').then(config => config.prefixesWithFallback)
         if (prefixesWithFallback.includes(aux.prefix) === false) {
-          await msg.react(reactions.confused)
+          if (!aux.hasOriginalFunction) {
+            await msg.react(reactions.confused)
+          }
           return false
         } else {
           aux.isFunction = false
