@@ -136,7 +136,12 @@ export async function stealSticker (msg) {
 
   const quotedMsg = await msg.getQuotedMessage()
 
-  const messageParts = msg.body.split('|')
+  const delimiters = ['|', '/', '\\']
+  let messageParts = [msg.body] // default to the whole message
+  for (const delimiter of delimiters) {
+    if (messageParts.length > 1) break
+    messageParts = msg.body.split(delimiter)
+  }
   const stickerName = messageParts[0]?.trim() || msg.aux.sender.pushname
   const stickerAuthor = messageParts[1]?.trim() || 'DeadByte.com.br'
 
@@ -164,6 +169,10 @@ export async function stealSticker (msg) {
   await msg.react(reactions.success)
 }
 
+/**
+ * Search for a sticker on sticker.ly
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
 export async function stickerLySearch (msg) {
   const stickerGroup = '120363187692992289@g.us'
   const isStickerGroup = msg.aux.chat.id._serialized === stickerGroup
