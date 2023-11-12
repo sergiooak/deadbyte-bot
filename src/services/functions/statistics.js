@@ -248,7 +248,7 @@ export async function hourStats (msg) {
  * @param {*} char
  * @returns
  */
-function lPad (string, length, char = '0') {
+function lPad (string, length, char = ' ') {
   string = string.toString()
   if (string.length >= length) return string
   return char.repeat(length - string.length) + string

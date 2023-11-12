@@ -147,7 +147,7 @@ async function sendDailyStats (client) {
 
     let message = ''
 
-    message += `*Nas últimas 24 horas* eu fu i{usado|utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
+    message += `*Nas últimas 24 horas* eu fui {usado|utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
     // Nas últimas 24 horas eu fui usado 100 vezes!
     // Por 10 usuários diferentes!
 
@@ -193,9 +193,6 @@ async function sendDailyStatsToAnnounceGroup (client) {
 
   let message = `Nas últimas 24 horas o {bot|Dead|DeadByte} {foi usado|foi utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
   // O bot com o nome *DeadByte* e o número *+55 11 99999-9999* foi usado *100* vezes!
-
-  message += `{{A|Sua} primeira vez|Seu primeiro uso} foi ${dayjs(stats.first).fromNow()} {em|no dia} *${dayjs(stats.first).format('DD/MM/YYYY')}* {ás|às|as} *${dayjs(stats.first).format('HH:mm:ss')}*.\n\n`
-  // Sua primeira vez foi há 2 dias em 01/01/2021 às 12:00:00
 
   const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
   const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
