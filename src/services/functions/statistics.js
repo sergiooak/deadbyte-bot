@@ -242,19 +242,6 @@ export async function hourStats (msg) {
 // ================================== Helper Functions ==================================
 //
 /**
- * Make the string have a fixed length by adding a char to the left
- * @param {*} string
- * @param {*} length
- * @param {*} char
- * @returns
- */
-function lPad (string, length, char = ' ') {
-  string = string.toString()
-  if (string.length >= length) return string
-  return char.repeat(length - string.length) + string
-}
-
-/**
  * Make the string have a fixed length by adding a char to the right
  * @param {*} string
  * @param {*} length
@@ -359,15 +346,13 @@ async function sendInitialReply (msg, sufix) {
  * @returns {string}
  */
 export function formatCommands (commands, msg, message) {
-  const mostUsedCommand = commands[0]
-  const mostUsedCommandCharLength = mostUsedCommand.total.toString().length // to align the numbers
   const prefix = msg?.aux.prefix || '!'
   message += commands.map(command => {
     let string = ''
     string += '```'
     // string += `*!${command.alternatives[0]}* - ${command.total.toLocaleString('pt-BR')}`
-    string += rPad(`${prefix}${command.alternatives[0]}`, 29 - mostUsedCommandCharLength)
-    string += lPad(command.total, mostUsedCommandCharLength)
+    string += rPad(`${prefix}${command.alternatives[0]}`, 29 - command.total.toString().length)
+    string += command.total
     string += '```'
     // .sticker ......... 100
     return string
