@@ -1,17 +1,16 @@
 /**
  * Miscelanius Bot Commands
- * @param {import('whatsapp-web.js').Message} msg
- * @param {object} aux
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @returns {Object}
  */
-export default (msg, aux) => {
+export default (msg) => {
   return {
-    uptime: /^(uptime|online|up|tempo)$/.test(aux.function),
-    react: /^(react|reacao)$/.test(aux.function) || aux.function === '',
-    dice: /^d\d+$/.test(aux.function),
-    debug: /^(debug)$/.test(aux.function),
-    toFile: /^(tofile|file|arquivo|imagem|img|togif|image)$/.test(aux.function),
-    toUrl: /^(tourl|url)$/.test(aux.function),
-    ping: /^(ping|pong)$/.test(aux.function)
+    uptime: /^(uptime|online|up|tempo)$/.test(msg.aux.function),
+    react: /^(react|reacao)$/.test(msg.aux.function) || msg.aux.function === '',
+    dice: /^d\d+$/.test(msg.aux.function),
+    debug: /^(debug)$/.test(msg.aux.function),
+    toFile: /^(tofile|file|arquivo|imagem|img|togif|image)$/.test(msg.aux.function),
+    toUrl: /^(tourl|url)$/.test(msg.aux.function),
+    ping: /^(ping|pong)$/.test(msg.aux.function)
   }
 }

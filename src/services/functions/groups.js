@@ -1,7 +1,7 @@
 import spintax from '../../utils/spintax.js'
 /**
  * Ban user from group
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function ban (msg) {
   if (!msg.hasQuotedMsg) {
@@ -25,7 +25,7 @@ export async function ban (msg) {
 
 /**
  * Promote user to admin
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function promote (msg) {
   if (!msg.aux.mentions.length === 0) {
@@ -46,7 +46,7 @@ export async function promote (msg) {
 
 /**
  * Demote user from admin
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function demote (msg) {
   if (!msg.aux.mentions.length === 0) {
@@ -67,7 +67,7 @@ export async function demote (msg) {
 
 /**
  * Draw a user from group
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function giveaway (msg) {
   const hasText = !!msg.body.trim()
@@ -92,7 +92,7 @@ export async function giveaway (msg) {
 
 /**
  * Draw a adm from group
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function giveawayAdminsOnly (msg) {
   const hasText = msg.body.split(' ').length > 1
@@ -118,7 +118,7 @@ export async function giveawayAdminsOnly (msg) {
 
 /**
  * Send the message but invisible mentioning all members of the group
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function markAllMembers (msg) {
   if (!msg.aux.isSenderAdmin) {
@@ -139,7 +139,7 @@ export async function markAllMembers (msg) {
 
 /**
  * Call group Admins
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function callAdmins (msg) {
   const admins = msg.aux.admins
@@ -153,7 +153,7 @@ export async function callAdmins (msg) {
 
 /**
  * Close group for admins only
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function closeGroup (msg) {
   if (!msg.aux.isBotAdmin) {
@@ -170,7 +170,7 @@ export async function closeGroup (msg) {
 
 /**
  * Open group for everyone
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function openGroup (msg) {
   if (!msg.aux.isBotAdmin) {

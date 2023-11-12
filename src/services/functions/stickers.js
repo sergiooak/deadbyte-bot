@@ -10,7 +10,7 @@ import FormData from 'form-data'
 
 /**
  * Make sticker from media (image, video, gif)
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @param {boolean} [crop=false] - crop the image to a square
  * @param {string} StickerAuthor - sticker author name
  * @param {string} StickerPack - sticker pack name
@@ -35,7 +35,7 @@ export async function stickerCreator (msg, crop = false, stickerAuthor, stickerP
 
 /**
  * Make sticker from text
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function textSticker (msg) {
   await msg.react(reactions.wait)
@@ -51,7 +51,7 @@ export async function textSticker (msg) {
 
 /**
  * Make sticker from text
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function textSticker2 (msg) {
   await msg.react(reactions.wait)
@@ -67,7 +67,7 @@ export async function textSticker2 (msg) {
 
 /**
  * Make sticker from text
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function textSticker3 (msg) {
   await msg.react(reactions.wait)
@@ -83,7 +83,7 @@ export async function textSticker3 (msg) {
 
 /**
  * Create a sticker of an image without background
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  *
  */
 export async function removeBg (msg) {
@@ -128,7 +128,7 @@ export async function removeBg (msg) {
 
 /**
  * Resend the sticker with the given pack and author
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  *
  */
 export async function stealSticker (msg) {

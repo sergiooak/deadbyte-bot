@@ -18,7 +18,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 //
 /**
  * return qr code image
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function qrImageCreator (msg) {
   if (!msg.body) {
@@ -45,7 +45,7 @@ export async function qrImageCreator (msg) {
 
 /**
  * return qr code text
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function qrTextCreator (msg) {
   if (!msg.body) {
@@ -73,7 +73,7 @@ export async function qrTextCreator (msg) {
 
 /**
  * return the qr code text from image
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function qrReader (msg) {
   // if is not replying to a image

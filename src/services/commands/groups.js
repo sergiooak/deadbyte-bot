@@ -1,19 +1,18 @@
 /**
  * Group commands like ban, unban, etc
- * @param {import('whatsapp-web.js').Message} msg
- * @param {object} aux
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @returns {Object}
  */
-export default (msg, aux) => {
+export default (msg) => {
   return {
-    ban: aux.chat.isGroup && /^(ban)$/.test(aux.function),
-    promote: aux.chat.isGroup && /^(promote|promove|promover)$/.test(aux.function),
-    demote: aux.chat.isGroup && /^(demote|rebaixa|rebaixar)$/.test(aux.function),
-    giveaway: aux.chat.isGroup && /^(sorteio|sortear)$/.test(aux.function),
-    'giveaway-admins-only': aux.chat.isGroup && /^(sorteioadm|sortearadm)$/.test(aux.function),
-    'mark-all-members': aux.chat.isGroup && /^(todos|all|hiddenmention)$/.test(aux.function),
-    'call-admins': aux.chat.isGroup && /^(adm|adms|admins)$/.test(aux.function),
-    'close-group': aux.chat.isGroup && /^(close|fechar)$/.test(aux.function),
-    'open-group': aux.chat.isGroup && /^(open|abrir)$/.test(aux.function)
+    ban: msg.aux.chat.isGroup && /^(ban)$/.test(msg.aux.function),
+    promote: msg.aux.chat.isGroup && /^(promote|promove|promover)$/.test(msg.aux.function),
+    demote: msg.aux.chat.isGroup && /^(demote|rebaixa|rebaixar)$/.test(msg.aux.function),
+    giveaway: msg.aux.chat.isGroup && /^(sorteio|sortear)$/.test(msg.aux.function),
+    'giveaway-admins-only': msg.aux.chat.isGroup && /^(sorteioadm|sortearadm)$/.test(msg.aux.function),
+    'mark-all-members': msg.aux.chat.isGroup && /^(todos|all|hiddenmention)$/.test(msg.aux.function),
+    'call-admins': msg.aux.chat.isGroup && /^(adm|adms|admins)$/.test(msg.aux.function),
+    'close-group': msg.aux.chat.isGroup && /^(close|fechar)$/.test(msg.aux.function),
+    'open-group': msg.aux.chat.isGroup && /^(open|abrir)$/.test(msg.aux.function)
   }
 }

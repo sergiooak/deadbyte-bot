@@ -2,11 +2,9 @@ import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import fetch from 'node-fetch'
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
 /**
  * Use chat gpt
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function gpt (msg) {
   await msg.react(reactions.wait)
@@ -52,7 +50,7 @@ export async function gpt (msg) {
 
 /**
  * Use DeadByte version of GPT
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function bot (msg) {
   await msg.react(reactions.wait)
@@ -98,7 +96,7 @@ export async function bot (msg) {
 
 /**
  * "Translate" the message into emojis
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function emojify (msg) {
   await msg.react(reactions.wait)
@@ -134,7 +132,7 @@ export async function emojify (msg) {
 
 /**
  * Translate the message into emojis
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function translate (msg) {
   await msg.react(reactions.wait)
@@ -175,7 +173,7 @@ export async function translate (msg) {
 
 /**
  * Calculate the message
- * @param {import('whatsapp-web.js').Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function calculate (msg) {
   await msg.react(reactions.wait)

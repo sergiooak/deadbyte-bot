@@ -10,7 +10,10 @@ dayjs.extend(relativeTime)
 //
 // ================================ Main Functions =================================
 //
-
+/**
+ * Send the menu
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
 export async function menu (msg) {
   let commands = await getCommands()
   const lang = 'pt'

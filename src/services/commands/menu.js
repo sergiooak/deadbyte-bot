@@ -1,11 +1,10 @@
 /**
  * Miscelanius Bot Commands
- * @param {import('whatsapp-web.js').Message} msg
- * @param {object} aux
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @returns {Object}
  */
-export default (msg, aux) => {
+export default (msg) => {
   return {
-    menu: /^(menu|commands)$/.test(aux.function)
+    menu: /^(menu|commands)$/.test(msg.aux.function)
   }
 }

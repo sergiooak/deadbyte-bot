@@ -1,24 +1,23 @@
 /**
  * Command using AI
- * @param {import('whatsapp-web.js').Message} msg
- * @param {object} aux
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @returns {Object}
  */
-export default (msg, aux) => {
+export default (msg) => {
   return {
-    gpt: /^(gpt|got)$/.test(aux.function) ||
-    (!aux.isFunction && aux.hasOriginalFunction && /^(gpt|got)$/.test(aux.originalFunction)),
+    gpt: /^(gpt|got)$/.test(msg.aux.function) ||
+    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(gpt|got)$/.test(msg.aux.originalFunction)),
 
-    bot: /^(bot|dead)$/.test(aux.function) ||
-    (!aux.isFunction && aux.hasOriginalFunction && /^(bot|dead)$/.test(aux.originalFunction)),
+    bot: /^(bot|dead)$/.test(msg.aux.function) ||
+    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(bot|dead)$/.test(msg.aux.originalFunction)),
 
-    emojify: /^(emojify)$/.test(aux.function) ||
-    (!aux.isFunction && aux.hasOriginalFunction && /^(emojify)$/.test(aux.originalFunction)),
+    emojify: /^(emojify)$/.test(msg.aux.function) ||
+    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(emojify)$/.test(msg.aux.originalFunction)),
 
-    translate: /^(translate|traduzir|traduz)$/.test(aux.function) ||
-    (!aux.isFunction && aux.hasOriginalFunction && /^(translate|traduzir|traduz)$/.test(aux.originalFunction)),
+    translate: /^(translate|traduzir|traduz)$/.test(msg.aux.function) ||
+    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(translate|traduzir|traduz)$/.test(msg.aux.originalFunction)),
 
-    calculate: /^(calculate|calcular|calc)$/.test(aux.function) ||
-    (!aux.isFunction && aux.hasOriginalFunction && /^(calculate|calcular|calc)$/.test(aux.originalFunction))
+    calculate: /^(calculate|calcular|calc)$/.test(msg.aux.function) ||
+    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(calculate|calcular|calc)$/.test(msg.aux.originalFunction))
   }
 }

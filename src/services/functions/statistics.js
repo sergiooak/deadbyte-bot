@@ -20,7 +20,7 @@ const minWaitTime = 1_500
 //
 /**
  * Returns general statistics
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function stats (msg) {
   await msg.react(reactions.wait)
@@ -64,7 +64,7 @@ export async function stats (msg) {
 
 /**
  * Returns bot statistics
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function botStats (msg) {
   await msg.react(reactions.wait)
@@ -112,7 +112,7 @@ export async function botStats (msg) {
 
 /**
  * Returns statistics for the week
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function weekStats (msg) {
   await msg.react(reactions.wait)
@@ -156,7 +156,7 @@ export async function weekStats (msg) {
 
 /**
  * Returns statistics for the day
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function dayStats (msg) {
   await msg.react(reactions.wait)
@@ -200,7 +200,7 @@ export async function dayStats (msg) {
 
 /**
  * Returns statistics for the hour
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function hourStats (msg) {
   await msg.react(reactions.wait)
@@ -281,7 +281,7 @@ async function waitForMinimumTime (startedAt) {
 
 /**
  * React to the message and reply
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @param {string} emojis
  * @param {wwebjs.Message} reply
  * @param {string} message
@@ -320,7 +320,7 @@ export async function fetchStats (contact = undefined, mode = undefined, bot = u
 
 /**
  * Send the initial reply
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @param {string} sufix
  * @returns {Promise}
  */
@@ -341,7 +341,7 @@ async function sendInitialReply (msg, sufix) {
 /**
  * Format the commands to a string
  * @param {array} commands
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @param {string} message
  * @returns {string}
  */

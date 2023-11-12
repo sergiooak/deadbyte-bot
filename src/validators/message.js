@@ -15,31 +15,6 @@ const commandless = (msg, aux) => {
 //
 // ================================ Main Functions =================================
 //
-/**
- * Auxiliar message data
- * @typedef {Object} aux
- * @property {import('whatsapp-web.js').Client} client - The client
- * @property {import('whatsapp-web.js').Chat} chat - The chat
- * @property {import('whatsapp-web.js').Contact} sender - The sender
- * @property {Boolean} senderIsMe - If the sender is the bot
- * @property {Boolean} mentionedMe - If the message mentions the bot
- * @property {import('whatsapp-web.js').Message} originalMsg - The original message
- * @property {import('whatsapp-web.js').Message[]} history - The message history
- * @property {String} originalBody - The original message body
- * @property {Boolean} isFunction - If the message is a function
- * @property {String} prefix - The message prefix
- * @property {String} function - The message function
- * @property {Boolean} hasOriginalFunction - If the original message is a function
- * @property {String} originalFunction - The original message function
- * @property {String} me - The bot id
- * @property {String[]} mentions - The mentions
- * @property {Boolean} amIMentioned - If the bot is mentioned
- * @property {import('whatsapp-web.js').GroupParticipant[]} participants - The chat participants
- * @property {String[]} admins - The chat admins
- * @property {Boolean} isSenderAdmin - If the sender is admin
- * @property {Boolean} isBotAdmin - If the bot is admin
- * @property {Boolean} isStickerGroup - If the chat is the sticker group
- */
 
 /**
  * Parse message and check if it is to respond

@@ -3,7 +3,6 @@ import relativeTime from 'dayjs/plugin/relativeTime.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
-import { getCommands } from '../../db.js'
 import logger from '../../logger.js'
 import FormData from 'form-data'
 import 'dayjs/locale/pt-br.js'
@@ -20,7 +19,7 @@ dayjs.extend(relativeTime)
 //
 /**
  * return uptime
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function uptime (msg) {
   const uptime = process.uptime()
@@ -48,7 +47,7 @@ export async function uptime (msg) {
 
 /**
  * React with a random emoji
- * @param {wwebjs.Message} msg
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function react (msg) {
   const response = await fetch('https://emojihub.yurace.pro/api/random')
@@ -67,37 +66,10 @@ export async function dice (msg) {
   await msg.reply(message)
 }
 
-export async function menu (msg) {
-  const commands = await getCommands()
-  const lang = 'pt'
-  const prefix = msg.aux.prefix || '!'
-
-  const groupsArray = commands.map(c => c.name[lang])
-  const commandsArray = commands.map(c => c.commands.filter(c => c.enabled).map(c => {
-    return {
-      name: c.name[lang],
-      command: prefix + (c.alternatives[0] || c.slug),
-      description: c.description[lang],
-      enabled: c.enabled,
-      alternatives: c.alternatives.slice(1)
-    }
-  }))
-
-  let message = `🤖 - No momento o DeadByte possui ${commandsArray.reduce((acc, c) => acc + c.length, 0)} comandos divididos em ${commandsArray.length} categorias\n\n`
-  commandsArray.forEach((c, i) => {
-    message += `*${groupsArray[i].toUpperCase()}:*\n\n`
-    c.forEach(c => {
-      message += `*${c.command}* - _${c.description}_\n${c.alternatives.length ? '<' + prefix + c.alternatives.join(' ' + prefix) + '>' : ''}\n\n`.replace(prefix + '.', '.')
-    })
-    message += '\n'
-  })
-
-  // remove the last \n
-  message = message.trim().replace(/\n$/, '').trim()
-  // await msg.reply(JSON.stringify(msg.aux, null, 2))
-  await msg.reply(message)
-}
-
+/**
+ * Tests functions
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
 export async function debug (msg) {
   const debugEmoji = '🐛'
   await msg.react(debugEmoji)
@@ -110,6 +82,10 @@ export async function debug (msg) {
   await msg.reply(JSON.stringify(botIsAdmin, null, 2))
 }
 
+/**
+ * Send the files as a document
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
 export async function toFile (msg) {
   if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
     await msg.react(reactions.error)
@@ -159,6 +135,10 @@ export async function toFile (msg) {
   // TODO convert to webp if animated to mp4 and send as "gif"
 }
 
+/**
+ * Sends a url to the file
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
 export async function toUrl (msg) {
   if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
     await msg.react(reactions.error)
@@ -186,6 +166,10 @@ export async function toUrl (msg) {
   await msg.reply(spintax(message))
 }
 
+/**
+ * Tells how much time the bot is taking to respond a message
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
 export async function ping (msg) {
   await msg.react('🏓')
 
@@ -223,6 +207,12 @@ export async function ping (msg) {
 //
 // ================================== Helper Functions ==================================
 //
+/**
+ * Converts seconds to a human readable format
+ * @param {number} seconds - The seconds to convert
+ * @returns {string} The human readable format
+ * @example secondsToDhms(86400) // '1:00:00:00'
+ */
 function secondsToDhms (seconds) {
   const d = Math.floor(seconds / (3600 * 24))
   const h = Math.floor(seconds % (3600 * 24) / 3600)

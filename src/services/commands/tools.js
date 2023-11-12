@@ -1,13 +1,12 @@
 /**
  * Tools commands
- * @param {import('whatsapp-web.js').Message} msg
- * @param {object} aux
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @returns {Object}
  */
-export default (msg, aux) => {
+export default (msg) => {
   return {
-    'qr-reader': /^(qrl|lerqr|readqr)$/.test(aux.function) || (/^(qr)$/.test(aux.function) && (msg.hasMedia || msg.aux.quotedMsg?.hasMedia)),
-    'qr-image-creator': /^(qr|qrimg|createqr)$/.test(aux.function),
-    'qr-text-creator': /^(qrt|qrtexto|textqr)$/.test(aux.function)
+    'qr-reader': /^(qrl|lerqr|readqr)$/.test(msg.aux.function) || (/^(qr)$/.test(msg.aux.function) && (msg.hasMedia || msg.aux.quotedMsg?.hasMedia)),
+    'qr-image-creator': /^(qr|qrimg|createqr)$/.test(msg.aux.function),
+    'qr-text-creator': /^(qrt|qrtexto|textqr)$/.test(msg.aux.function)
   }
 }
