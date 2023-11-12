@@ -109,27 +109,21 @@ async function sendHourlyStats (client) {
     const stats = await fetchStats(undefined, 'hour', botID)
 
     let message = ''
-
-    message += `Nesta última hora eu fui {usado|utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
-    // Nesta última hora o bot com o nome "DeadByte" e o número +55 11 99999-9999 foi usado 100 vezes!
-    // Por 10 usuários diferentes!
-
-    const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
-    const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
-    message += `{Foram criadas|Foram feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nesta última hora!`
-    // Foram criadas 100 figurinhas!
-    // 10% do total de interações com o bot!
-
-    message += '\n\n```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
-
+    const hourEmoji = '{🕐|🕑|🕒|🕓|🕔|🕕|🕖|🕗|🕘|🕙|🕚|🕛}'
     const commands = stats.commands.reduce((acc, command) => {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
+    message += `${hourEmoji} Uso: ${commands.length.toLocaleString('pt-BR')} comandos, `
+    message += `${stats.users.toLocaleString('pt-BR')} usuários\n`
+    // 🕐 Uso: 100 comandos, 50 usuários
 
-    message += `*Foram {usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
-    // Foram usados 10 comandos diferentes:
+    const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
+    const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
+    message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')} (${stickersPercent}% do total)\n`
+    // 📊 Figurinhas: 100 (10% do total)
 
-    message = formatCommands(commands, null, message)
+    message += `🌟 Comandos: ${formatCommands(commands, null, message, 'inline')}`
+    // 🌟 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),
 
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage(spintax(message))
@@ -146,26 +140,22 @@ async function sendDailyStats (client) {
     const stats = await fetchStats(undefined, 'day', botID)
 
     let message = ''
-
-    message += `*Nas últimas 24 horas* eu fui {usado|utilizado} *${stats.total.toLocaleString('pt-BR')}* vezes!\nPor *${stats.users.toLocaleString('pt-BR')}* {usuários|pessoas} diferentes!\n\n`
-    // Nas últimas 24 horas eu fui usado 100 vezes!
-    // Por 10 usuários diferentes!
-
-    const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
-    const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
-    message += `{Foram criadas|Foram feitas} *${totalStickers.toLocaleString('pt-BR')} figurinhas*{!|!!|!!!}\n${stickersPercent}% do total de {interações com o {bot|Dead|DeadByte}|comandos executados|solicitações feitas|ações realizadas} nas últimas 24 horas!`
-    // Foram criadas 100 figurinhas!
-    // 10% do total de interações com o bot!
-
-    message += '\n\n```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
-
+    const dayEmoji = '{🌞|🌝|🌛|🌜|🌚|🌕|🌖|🌗|🌘|🌑|🌒|🌓|🌔}'
     const commands = stats.commands.reduce((acc, command) => {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
+    message += `*Estatísticas do dia ${dayjs().format('DD/MM/YYYY')}*\n\n`
+    message += `${dayEmoji} Uso: ${commands.length.toLocaleString('pt-BR')} comandos, `
+    message += `${stats.users.toLocaleString('pt-BR')} usuários\n`
+    // 🕐 Uso: 100 comandos, 50 usuários
 
-    message += `*Foram {usados|utilizados|executados|acessados} ${commands.length} {comandos|funções} diferentes:*\n\n`
+    const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
+    const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
+    message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')} (${stickersPercent}% do total)\n`
+    // 📊 Figurinhas: 100 (10% do total)
 
-    message = formatCommands(commands, null, message)
+    message += `🌟 Comandos: ${formatCommands(commands, null, message, 'inline')}`
+    // 🌟 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),)
 
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage(spintax(message))
