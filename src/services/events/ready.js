@@ -109,21 +109,26 @@ async function sendHourlyStats (client) {
     const stats = await fetchStats(undefined, 'hour', botID)
 
     let message = ''
-    const hourEmoji = '{🕐|🕑|🕒|🕓|🕔|🕕|🕖|🕗|🕘|🕙|🕚|🕛}'
+
+    const usersEmoji = '{👤|👥}'
+    message += `${usersEmoji} ${stats.users.toLocaleString('pt-BR')} usuários\n`
+    // 👥 50 usuários
+
     const commands = stats.commands.reduce((acc, command) => {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
-    message += `${hourEmoji} Uso: ${commands.length.toLocaleString('pt-BR')} comandos, `
-    message += `${stats.users.toLocaleString('pt-BR')} usuários\n`
-    // 🕐 Uso: 100 comandos, 50 usuários
+    const usageEmoji = '{📈|📉|📊|🔍|🔬|📚}'
+    message += `${usageEmoji} ${commands.length.toLocaleString('pt-BR')} comandos\n`
+    // 📈 100 comandos
 
     const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
     const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
     message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')} (${stickersPercent}% do total)\n`
     // 📊 Figurinhas: 100 (10% do total)
 
-    message += `🌟 Comandos: ${formatCommands(commands, null, message, 'inline')}`
-    // 🌟 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),
+    const commandsEmoji = '{📝|📜|📃|📄|📑|📒}'
+    message += `${commandsEmoji} Comandos: ${formatCommands(commands, null, message, 'inline')}`
+    // 📝 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),
 
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage(spintax(message))
@@ -140,22 +145,26 @@ async function sendDailyStats (client) {
     const stats = await fetchStats(undefined, 'day', botID)
 
     let message = ''
-    const dayEmoji = '{🌞|🌝|🌛|🌜|🌚|🌕|🌖|🌗|🌘|🌑|🌒|🌓|🌔}'
+    message += `*Estatísticas do dia ${dayjs().format('DD/MM/YYYY')}*\n\n`
+    const usersEmoji = '{👤|👥}'
+    message += `${usersEmoji} ${stats.users.toLocaleString('pt-BR')} usuários\n`
+    // 👥 50 usuários
+
     const commands = stats.commands.reduce((acc, command) => {
       return acc.concat(command.commands)
     }, []).filter(command => command.total > 0).sort((a, b) => b.total - a.total)
-    message += `*Estatísticas do dia ${dayjs().format('DD/MM/YYYY')}*\n\n`
-    message += `${dayEmoji} Uso: ${commands.length.toLocaleString('pt-BR')} comandos, `
-    message += `${stats.users.toLocaleString('pt-BR')} usuários\n`
-    // 🕐 Uso: 100 comandos, 50 usuários
+    const usageEmoji = '{📈|📉|📊|🔍|🔬|📚}'
+    message += `${usageEmoji} ${commands.length.toLocaleString('pt-BR')} comandos\n`
+    // 📈 100 comandos
 
     const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
     const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
     message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')} (${stickersPercent}% do total)\n`
     // 📊 Figurinhas: 100 (10% do total)
 
-    message += `🌟 Comandos: ${formatCommands(commands, null, message, 'inline')}`
-    // 🌟 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),)
+    const commandsEmoji = '{📝|📜|📃|📄|📑|📒}'
+    message += `${commandsEmoji} Comandos: ${formatCommands(commands, null, message, 'inline')}`
+    // 📝 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),
 
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage(spintax(message))

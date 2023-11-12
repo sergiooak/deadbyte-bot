@@ -349,13 +349,9 @@ export function formatCommands (commands, msg, message, mode = 'full') {
   const prefix = msg?.aux.prefix || '!'
 
   if (mode === 'full') {
-  // !s ....................... 98
-  // !ttp ...................... 9
-  // !ly ....................... 5
-  // !roubar ................... 4
-  // !menu ..................... 2
-  // !reacao ................... 1
-  // !ping ..................... 1
+    // !s ....................... 98
+    // !ttp ...................... 9
+    // !ly ....................... 5
     message += commands.map(command => {
       let string = ''
       string += '```'
