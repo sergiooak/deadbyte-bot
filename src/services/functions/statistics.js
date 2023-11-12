@@ -345,32 +345,17 @@ async function sendInitialReply (msg, sufix) {
  * @param {string} message
  * @returns {string}
  */
-export function formatCommands (commands, msg, message, mode = 'full') {
+export function formatCommands (commands, msg, message) {
   const prefix = msg?.aux.prefix || '!'
-
-  if (mode === 'full') {
-    // !s ....................... 98
-    // !ttp ...................... 9
-    // !ly ....................... 5
-    message += commands.map(command => {
-      let string = ''
-      string += '```'
-      // string += `*!${command.alternatives[0]}* - ${command.total.toLocaleString('pt-BR')}`
-      string += rPad(`${prefix}${command.alternatives[0]}`, 29 - command.total.toString().length)
-      string += command.total
-      string += '```'
-      // .sticker ......... 100
-      return string
-    }).join('\n')
-    return message
-  }
-
-  // !s (98), !ttp (9), !ly (5)
   message += commands.map(command => {
     let string = ''
-    string += `${prefix}${command.alternatives[0]} (${command.total.toLocaleString('pt-BR')})`
+    string += '```'
+    // string += `*!${command.alternatives[0]}* - ${command.total.toLocaleString('pt-BR')}`
+    string += rPad(`${prefix}${command.alternatives[0]}`, 29 - command.total.toString().length)
+    string += command.total
+    string += '```'
+    // .sticker ......... 100
     return string
-  }).join(', ')
-
+  }).join('\n')
   return message
 }

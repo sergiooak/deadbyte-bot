@@ -123,11 +123,10 @@ async function sendHourlyStats (client) {
 
     const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
     const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
-    message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')} (${stickersPercent}% do total)\n`
+    message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')}${totalStickers ? ' (' + stickersPercent + '% do total)' : ''} \n\n`
     // 📊 Figurinhas: 100 (10% do total)
 
-    const commandsEmoji = '{📝|📜|📃|📄|📑|📒}'
-    message += `${commandsEmoji} Comandos: ${formatCommands(commands, null, message, 'inline')}`
+    message = `${formatCommands(commands, null, message, 'inline')}`
     // 📝 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),
 
     const chat = await client.getChatById(logsGroup)
@@ -159,11 +158,10 @@ async function sendDailyStats (client) {
 
     const totalStickers = stats.commands.find(command => command.slug === 'stickers').total
     const stickersPercent = ((totalStickers / stats.total) * 100).toFixed(2).replace('.', ',')
-    message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')} (${stickersPercent}% do total)\n`
+    message += `📊 Figurinhas: ${totalStickers.toLocaleString('pt-BR')}${totalStickers ? ' (' + stickersPercent + '% do total)' : ''} \n\n`
     // 📊 Figurinhas: 100 (10% do total)
 
-    const commandsEmoji = '{📝|📜|📃|📄|📑|📒}'
-    message += `${commandsEmoji} Comandos: ${formatCommands(commands, null, message, 'inline')}`
+    message = `${formatCommands(commands, null, message, 'inline')}`
     // 📝 Comandos: !comando1 (20), !comando2 (10),!comando3 (5),
 
     const chat = await client.getChatById(logsGroup)
