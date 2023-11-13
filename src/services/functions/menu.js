@@ -63,9 +63,10 @@ export async function menu (msg) {
       command.command = prefix + (command.alternatives[0] || command.slug)
       command.alternatives = command.alternatives.slice(1)
 
-      message += `*${command.command}* - _${command.description}_${
+      message += `${command.emoji} - *${command.name}*\n`
+      message += `*${command.command}* - ${command.description}${
         command.alternatives.length
-        ? '\n```' + prefix + command.alternatives.join(' ' + prefix) + '```'
+        ? '\n( ' + prefix + command.alternatives.join(' ' + prefix) + ' )'
         : ''
       }\n\n`.replace(prefix + '.', '.')
     })
