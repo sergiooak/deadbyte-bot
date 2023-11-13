@@ -26,33 +26,48 @@ export async function menu (msg) {
     commands = commands.filter(command => stickerOnlyCommands.includes(command.slug))
   }
 
-  const groupsArray = commands.map(c => c.name)
-  const commandsArray = commands.map(c => c.commands.filter(c => c.enabled).map(c => {
-    return {
-      name: c.name,
-      command: prefix + (c.alternatives[0] || c.slug),
-      description: c.description,
-      enabled: c.enabled,
-      alternatives: c.alternatives.slice(1)
-    }
-  }))
+  // const commandsArray = commands.map(c => c.commands.filter(c => c.enabled).map(c => {
+  //   c.command = prefix + (c.alternatives[0] || c.slug)
+  //   c.alternatives = c.alternatives.slice(1)
+  //   return c
+  // })
+  // )
+
+  // reorder commands Group and commands sort by "order" field in both
+  commands = commands.sort((a, b) => a.order - b.order).map(c => {
+    c.commands = c.commands.sort((a, b) => a.order - b.order)
+    return c
+  })
+  const commandsCount = commands.reduce((acc, c) => acc + c.commands.length, 0)
 
   let message = isStickerOnly
     ? 'Este número é *somente* para figurinhas, se quiser todos os comandos utilize o bot completo disponivel em DeadByte.com.br\n\n'
-    : `No momento o DeadByte possui ${commandsArray.reduce((acc, c) => acc + c.length, 0)} comandos divididos em ${commandsArray.length} categorias\n\n`
+    : `No momento o DeadByte possui ${commandsCount} comandos divididos em ${commands.length} categorias\n\n`
 
   // Tell about commandless messages
   message += '*Para criar figurinhas básicas, você NÃO precisa de comandos, basta enviar o seu arquivo ou texto!!!*\n\n'
 
-  const menuEmojis = '{📋|🗒️|📜}'
-  message += '```━━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━━```\n\n'
-
   // Tell About prefix
   message += 'Os seguintes prefixos são aceitos para os comandos: *! . # /*\n\n'
-  commandsArray.forEach((c, i) => {
-    message += `*${groupsArray[i].toUpperCase()}:*\n\n`
-    c.forEach(c => {
-      message += `*${c.command}* - _${c.description}_${c.alternatives.length ? '\n<' + prefix + c.alternatives.join(' ' + prefix) + '>' : ''}\n\n`.replace(prefix + '.', '.')
+
+  // const menuEmojis = '{📋|🗒️|📜}'
+  // message += '```━━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━━```\n\n'
+
+  // await msg.reply(JSON.stringify(commands, null, 2))
+
+  commands.forEach((commandGroup, i) => {
+    message += '```━━━━━━━━━━ ' + commandGroup.emoji + ' ━━━━━━━━━━```\n\n'
+    message += `*${commandGroup.description}*\n\n`
+    commandGroup.commands.forEach(command => {
+      command = structuredClone(command)
+      command.command = prefix + (command.alternatives[0] || command.slug)
+      command.alternatives = command.alternatives.slice(1)
+
+      message += `*${command.command}* - _${command.description}_${
+        command.alternatives.length
+        ? '\n```' + prefix + command.alternatives.join(' ' + prefix) + '```'
+        : ''
+      }\n\n`.replace(prefix + '.', '.')
     })
     message += '\n'
   })

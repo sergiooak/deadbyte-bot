@@ -125,6 +125,7 @@ export default async (msg) => {
         const prefixesWithFallback = await importFresh('config/bot.js').then(config => config.prefixesWithFallback)
         if (prefixesWithFallback.includes(aux.prefix) === false) {
           if (!aux.hasOriginalFunction) {
+            console.log('No matching command found')
             await msg.react(reactions.confused)
           }
           return false
