@@ -89,31 +89,7 @@ export async function loadCommands () {
 
   // Convert translation arrays to objects
   groups.data.forEach(group => {
-    const name = {}
-    group.name.forEach(nameObj => {
-      name[nameObj.lang] = nameObj.value
-    })
-    group.name = name
-
-    const description = {}
-    group.description.forEach(descriptionObj => {
-      description[descriptionObj.lang] = descriptionObj.value
-    })
-    group.description = description
-
     group.commands.forEach(command => {
-      const name = {}
-      command.name.forEach(nameObj => {
-        name[nameObj.lang] = nameObj.value
-      })
-      command.name = name
-
-      const description = {}
-      command.description.forEach(descriptionObj => {
-        description[descriptionObj.lang] = descriptionObj.value
-      })
-      command.description = description
-
       command.alternatives = command.alternatives.map(a => a.name)
     })
   })

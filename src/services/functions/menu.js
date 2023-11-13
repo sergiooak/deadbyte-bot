@@ -16,7 +16,6 @@ dayjs.extend(relativeTime)
  */
 export async function menu (msg) {
   let commands = await getCommands()
-  const lang = 'pt'
   const prefix = msg.aux.prefix || '!'
 
   const isStickerOnly = process.env.BOT_TYPE === 'sticker'
@@ -27,12 +26,12 @@ export async function menu (msg) {
     commands = commands.filter(command => stickerOnlyCommands.includes(command.slug))
   }
 
-  const groupsArray = commands.map(c => c.name[lang])
+  const groupsArray = commands.map(c => c.name)
   const commandsArray = commands.map(c => c.commands.filter(c => c.enabled).map(c => {
     return {
-      name: c.name[lang],
+      name: c.name,
       command: prefix + (c.alternatives[0] || c.slug),
-      description: c.description[lang],
+      description: c.description,
       enabled: c.enabled,
       alternatives: c.alternatives.slice(1)
     }
