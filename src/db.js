@@ -271,11 +271,9 @@ export async function createAction (commandGroupId, commandId, chatId, contactId
 export async function saveActionToDB (moduleName, functionName, msg) {
   const actions = getCommands()
   const commandGroup = actions.find((group) => group.slug === kebabCase(moduleName))
-  if (!commandGroup) return { error: 'Command group not found' }
-  const commandGroupID = commandGroup.id
+  const commandGroupID = commandGroup?.id
   const command = commandGroup.commands.find((command) => command.slug === kebabCase(functionName))
-  if (!command) return { error: 'Command not found' }
-  const commandID = command.id
+  const commandID = command?.id
   const contact = await findOrCreateContact(msg.aux.sender)
   const contactID = contact.id
   const chat = await findOrCreateChat(msg.aux.chat)
