@@ -33,7 +33,11 @@ export default async (msg) => {
 
   const checkDisabled = await importFresh('validators/checkDisabled.js')
   const isEnabled = await checkDisabled.default(msg)
-  if (!isEnabled) return logger.info(`❌ - ${msg.from} - ${handlerModule.type} - ${handlerModule.command} - Disabled`)
+  if (!isEnabled) return logger.info(`⛔ - ${msg.from} - ${handlerModule.command} - Disabled`)
+
+  const checkOwnerOnly = await importFresh('validators/checkOwnerOnly.js')
+  const isOwnerOnly = await checkOwnerOnly.default(msg)
+  if (isOwnerOnly) return logger.info(`🛂 - ${msg.from} - ${handlerModule.command} - Restricted to admins`)
 
   const [queueLength, userQueueLength] = addToQueue(msg.from, handlerModule.type, handlerModule.command, msg)
   const number = await client.getFormattedNumber(msg.from)
