@@ -7,6 +7,7 @@ export default {
   wait: '⏳',
   success: '✅',
   error: '❌',
+  disabled: '⛔',
   heavy: '⚓️',
   confused: '🤔',
   spam: '⚠️'
