@@ -8,6 +8,8 @@ export default {
   success: '✅',
   error: '❌',
   disabled: '⛔',
+  adminOnly: '🛂',
+  ownerOnly: '🛑',
   heavy: '⚓️',
   confused: '🤔',
   spam: '⚠️'
