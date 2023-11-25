@@ -102,6 +102,8 @@ export async function loadCommands () {
  * @returns {object} commands
  */
 export function getCommands () {
+  loadCommands() // reload commands but don't wait for it
+  // the return is the already loaded commands
   return commands
 }
 
