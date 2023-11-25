@@ -22,8 +22,8 @@ export default async (msg) => {
   const isBotOwnerOnly = db?.command.isBotOwnerOnly ?? false
   if (!isBotOwnerOnly) return false
 
-  // const isUserOwner = db?.contact?.isOwner ??
-  // if (isUserOwner) return false
+  const isUserOwner = db?.contact?.attributes.isOwner ?? false
+  if (isUserOwner) return false
 
   await msg.react(reactions.ownerOnly)
   const prefix = msg.aux.prefix || '!'
