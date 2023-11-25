@@ -30,6 +30,11 @@ export default async (msg) => {
   if (!handlerModule) return logger.debug('handlerModule is undefined')
 
   msg.aux.db = await saveActionToDB(handlerModule.type, handlerModule.command, msg)
+
+  const checkDisabled = await importFresh('validators/checkDisabled.js')
+  const isEnabled = await checkDisabled.default(msg)
+  if (!isEnabled) return logger.info(`❌ - ${msg.from} - ${handlerModule.type} - ${handlerModule.command} - Disabled`)
+
   const [queueLength, userQueueLength] = addToQueue(msg.from, handlerModule.type, handlerModule.command, msg)
   const number = await client.getFormattedNumber(msg.from)
   if (queueLength === 1) return
