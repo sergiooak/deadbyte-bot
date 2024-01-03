@@ -9,10 +9,10 @@ import { camelCase } from 'change-case'
 
 const client = getClient()
 const queue = []
-const waitTimeMax = 10_000 // 10 seconds
-const waitTimeMin = 250 // 250ms
-const waitTimeMultiplier = 100 // 100ms
-let waitTime = waitTimeMax // 10 seconds
+const waitTimeMax = 2_500 // 2.5s
+const waitTimeMin = 150 // 250ms
+const waitTimeMultiplier = 250 // 100ms
+let waitTime = waitTimeMax // initial wait time
 
 //
 // ==================================== Main Function ====================================
@@ -53,8 +53,10 @@ async function bypassQueue (moduleName, functionName, msg) {
 
 async function processQueue () {
   // set the wait time for the next round based on the queue length
-  setWaitTime(Math.max(waitTimeMax - (queue.length * waitTimeMultiplier), waitTimeMin))
-  // with more items on the queue, the wait time will be smaller, but never less than 500ms
+  const newWaitTime = Math.max(waitTimeMax - (queue.length * waitTimeMultiplier), waitTimeMin)
+  // noise between -150ms and 150ms to make the wait time more human-like
+  const noise = Math.floor(Math.random() * 300) - 150
+  setWaitTime(newWaitTime + noise)
 
   if (queue.length === 0) return setTimeout(processQueue, waitTime) // if the queue is empty, wait and try again
 
@@ -96,7 +98,9 @@ processQueue()
 // ================================== Helper Functions ==================================
 //
 export function setWaitTime (time) {
-  waitTime = time
+  // make sure the wait time is not lower than 1ms
+  const safeTime = Math.max(time, 1)
+  waitTime = safeTime
 }
 
 export function getWaitTime () {

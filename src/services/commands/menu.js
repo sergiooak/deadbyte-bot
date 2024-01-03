@@ -5,6 +5,7 @@
  */
 export default (msg) => {
   return {
-    menu: /^(menu|commands)$/.test(msg.aux.function)
+    menu: /^(menu|commands)$/.test(msg.aux.function),
+    'menu-group': /^(gmenu|menugrupos|gruposmenu|menug)$/.test(msg.aux.function)
   }
 }
