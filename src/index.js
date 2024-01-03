@@ -40,12 +40,13 @@ const main = defineCommand({
     bot.name = args.name
     logger.info(`Starting bot "${args.name}"`)
     bot.headless = !args.showBrowser ? 'new' : false
-    console.log(bot.headless)
     logger.info(`Headless mode: ${bot.headless ? 'on' : 'off'}`)
     bot.stickerOnly = args.stickerOnly
     logger.info(`Sticker only mode: ${bot.stickerOnly ? 'on' : 'off'}`)
     bot.dummy = args.dummy
     logger.info(`Dummy mode: ${bot.dummy ? 'on' : 'off'}`)
+
+    loadEvents()
   }
 })
 
@@ -63,17 +64,7 @@ export function getArgs () {
  * Whatsapp Web Client
  * @type {wwebjs.Client}
  */
-const client = new wwebjs.Client({
-  authStrategy: new wwebjs.LocalAuth({
-    clientId: bot.name
-  }),
-
-  puppeteer: {
-    headless: bot.headless,
-    executablePath: bot.chromePath,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  }
-})
+let client = null
 
 /**
  * Grabs Whatsapp Web Client
@@ -83,8 +74,19 @@ export function getClient () {
   return client
 }
 
-// Auto load events
-(async () => {
+async function loadEvents () {
+  console.log('Loading events...', bot)
+  client = new wwebjs.Client({
+    authStrategy: new wwebjs.LocalAuth({
+      clientId: bot.name
+    }),
+
+    puppeteer: {
+      headless: bot.headless,
+      executablePath: bot.chromePath,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
+  })
   const events = await fs.readdir('./src/services/events')
   // if not in dummy mode, load all events
   if (!bot.dummy) {
@@ -103,7 +105,7 @@ export function getClient () {
     logger.fatal('API_KEY not found! Grab one at https://api.deadbyte.com.br')
     process.exit(1)
   }
-})()
+}
 
 // clear terminal
 process.stdout.write('\x1B[2J\x1B[0f')
