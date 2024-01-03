@@ -35,13 +35,13 @@ export default async () => {
     await client.sendPresenceAvailable()
   })
 
-  cron.schedule('59 * * * *', async () => { // every end of hour
-    await sendHourlyStats(client)
-  })
+  // cron.schedule('59 * * * *', async () => { // every end of hour
+  //   await sendHourlyStats(client)
+  // })
 
-  cron.schedule('00 22 * * *', async () => { // every day at 22:00
-    await sendDailyStats(client)
-  })
+  // cron.schedule('00 22 * * *', async () => { // every day at 22:00
+  //   await sendDailyStats(client)
+  // })
 }
 //
 // ================================== Helper Functions ==================================
