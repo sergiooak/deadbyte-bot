@@ -12,12 +12,10 @@ export const prefixes = ['!', '\\.', '#', '/']
  */
 export const prefixesWithFallback = ['#']
 
-export const name = process.env.BOT_NAME || 'DeadByte'
 export const chromePath = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 
 export default {
   prefixes,
   prefixesWithFallback,
-  name,
   chromePath
 }
