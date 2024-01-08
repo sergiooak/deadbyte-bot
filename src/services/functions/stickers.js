@@ -174,12 +174,8 @@ export async function stealSticker (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function stickerLySearch (msg) {
-  const stickerGroup = '120363187692992289@g.us'
-  const isStickerGroup = msg.aux.chat.id._serialized === stickerGroup
-
-  const maxStickersOnGroup = 8
-  const maxStickersOnPrivate = 4
-  const limit = isStickerGroup ? maxStickersOnGroup : maxStickersOnPrivate
+  const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+  const limit = getStickerLimit(isStickerGroup)
 
   if (!msg.body) {
     await msg.reply('🤖 - Para usar o *!ly* você precisa enviar um termo para a pesquisa.\nEx: *!ly pior que é*')
@@ -188,43 +184,18 @@ export async function stickerLySearch (msg) {
 
   await msg.react(reactions.wait)
 
-  const cursor = msg.aux.function.match(/\d+/g) ? parseInt(msg.aux.function.match(/\d+/g) - 1) : 0
-  const response = await fetch('http://api.sticker.ly/v4/sticker/search', {
-    method: 'POST',
-    headers: {
-      'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
-      'Content-Type': 'application/json',
-      Host: 'api.sticker.ly'
-    },
-    body: JSON.stringify({
-      keyword: msg.body,
-      size: 0,
-      cursor: 0,
-      limit: 999
-    })
-  })
+  const stickers = await searchTermOnStickerLy(msg.body)
 
-  const json = await response.json()
-  if (!json.result) throw new Error('No response from sticker.ly')
-
-  let stickers = json.result.stickers.map((s) => ({
-    id: s.sid,
-    pack: s.packName,
-    packId: s.packId,
-    author: s.authorName,
-    url: s.resourceUrl,
-    isAnimated: s.isAnimated,
-    views: s.viewCount,
-    nsfw: s.stickerPack.nsfwScore
-  }))
-    .filter((s) => s.nsfw <= 69) // filter out nsfw stickers
-
+  const cursor = getCursor(msg.aux.function)
   const total = stickers.length // total number of stickers
-  stickers = stickers.slice(cursor * limit, (cursor + 1) * limit) // paginate
+  const stickersPaginated = paginateStickers(stickers, cursor, limit) // paginate
 
-  if (stickers.length === 0) {
-    if (cursor === 0) await msg.reply(`🤖 - O sticker.ly não retornou nenhum sticker para a busca *${msg.body}*`)
-    else await msg.reply(`🤖 - O sticker.ly não retornou nenhum sticker para a busca *${msg.body}* na página ${cursor + 1}`)
+  if (stickersPaginated.length === 0) {
+    let message = `🤖 - O sticker.ly não retornou {nenhum sticker|nenhum figurinha} para {a busca|o termo} *"${msg.body}"*`
+    if (cursor !== 0) {
+      message += ` na página ${cursor + 1}, {pois|porque|já que|pq} só existem ${Math.ceil(total / limit) + 1} páginas`
+    }
+    await msg.reply(spintax(message))
     throw new Error('No stickers found')
   }
 
@@ -232,20 +203,23 @@ export async function stickerLySearch (msg) {
 
   if (cursor === 0) {
     let message = '🤖 - '
-    message += `Encontrei ${total} figurinha${stickers.length > 1 ? 's' : ''} para {a busca|o termo} *"${msg.body}"* no sticker.ly\n\n`
-    message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${maxStickersOnPrivate} primeiros stickers encontrados|as ${maxStickersOnPrivate} primeiras figurinhas encontradas}...\n\n`
-    message += spintax('Se quiser {mais{ figurinhas| stickers|}|outros} com {esse{ mesmo|}|o mesmo} termo, {envie|mande}:\n')
-    message += `*${prefix}ly2 ${msg.body}* (${
-      maxStickersOnPrivate + 1}ª até ${maxStickersOnPrivate * 2}ª figurinha)\n`
-    message += `*${prefix}ly3 ${msg.body}* (${maxStickersOnPrivate * 2 + 1}ª até ${maxStickersOnPrivate * 3}ª figurinha)\n`
-    message += '...\n'
+    message += `Encontrei ${total} figurinha${stickersPaginated.length > 1 ? 's' : ''} para {a busca|o termo} *"${msg.body}"* no sticker.ly\n\n`
 
-    const lastPage = Math.ceil(total / maxStickersOnPrivate)
-    const firstItemOnLastPage = (lastPage - 1) * maxStickersOnPrivate + 1
-    const lastItemOnLastPage = total
-    message += `*${prefix}ly${lastPage} ${msg.body}* (${firstItemOnLastPage}ª`
-    // do not send lastItemOnLastPage if it is the same as firstItemOnLastPage
-    message += lastItemOnLastPage === firstItemOnLastPage ? ' figurinha)' : ` até ${lastItemOnLastPage}ª figurinha)`
+    // If there will exist more than one page, show the pagination examples
+    if (total > limit) {
+      message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${limit} primeiros stickers encontrados|as ${limit} primeiras figurinhas encontradas}...\n\n`
+    message += spintax('Se quiser {mais{ figurinhas| stickers|}|outros} com {esse{ mesmo|}|o mesmo} termo, {envie|mande}:\n')
+      message = addPaginationToTheMessage(message, prefix, 'ly', msg.body, limit, total)
+    } else {
+      message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${stickersPaginated.length} stickers encontrados|as ${stickersPaginated.length} figurinhas encontradas}...`
+    }
+    await msg.reply(spintax(message))
+  }
+
+  await sendStickers(stickersPaginated, msg.aux.chat)
+  await msg.react(reactions.success)
+}
+
     await msg.reply(spintax(message))
   }
 
