@@ -208,7 +208,7 @@ export async function stickerLySearch (msg) {
     // If there will exist more than one page, show the pagination examples
     if (total > limit) {
       message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${limit} primeiros stickers encontrados|as ${limit} primeiras figurinhas encontradas}...\n\n`
-    message += spintax('Se quiser {mais{ figurinhas| stickers|}|outros} com {esse{ mesmo|}|o mesmo} termo, {envie|mande}:\n')
+      message += spintax('Se quiser {mais{ figurinhas| stickers|}|outros} com {esse{ mesmo|}|o mesmo} termo, {envie|mande}:\n')
       message = addPaginationToTheMessage(message, prefix, 'ly', msg.body, limit, total)
     } else {
       message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${stickersPaginated.length} stickers encontrados|as ${stickersPaginated.length} figurinhas encontradas}...`
@@ -220,14 +220,60 @@ export async function stickerLySearch (msg) {
   await msg.react(reactions.success)
 }
 
+/**
+ * Get a sticker pack from sticker.ly
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
+export async function stickerLyPack (msg) {
+  // remove https://sticker.ly/s/ from the beginning of the message if it exists
+  msg.body = msg.body.replace('https://sticker.ly/s/', '')
+
+  const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+  const limit = getStickerLimit(isStickerGroup)
+
+  if (!msg.body) {
+    await msg.reply('🤖 - Para usar o *!pack* você precisa enviar um código de pacote do sticker.ly.\nEx: *!pack 2RY2AQ*')
+    throw new Error('No search term')
+  }
+
+  await msg.react(reactions.wait)
+
+  // if the term is a pack id, send the pack
+  const packRegex = /^[a-zA-Z0-9]{6}$/
+  if (!packRegex.test(msg.body)) {
+    await msg.reply('🤖 - Para usar o *!pack* você precisa enviar um código de pacote do sticker.ly.\nEx: *!pack 2RY2AQ*')
+  }
+  const packId = msg.body.toUpperCase()
+
+  const stickers = await getPackFromStickerLy(packId)
+
+  const cursor = getCursor(msg.aux.function)
+  const total = stickers.length // total number of stickers
+  const stickersPaginated = paginateStickers(stickers, cursor, limit) // paginate
+
+  if (stickersPaginated.length === 0) {
+    let message = `🤖 - O sticker.ly não retornou {nenhum sticker|nenhum figurinha} para o {pacotre|pack} *"${packId}"*`
+    if (cursor !== 0) {
+      message += ` na página ${cursor + 1}, {pois|porque|já que|pq} só existem ${Math.ceil(total / limit) + 1} páginas`
+    }
+    await msg.reply(spintax(message))
+    throw new Error('No stickers found')
+  }
+
+  const prefix = msg.aux.prefix || '!'
+
+  if (cursor === 0) {
+    let message = '🤖 - '
+    message += `Encontrei ${total} figurinha${stickersPaginated.length > 1 ? 's' : ''} no {pacote|pack} *"${packId}"* no sticker.ly\n\n`
+    // o pacote se chama ${stickers[0].pack} e foi criado por ${stickers[0].author}
+    message += `O pacote se chama *"${stickers[0].pack}"* e foi criado por *"${stickers[0].author}"*\n\n`
+    message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${limit} primeiros stickers encontrados|as ${limit} primeiras figurinhas encontradas}...\n\n`
+    message += spintax('Se quiser {mais{ figurinhas| stickers|}} {desse|do mesmo} {pacote|pack}, {envie|mande}:\n')
+    message = addPaginationToTheMessage(message, prefix, 'pack', packId, limit, total)
     await msg.reply(spintax(message))
   }
 
-  await Promise.all(stickers.map(async (s) => {
-    const media = await wwebjs.MessageMedia.fromUrl(s.url)
-    await sendMediaAsSticker(msg.aux.chat, media)
-    return media
-  }))
+  await sendStickers(stickersPaginated, msg.aux.chat)
   await msg.react(reactions.success)
 }
 
