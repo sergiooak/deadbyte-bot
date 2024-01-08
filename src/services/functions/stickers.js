@@ -228,19 +228,22 @@ export async function stickerLySearch (msg) {
     throw new Error('No stickers found')
   }
 
+  const prefix = msg.aux.prefix || '!'
+
   if (cursor === 0) {
     let message = '🤖 - '
     message += `Encontrei ${total} figurinha${stickers.length > 1 ? 's' : ''} para {a busca|o termo} *"${msg.body}"* no sticker.ly\n\n`
-    message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${maxStickersOnPrivate} primeiros stickers encontrados|as ${maxStickersOnPrivate} primeiras figurinhas encontradas}... `
-    message += `\n\nMande o comando\n*!ly2 ${msg.body}* (${
+    message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${maxStickersOnPrivate} primeiros stickers encontrados|as ${maxStickersOnPrivate} primeiras figurinhas encontradas}...\n\n`
+    message += spintax('Se quiser {mais{ figurinhas| stickers|}|outros} com {esse{ mesmo|}|o mesmo} termo, {envie|mande}:\n')
+    message += `*${prefix}ly2 ${msg.body}* (${
       maxStickersOnPrivate + 1}ª até ${maxStickersOnPrivate * 2}ª figurinha)\n`
-    message += `*!ly3 ${msg.body}* (${maxStickersOnPrivate * 2 + 1}ª até ${maxStickersOnPrivate * 3}ª figurinha)\n`
+    message += `*${prefix}ly3 ${msg.body}* (${maxStickersOnPrivate * 2 + 1}ª até ${maxStickersOnPrivate * 3}ª figurinha)\n`
     message += '...\n'
 
     const lastPage = Math.ceil(total / maxStickersOnPrivate)
     const firstItemOnLastPage = (lastPage - 1) * maxStickersOnPrivate + 1
     const lastItemOnLastPage = total
-    message += `*!ly${lastPage} ${msg.body}* (${firstItemOnLastPage}ª`
+    message += `*${prefix}ly${lastPage} ${msg.body}* (${firstItemOnLastPage}ª`
     // do not send lastItemOnLastPage if it is the same as firstItemOnLastPage
     message += lastItemOnLastPage === firstItemOnLastPage ? ' figurinha)' : ` até ${lastItemOnLastPage}ª figurinha)`
     await msg.reply(spintax(message))
