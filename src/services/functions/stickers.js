@@ -374,3 +374,173 @@ async function getTempUrl (buffer) {
 
   return tempUrl
 }
+
+/**
+ * Get a sticker pack from sticker.ly
+ * @param {string} packId
+ */
+async function getPackFromStickerLy (packId) {
+  console.log('getPackFromStickerLy', `http://api.sticker.ly/v1/stickerPack/${packId}`)
+  const packResponse = await fetch(`http://api.sticker.ly/v1/stickerPack/${packId}`, {
+    method: 'GET',
+    headers: {
+      'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
+      'Content-Type': 'application/json',
+      Host: 'api.sticker.ly'
+    }
+  })
+
+  const packJson = await packResponse.json()
+  if (!packJson.result) return []
+
+  return packJson.result.resourceFiles.map((s, i) => ({
+    id: null,
+    pack: packJson.result.name,
+    packId,
+    author: packJson.result.authorName,
+    url: packJson.result.resourceUrlPrefix + s,
+    isAnimated: packJson.result.isAnimated,
+    views: null,
+    nsfw: 0
+  }))
+}
+
+/**
+ * Search for a sticker on sticker.ly
+ * @param {string} term
+ */
+async function searchTermOnStickerLy (term) {
+  const response = await fetch('http://api.sticker.ly/v4/sticker/search', {
+    method: 'POST',
+    headers: {
+      'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
+      'Content-Type': 'application/json',
+      Host: 'api.sticker.ly'
+    },
+    body: JSON.stringify({
+      keyword: term,
+      size: 0,
+      cursor: 0,
+      limit: 999
+    })
+  })
+
+  const json = await response.json()
+  if (!json.result) return []
+
+  const stickers = json.result.stickers.map((s) => ({
+    id: s.sid,
+    pack: s.packName,
+    packId: s.packId,
+    author: s.authorName,
+    url: s.resourceUrl,
+    isAnimated: s.isAnimated,
+    views: s.viewCount,
+    nsfw: s.stickerPack.nsfwScore
+  }))
+    .filter((s) => s.nsfw <= 69) // filter out nsfw stickers
+  return stickers
+}
+
+/**
+ * Add pagination examples to the message
+ * @param {string} message - The message to add the pagination examples to
+ * @param {string} prefix - The prefix. Ex: '!'
+ * @param {string} command - The command. Ex: 'ly' for !ly
+ * @param {string} term - The term used to search. Ex: 'pior que é'
+ * @param {number} limit - The limit of items per page
+ * @param {number} total - The total number of items
+ * @returns {string} The message with the pagination examples
+ */
+/**
+ * Adds pagination examples to the message.
+ * @param {string} message - The message to add the pagination examples to.
+ * @param {string} prefix - The prefix. Ex: '!'.
+ * @param {string} command - The command. Ex: 'ly' for !ly.
+ * @param {string} term - The term used to search.
+ * @param {number} limit - The limit of items per page.
+ * @param {number} total - The total number of items.
+ * @returns {string} The message with the pagination examples.
+ */
+function addPaginationToTheMessage (message, prefix, command, term, limit, total) {
+  if (total <= limit) return message
+
+  const lastPage = Math.ceil(total / limit)
+
+  const getPageRange = (page) => ({
+    firstItem: (page - 1) * limit + 1,
+    lastItem: Math.min(page * limit, total)
+  })
+
+  const addPageExample = (page) => {
+    const { firstItem, lastItem } = getPageRange(page)
+    message += `*${prefix}${command}${page} ${term}* (${firstItem}ª`
+    message += lastItem === firstItem ? ' figurinha)' : ` até ${lastItem}ª figurinha)\n`
+  }
+
+  if (total > limit) addPageExample(2) // if there is more than one page, add the second page example
+  if (total > limit * 2) addPageExample(3) // if there is more than two pages, add the third page example
+
+  if (lastPage !== 2 && lastPage !== 3) {
+    // if the last page is not the second or third page, add the last page example
+    message += 'até\n'
+    addPageExample(lastPage)
+  }
+
+  return message
+}
+
+/**
+ * Check if the chat is a sticker group
+ * @param {string} chatId
+ * @returns {boolean}
+ */
+function checkStickerGroup (chatId) {
+  const stickerGroup = '120363187692992289@g.us'
+  return chatId._serialized === stickerGroup
+}
+
+/**
+ * Get the limit of stickers based on the chat type
+ * @param {boolean} isStickerGroup
+ * @returns {number}
+ */
+function getStickerLimit (isStickerGroup) {
+  const maxStickersOnGroup = 8
+  const maxStickersOnPrivate = 4
+  return isStickerGroup ? maxStickersOnGroup : maxStickersOnPrivate
+}
+
+/**
+ * Get the cursor for pagination
+ * @param {string} functionAux
+ * @returns {number}
+ */
+function getCursor (functionAux) {
+  return functionAux.match(/\d+/g) ? parseInt(functionAux.match(/\d+/g) - 1) : 0
+}
+
+/**
+ * Paginate the stickers
+ * @param {Array} stickers
+ * @param {number} cursor
+ * @param {number} limit
+ * @returns {Array}
+ */
+function paginateStickers (stickers, cursor, limit) {
+  return stickers.slice(cursor * limit, (cursor + 1) * limit)
+}
+
+/**
+ * Send stickers
+ * @param {Array} stickersPaginated
+ * @param {Object} chat
+ * @returns {Promise}
+ */
+async function sendStickers (stickersPaginated, chat) {
+  // return await Promise.all(stickersPaginated.map(async (s) => {
+  //   const media = await wwebjs.MessageMedia.fromUrl(s.url)
+  //   await sendMediaAsSticker(chat, media)
+  //   return media
+  // }))
+}
