@@ -177,6 +177,10 @@ export async function stickerLySearch (msg) {
   const stickerGroup = '120363187692992289@g.us'
   const isStickerGroup = msg.aux.chat.id._serialized === stickerGroup
 
+  const maxStickersOnGroup = 8
+  const maxStickersOnPrivate = 4
+  const limit = isStickerGroup ? maxStickersOnGroup : maxStickersOnPrivate
+
   if (!msg.body) {
     await msg.reply('🤖 - Para usar o *!ly* você precisa enviar um termo para a pesquisa.\nEx: *!ly pior que é*')
     throw new Error('No search term')
@@ -195,14 +199,28 @@ export async function stickerLySearch (msg) {
     body: JSON.stringify({
       keyword: msg.body,
       size: 0,
-      cursor,
-      limit: isStickerGroup ? 8 : 4
+      cursor: 0,
+      limit: 999
     })
   })
 
   const json = await response.json()
   if (!json.result) throw new Error('No response from sticker.ly')
-  const stickers = json.result.stickers.map((s) => s.resourceUrl)
+
+  let stickers = json.result.stickers.map((s) => ({
+    id: s.sid,
+    pack: s.packName,
+    packId: s.packId,
+    author: s.authorName,
+    url: s.resourceUrl,
+    isAnimated: s.isAnimated,
+    views: s.viewCount,
+    nsfw: s.stickerPack.nsfwScore
+  }))
+    .filter((s) => s.nsfw <= 69) // filter out nsfw stickers
+
+  const total = stickers.length // total number of stickers
+  stickers = stickers.slice(cursor * limit, (cursor + 1) * limit) // paginate
 
   if (stickers.length === 0) {
     if (cursor === 0) await msg.reply(`🤖 - O sticker.ly não retornou nenhum sticker para a busca *${msg.body}*`)
@@ -210,15 +228,26 @@ export async function stickerLySearch (msg) {
     throw new Error('No stickers found')
   }
 
-  if (!isStickerGroup && stickers.length === 4 && cursor === 0) {
+  if (cursor === 0) {
     let message = '🤖 - '
-    message += '{To|Estou} {enviando|mandando} {os 4 primeiros stickers encontrados|as 4 primeiras figurinhas encontradas}{ no sticker.ly|}...'
-    message += `\n\nMande o comando\n*!ly2 ${msg.body}* (5ª até 8ª figurinha)\nou *!ly3 ${msg.body}* (9ª até 12ª figurinha)\netc...`
+    message += `Encontrei ${total} figurinha${stickers.length > 1 ? 's' : ''} para {a busca|o termo} *"${msg.body}"* no sticker.ly\n\n`
+    message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${maxStickersOnPrivate} primeiros stickers encontrados|as ${maxStickersOnPrivate} primeiras figurinhas encontradas}... `
+    message += `\n\nMande o comando\n*!ly2 ${msg.body}* (${
+      maxStickersOnPrivate + 1}ª até ${maxStickersOnPrivate * 2}ª figurinha)\n`
+    message += `*!ly3 ${msg.body}* (${maxStickersOnPrivate * 2 + 1}ª até ${maxStickersOnPrivate * 3}ª figurinha)\n`
+    message += '...\n'
+
+    const lastPage = Math.ceil(total / maxStickersOnPrivate)
+    const firstItemOnLastPage = (lastPage - 1) * maxStickersOnPrivate + 1
+    const lastItemOnLastPage = total
+    message += `*!ly${lastPage} ${msg.body}* (${firstItemOnLastPage}ª`
+    // do not send lastItemOnLastPage if it is the same as firstItemOnLastPage
+    message += lastItemOnLastPage === firstItemOnLastPage ? ' figurinha)' : ` até ${lastItemOnLastPage}ª figurinha)`
     await msg.reply(spintax(message))
   }
 
   await Promise.all(stickers.map(async (s) => {
-    const media = await wwebjs.MessageMedia.fromUrl(s)
+    const media = await wwebjs.MessageMedia.fromUrl(s.url)
     await sendMediaAsSticker(msg.aux.chat, media)
     return media
   }))
