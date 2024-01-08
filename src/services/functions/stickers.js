@@ -537,6 +537,7 @@ function getStickerLimit (isStickerGroup) {
  * @returns {number}
  */
 function getCursor (functionAux) {
+  if (!functionAux) return 0
   return functionAux.match(/\d+/g) ? parseInt(functionAux.match(/\d+/g) - 1) : 0
 }
 

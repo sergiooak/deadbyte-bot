@@ -140,7 +140,15 @@ export default async (msg) => {
     }
 
     msg.body = aux.originalBody
-    if (((aux.chat.isGroup && !aux.isStickerGroup) && !aux.mentionedMe) || aux.isFunction) return false
+    const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
+    console.log('chegou aqui', isStickerPack)
+    console.log(!isStickerPack && (((aux.chat.isGroup && !aux.isStickerGroup) && !aux.mentionedMe) || aux.isFunction))
+    if (!isStickerPack && // se não for sticker pack
+      (
+        ((aux.chat.isGroup && !aux.isStickerGroup) && // se for grupo e não for sticker group
+        !aux.mentionedMe) || // e não tiver sido marcado
+         aux.isFunction // ou se for um comando
+      )) return false
 
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))
