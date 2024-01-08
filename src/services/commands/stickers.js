@@ -11,6 +11,7 @@ export default (msg) => {
     'text-sticker2': /^(ttp2)$/.test(msg.aux.function) && msg.type === 'chat',
     'text-sticker3': /^(ttp3)$/.test(msg.aux.function) && msg.type === 'chat',
     'steal-sticker': /^(steal|roubar|rename|renomear)$/.test(msg.aux.function),
-    'sticker-ly-search': /^(stickerly|ly|lu)\d*$/.test(msg.aux.function)
+    'sticker-ly-search': /^(stickerly|ly|lu)\d*$/.test(msg.aux.function),
+    'sticker-ly-pack': /^(stickerlypack|lypack|packly|ply|pack)\d*$/.test(msg.aux.function)
   }
 }

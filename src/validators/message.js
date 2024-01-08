@@ -7,6 +7,7 @@ import reactions from '../config/reactions.js'
 //
 const commandless = (msg, aux) => {
   return {
+    stickersFNstickerLyPack: msg.body && msg.body.startsWith('https://sticker.ly/s/'),
     stickersFNstickerCreator: (msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia)) &&
       ((aux.isStickerGroup && ['video', 'image', 'document'].includes(msg.type)) || !aux.isStickerGroup),
     stickersFNtextSticker: msg.body && msg.type === 'chat' && !aux.isStickerGroup
