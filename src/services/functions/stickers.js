@@ -558,9 +558,9 @@ function paginateStickers (stickers, cursor, limit) {
  * @returns {Promise}
  */
 async function sendStickers (stickersPaginated, chat) {
-  // return await Promise.all(stickersPaginated.map(async (s) => {
-  //   const media = await wwebjs.MessageMedia.fromUrl(s.url)
-  //   await sendMediaAsSticker(chat, media)
-  //   return media
-  // }))
+  return await Promise.all(stickersPaginated.map(async (s) => {
+    const media = await wwebjs.MessageMedia.fromUrl(s.url)
+    await sendMediaAsSticker(chat, media)
+    return media
+  }))
 }
