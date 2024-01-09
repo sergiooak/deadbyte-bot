@@ -553,15 +553,27 @@ function paginateStickers (stickers, cursor, limit) {
 }
 
 /**
- * Send stickers
+ * Send stickers waiting a random time between each one
  * @param {Array} stickersPaginated
  * @param {Object} chat
  * @returns {Promise}
  */
 async function sendStickers (stickersPaginated, chat) {
-  return await Promise.all(stickersPaginated.map(async (s) => {
+  for (const s of stickersPaginated) {
     const media = await wwebjs.MessageMedia.fromUrl(s.url)
     await sendMediaAsSticker(chat, media)
-    return media
-  }))
+    await waitRandomTime()
+  }
+}
+
+/**
+ * Wait random time
+ * @param {number} min @default 50
+ * @param {number} max @default 500
+ * @returns {Promise}
+ */
+function waitRandomTime (min = 50, max = 500) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, Math.random() * (max - min) + min)
+  })
 }
