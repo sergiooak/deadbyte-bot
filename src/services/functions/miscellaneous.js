@@ -189,16 +189,27 @@ export async function ping (msg) {
   let lag = msg.lag
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
   lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
+  lag = isNaN(lag) ? 0 : lag
 
   const ping = Date.now() - msg.startedAt
-  let pingInSecs = (ping / 1000 + lag).toFixed(2) // 2.50
-  pingInSecs = pingInSecs.replace('.', ',') // 2,50
-  pingInSecs = pingInSecs.replace(/0+$/, '').replace(/,$/, '') // 2,50 => 2,5 | 2,00 => 2
-  const isSingular = parseFloat(pingInSecs.replace(',', '.')) > 1
-  message += `\n\nEssa mensagem demorou *${pingInSecs} ${isSingular ? 'segundos' : 'segundo'}* para ser respondida`
+  const pingInSecsFloat = ping / 1000 + lag
+  let pingInSecsHumanReadble = pingInSecsFloat.toFixed(2) // 2.50
+  pingInSecsHumanReadble = pingInSecsHumanReadble.replace('.', ',') // 2,50
+  pingInSecsHumanReadble = pingInSecsHumanReadble.replace(/0+$/, '').replace(/,$/, '') // 2,50 => 2,5 | 2,00 => 2
+  const isSingular = parseFloat(pingInSecsHumanReadble.replace(',', '.')) > 1
+
+  // if bigger than 1 minute, send it as clock 00:00:00, if not send it as human readable seconds
+  const delayString = pingInSecsFloat > 60
+    ? secondsToDhms(pingInSecsFloat)
+    : `${pingInSecsHumanReadble} ${isSingular ? 'segundos' : 'segundo'}`
+  message += `\n\nEssa mensagem demorou *${delayString}* para ser respondida`
 
   if (lag > 0) {
-    message += `\nO WhatsApp demorou *${lag} ${lag > 1 ? 'segundos' : 'segundo'}* para entregar essa mensagem pra mim!`
+    // if lag is bigger than 60 seconds, send it as clock 00:00:00, if not send it as human readable seconds
+    const lagString = lag > 60
+      ? secondsToDhms(lag)
+      : `${lag.toFixed(2).replace('.', ',')} ${lag > 1 ? 'segundos' : 'segundo'}`
+    message += `\nO WhatsApp demorou *${lagString}* para entregar essa mensagem pra mim!`
   }
 
   await msg.reply(spintax(message))
