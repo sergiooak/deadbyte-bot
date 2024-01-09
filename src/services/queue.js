@@ -79,6 +79,11 @@ async function processQueue () {
     fnPromisse.then((_result) => {
       if (user.messagesQueue.length > 0) {
         queue.push(user) // if there are more messages on the user queue, push it back to the queue
+      } else {
+        // mark the chat as read after 5 seconds
+        setTimeout(() => {
+          msg.aux.chat.sendSeen()
+        }, 5_000)
       }
     }).catch((err) => {
       logger.error(err)
