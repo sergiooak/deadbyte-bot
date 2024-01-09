@@ -186,7 +186,7 @@ export async function ping (msg) {
     message += `\n\n{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!`
   }
 
-  let lag = msg.lag + 128
+  let lag = msg.lag
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
   lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
   lag = isNaN(lag) ? 0 : lag
