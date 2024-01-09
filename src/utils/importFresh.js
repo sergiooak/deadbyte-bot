@@ -34,7 +34,7 @@ const importFresh = async (modulePath) => {
     return moduleCache[modulePath].module
   }
 
-  const module = await import(`${modulePathConverted}?update=${new Date()}`)
+  const module = await import(`${modulePathConverted}?update=${Date.now()}`)
   moduleCache[modulePath] = { module, lastModified }
   return module
 }
