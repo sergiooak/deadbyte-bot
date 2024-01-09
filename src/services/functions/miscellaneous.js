@@ -186,30 +186,18 @@ export async function ping (msg) {
     message += `\n\n{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!`
   }
 
-  let lag = msg.lag
+  let lag = msg.lag + 128
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
   lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
   lag = isNaN(lag) ? 0 : lag
 
   const ping = Date.now() - msg.startedAt
-  const pingInSecsFloat = ping / 1000 + lag
-  let pingInSecsHumanReadble = pingInSecsFloat.toFixed(2) // 2.50
-  pingInSecsHumanReadble = pingInSecsHumanReadble.replace('.', ',') // 2,50
-  pingInSecsHumanReadble = pingInSecsHumanReadble.replace(/0+$/, '').replace(/,$/, '') // 2,50 => 2,5 | 2,00 => 2
-  const isSingular = parseFloat(pingInSecsHumanReadble.replace(',', '.')) > 1
-
-  // if bigger than 1 minute, send it as clock 00:00:00, if not send it as human readable seconds
-  const delayString = pingInSecsFloat > 60
-    ? secondsToDhms(pingInSecsFloat)
-    : `${pingInSecsHumanReadble} ${isSingular ? 'segundos' : 'segundo'}`
+  const delayString = convertToHumanReadable(ping, lag, 'ms')
   message += `\n\nEssa mensagem demorou *${delayString}* para ser respondida`
 
   if (lag > 0) {
-    // if lag is bigger than 60 seconds, send it as clock 00:00:00, if not send it as human readable seconds
-    const lagString = lag > 60
-      ? secondsToDhms(lag)
-      : `${lag.toFixed(2).replace('.', ',')} ${lag > 1 ? 'segundos' : 'segundo'}`
-    message += `\nO WhatsApp demorou *${lagString}* para entregar essa mensagem pra mim!`
+    const lagString = convertToHumanReadable(lag, 0, 's')
+    message += `\n\nO WhatsApp demorou *${lagString}* para entregar essa mensagem pra mim!`
   }
 
   await msg.reply(spintax(message))
@@ -229,7 +217,25 @@ function secondsToDhms (seconds) {
   const h = Math.floor(seconds % (3600 * 24) / 3600)
   const m = Math.floor(seconds % 3600 / 60)
   const s = Math.floor(seconds % 60)
-  return `${d}:${h < 10 ? '0' : ''}${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`
+
+  let string = ''
+  if (d > 0) string += `${d}:`
+  if (h > 0) string += `${h < 10 ? '0' : ''}${h}:`
+  if (m > 0) string += `${m < 10 ? '0' : ''}${m}:`
+  string += `${s < 10 ? '0' : ''}${s}`
+
+  // add suffixe "dia" or "dias" if days > 0 and singular or plural
+  // "hora" or "horas" if hours > 0 and singular or plural etc...
+
+  const days = d > 0 ? `${d === 1 ? 'dia' : 'dias'}` : ''
+  const hours = h > 0 ? `${h === 1 ? 'hora' : 'horas'}` : ''
+  const minutes = m > 0 ? `${m === 1 ? 'minuto' : 'minutos'}` : ''
+  const secondsString = `${s === 1 ? 'segundo' : 'segundos'}`
+  // from left to right, get the first non empty string
+  const array = [days, hours, minutes, secondsString].filter(s => s !== '')
+  const suffix = array[0]
+  string += ` ${suffix}`
+  return string
 }
 
 /**
@@ -258,4 +264,27 @@ async function getTempUrl (media) {
   const tempUrl = json.result
 
   return tempUrl
+}
+
+/**
+ * Converts input to a human readable format with an additional increment.
+ * @param {number} input - The input value to convert
+ * @param {number} increment - The additional increment in milliseconds
+ * @param {string} mode - The mode to convert to. Can be 'ms' or 's'
+ * @returns {string} The human readable format
+ * @example
+ * convertToHumanReadable(1000, 0) // '1 segundo'
+ * convertToHumanReadable(3570, 0) // '3,57 segundos'
+ * convertToHumanReadable(100000, 0) // '1:40'
+ */
+function convertToHumanReadable (input, increment, mode = 'ms') {
+  if (mode === 's') input *= 1000
+  const inputInSeconds = input / 1000 + increment
+  const secondsInHumanReadable = inputInSeconds.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+  const isSingular = inputInSeconds === 1
+
+  const humanReadableString = inputInSeconds > 60
+    ? secondsToDhms(inputInSeconds)
+    : `${secondsInHumanReadable} ${isSingular ? 'segundo' : 'segundos'}` // 2,5 seconds
+  return humanReadableString
 }
