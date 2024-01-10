@@ -16,6 +16,8 @@ dayjs.extend(relativeTime)
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function menu (msg) {
+  await msg.react('📜')
+
   let commandGroups = await getCommands()
 
   const menuImages = [
