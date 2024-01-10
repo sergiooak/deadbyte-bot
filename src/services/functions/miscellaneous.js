@@ -203,7 +203,7 @@ export async function ping (msg) {
   const usersInQueue = getQueueLength('user')
   const messagesInQueue = getQueueLength('messages')
   if (usersInQueue || messagesInQueue) {
-    message += `\n\n{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!`
+    message += `{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!\n\n`
   }
 
   let lag = msg.lag
@@ -213,7 +213,7 @@ export async function ping (msg) {
 
   const ping = Date.now() - msg.startedAt
   const delayString = convertToHumanReadable(ping, lag, 'ms')
-  message += `\n\nEssa mensagem demorou *${delayString}* para ser respondida`
+  message += `Essa mensagem demorou *${delayString}* para ser respondida`
 
   if (lag > 0) {
     const lagString = convertToHumanReadable(lag, 0, 's')
