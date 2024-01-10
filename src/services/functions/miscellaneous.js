@@ -57,12 +57,37 @@ export async function react (msg) {
   await msg.aux.chat.sendSeen()
 }
 
+/**
+ * Roll a dice, or multiple dice with optional modifier
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
 export async function dice (msg) {
   await msg.react('🎲')
-  const max = parseInt(msg.aux.function.replace('d', ''))
-  const min = 1
-  let message = `🎲 - Você rolou *${Math.floor(Math.random() * (max - min + 1)) + min}*`
-  message += `\n\nEm um dado de ${max} lados`
+
+  const fullCommand = msg.aux.function
+
+  const regex = /(?<dice>\d*)d(?<faces>\d+)(?<modifier>[\+\-\*\/]\d+)?/i
+  const match = fullCommand.match(regex)
+
+  const amountOfDice = validateDice(match.groups.dice)
+  const amountOfFaces = validateFaces(match.groups.faces)
+  const modifier = match.groups.modifier || 0
+
+  const diceRolls = Array.from({ length: amountOfDice }, () => rollDice(amountOfFaces))
+
+  const total = diceRolls.reduce((acc, curr) => acc + curr.roll, 0)
+  const initialTotal = total
+
+  let message = `🎲 - *Você rolou ${applyModifierIfNeeded(total, modifier, initialTotal)}`
+  message += `\n\n_Em ${amountOfDice} dado${amountOfDice > 1 ? 's' : ''} de ${amountOfFaces} lados_`
+
+  // explain each roll if more than 1 dice
+  if (amountOfDice > 1) {
+    message += '\n\n'
+    diceRolls.forEach((d, i) => {
+      message += `• ${i + 1}º dado: \`\`\`${d.roll}${d.explanation ? ` ${d.explanation}` : ''}\`\`\`\n`
+    })
+  }
   await msg.reply(message)
 }
 
@@ -287,4 +312,60 @@ function convertToHumanReadable (input, increment, mode = 'ms') {
     ? secondsToDhms(inputInSeconds)
     : `${secondsInHumanReadable} ${isSingular ? 'segundo' : 'segundos'}` // 2,5 seconds
   return humanReadableString
+}
+
+/**
+ * Validates the dice amount
+ * @param {string} dice - The dice amount to validate
+ * @param {number} min - The minimum amount of dice (default 1)
+ * @param {number} max - The maximum amount of dice (default 100)
+ * @returns {number} The validated dice amount
+ */
+function validateDice (dice, min = 1, max = 100) {
+  return Math.min(Math.max(parseInt(dice) || 1, min), max)
+}
+
+/**
+ * Validates the faces amount
+ * @param {string} faces - The faces amount to validate
+ * @param {number} min - The minimum amount of faces (default 2)
+ * @param {number} max - The maximum amount of faces (default 1000)
+ * @returns {number} The validated faces amount
+ */
+function validateFaces (faces, min = 2, max = 1000) {
+  return Math.min(Math.max(parseInt(faces) || 2, min), max)
+}
+
+/**
+ * Rolls a dice
+ * @param {number} faces - The amount of faces of the dice
+ * @returns {number} The dice roll
+ */
+function rollDice (faces) {
+  const min = 1
+  const roll = Math.floor(Math.random() * (faces - min + 1)) + min
+  return { roll }
+}
+
+/**
+ * Applies a modifier to the total
+ * @param {number} total - The total to apply the modifier
+ * @param {string} modifier - The modifier to apply
+ * @param {number} initialTotal - The initial total before applying the modifier
+ * @returns {string} The total with the modifier
+ */
+function applyModifierIfNeeded (total, modifier, initialTotal) {
+  if (!modifier) return `*${total}*`
+
+  const operator = modifier[0] // + - * /
+  const value = parseInt(modifier.slice(1))
+  const operations = {
+    '+': (total, value) => total + value,
+    '-': (total, value) => Math.max(total - value, 0),
+    '*': (total, value) => total * value,
+    '/': (total, value) => Math.floor(total / value)
+  }
+
+  total = operations[operator](total, value)
+  return `${total}* _(${initialTotal} ${operator} ${value})_`
 }
