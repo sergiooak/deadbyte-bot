@@ -200,10 +200,10 @@ export async function ping (msg) {
 
   let message = '🏓 - Pong!\n\n'
 
-  const currentQueueWaitTime = getWaitTime()
-  const waitTimeInSecs = (currentQueueWaitTime / 1000).toFixed(1).replace('.', ',').replace(',0', '')
-  const name = msg.aux.sender.pushname
-  message += `{Oi|Olá|Eai|Eae} *${name}* {no momento|atualmente|{nesse|neste}{ exato|} momento} o {bot|DeadByte|Dead} está respondendo {uma mensagem|um comando} a cada *${waitTimeInSecs} segundos*`
+  // const currentQueueWaitTime = getWaitTime()
+  // const waitTimeInSecs = (currentQueueWaitTime / 1000).toFixed(1).replace('.', ',').replace(',0', '')
+  // const name = msg.aux.sender.pushname
+  // message += `{Oi|Olá|Eai|Eae} *${name}* {no momento|atualmente|{nesse|neste}{ exato|} momento} o {bot|DeadByte|Dead} está respondendo {uma mensagem|um comando} a cada *${waitTimeInSecs} segundos*`
 
   const usersInQueue = getQueueLength('user')
   const messagesInQueue = getQueueLength('messages')
