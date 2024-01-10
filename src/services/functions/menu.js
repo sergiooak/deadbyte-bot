@@ -18,13 +18,24 @@ dayjs.extend(relativeTime)
 export async function menu (msg) {
   let commandGroups = await getCommands()
 
-  // if there is image, send it
-  const menu = commandGroups.find(c => c.slug === 'menu')
-  let media
-  if (menu.menuImageUrl) {
-    media = await wwebjs.MessageMedia.fromUrl(menu.menuImageUrl, { unsafeMime: true })
-    if (!media) throw new Error('Error downloading media')
-  }
+  const menuImages = [
+    'https://i.ibb.co/bPm0d0P/DALL-E-2024-01-10-18-12-59-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/pWQX5cG/DALL-E-2024-01-10-18-13-36-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/NZTH1Md/DALL-E-2024-01-10-18-15-58-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/N9Wx5kX/DALL-E-2024-01-10-18-12-15-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/J3YxtWW/DALL-E-2024-01-10-18-27-59-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/6mgDs61/DALL-E-2024-01-10-18-27-55-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/PZ5zvk6/DALL-E-2024-01-10-18-30-27-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/Vvvcgs6/DALL-E-2024-01-10-18-30-22-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/cxMHFtk/DALL-E-2024-01-10-18-34-02-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/Wkwrk6s/DALL-E-2024-01-10-18-34-00-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/BPbHPmY/DALL-E-2024-01-10-18-32-55-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png',
+    'https://i.ibb.co/Ybnhxcm/DALL-E-2024-01-10-18-32-53-Disney-Pixar-style-character-from-the-movie-Dead-Byte-a-cute-skeleton-rob.png'
+  ]
+  const randomImage = menuImages[Math.floor(Math.random() * menuImages.length)]
+
+  const media = await wwebjs.MessageMedia.fromUrl(randomImage, { unsafeMime: true })
+  if (!media) throw new Error('Error downloading media')
 
   // remove CommandGroups where hideFromMenu is true
   commandGroups = commandGroups.filter(c => !c.hideFromMenu)
