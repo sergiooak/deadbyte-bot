@@ -1,4 +1,4 @@
-import { getWaitTime, getQueueLength } from '../queue.js'
+import { getQueueLength } from '../queue.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
@@ -199,11 +199,6 @@ export async function ping (msg) {
   await msg.react('🏓')
 
   let message = '🏓 - Pong!\n\n'
-
-  // const currentQueueWaitTime = getWaitTime()
-  // const waitTimeInSecs = (currentQueueWaitTime / 1000).toFixed(1).replace('.', ',').replace(',0', '')
-  // const name = msg.aux.sender.pushname
-  // message += `{Oi|Olá|Eai|Eae} *${name}* {no momento|atualmente|{nesse|neste}{ exato|} momento} o {bot|DeadByte|Dead} está respondendo {uma mensagem|um comando} a cada *${waitTimeInSecs} segundos*`
 
   const usersInQueue = getQueueLength('user')
   const messagesInQueue = getQueueLength('messages')
