@@ -350,7 +350,7 @@ function rollDice (faces) {
  * @returns {string} The total with the modifier
  */
 function applyModifierIfNeeded (total, modifier, initialTotal) {
-  if (!modifier) return `*${total}*`
+  if (!modifier) return `${total}*`
 
   const operator = modifier[0] // + - * /
   const value = parseInt(modifier.slice(1))
