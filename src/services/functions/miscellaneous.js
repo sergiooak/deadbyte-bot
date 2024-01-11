@@ -260,9 +260,23 @@ export async function speak (msg) {
   await msg.react('🗣️')
   await msg.aux.chat.sendStateRecording()
 
+  const voices = ['onyx', 'echo', 'fable', 'nova', 'shimmer']
+
+  // function can be called with !speak1, !speak2, !speak3, !speak4, !speak5
+  let voiceId = typeof msg.aux.function.slice(-1) === 'number'
+    ? parseInt(msg.aux.function.slice(-1)) - 1
+    : 0
+  // say if the voice is invalid
+  if (voiceId > voices.length - 1) {
+    await msg.reply(`Essa voz não existe!\n\nAs vozes disponíveis são:\n${voices.map((v, i) => `${i + 1} - ${v}`).join('\n')}\n\nIrei usar a voz padrão!`)
+    voiceId = 0
+  }
+
+  const voice = voices[voiceId]
+
   const opus = await openai.audio.speech.create({
     input,
-    voice: 'echo',
+    voice,
     model: 'tts-1',
     response_format: 'opus'
   })
