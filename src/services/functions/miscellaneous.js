@@ -263,9 +263,7 @@ export async function speak (msg) {
   const voices = ['onyx', 'echo', 'fable', 'nova', 'shimmer']
 
   // function can be called with !speak1, !speak2, !speak3, !speak4, !speak5
-  let voiceId = typeof msg.aux.function.slice(-1) === 'number'
-    ? parseInt(msg.aux.function.slice(-1)) - 1
-    : 0
+  let voiceId = parseInt(msg.aux.function.slice(-1)) - 1 || 0
   // say if the voice is invalid
   if (voiceId > voices.length - 1) {
     await msg.reply(`Essa voz não existe!\n\nAs vozes disponíveis são:\n${voices.map((v, i) => `${i + 1} - ${v}`).join('\n')}\n\nIrei usar a voz padrão!`)
