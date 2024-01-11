@@ -3,16 +3,19 @@ import relativeTime from 'dayjs/plugin/relativeTime.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
+import wwebjs from 'whatsapp-web.js'
 import logger from '../../logger.js'
 import FormData from 'form-data'
 import 'dayjs/locale/pt-br.js'
 import fetch from 'node-fetch'
 import mime from 'mime-types'
+import OpenAI from 'openai'
 import sharp from 'sharp'
 import dayjs from 'dayjs'
 
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
+const openai = new OpenAI(process.env.OPENAI_API_KEY)
 
 //
 // ================================ Main Functions =================================
@@ -221,6 +224,50 @@ export async function ping (msg) {
   }
 
   await msg.reply(spintax(message))
+}
+
+/**
+ * Speaks the message
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
+export async function speak (msg) {
+  let input = msg.body
+  if (msg.hasQuotedMsg && !msg.body) {
+    const quotedMsg = await msg.getQuotedMessage()
+    input = quotedMsg.body
+  }
+
+  if (!input) {
+    await msg.reply(
+      spintax('Para usar o *{!speak|!fale|!falar|!voz|!diga|!dizer}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um texto!\n\nExemplo: `!diga Olá, eu sou o DeadByte!`')
+    )
+    await msg.react(reactions.error)
+    return
+  }
+
+  const inputLimit = 1000
+  const originalInputSize = input.length
+
+  if (originalInputSize > inputLimit) {
+    await msg.reply(`O texto não pode ter mais de ${inputLimit} caracteres!\n\nO seu texto tem ${originalInputSize} caracteres!\nVou cortar o texto para você!`)
+    input = input.slice(0, inputLimit)
+  }
+
+  await msg.react('🗣️')
+  await msg.aux.chat.sendStateRecording()
+
+  const opus = await openai.audio.speech.create({
+    input,
+    voice: 'echo',
+    model: 'tts-1',
+    response_format: 'opus'
+  })
+
+  const buffer = Buffer.from(await opus.arrayBuffer())
+
+  // hand make the media object
+  const media = new wwebjs.MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte.opus')
+  await msg.reply(media, undefined, { sendAudioAsVoice: true })
 }
 
 //
