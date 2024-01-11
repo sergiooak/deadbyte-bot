@@ -231,10 +231,12 @@ export async function ping (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function speak (msg) {
+  let msgToReply = msg
   let input = msg.body
   if (msg.hasQuotedMsg && !msg.body) {
     const quotedMsg = await msg.getQuotedMessage()
     input = quotedMsg.body
+    msgToReply = quotedMsg
   }
 
   if (!input) {
@@ -267,7 +269,7 @@ export async function speak (msg) {
 
   // hand make the media object
   const media = new wwebjs.MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte.opus')
-  await msg.reply(media, undefined, { sendAudioAsVoice: true })
+  await msgToReply.reply(media, undefined, { sendAudioAsVoice: true })
 }
 
 //
