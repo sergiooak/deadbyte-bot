@@ -8,7 +8,9 @@ import reactions from '../config/reactions.js'
 const commandless = (msg, aux) => {
   return {
     stickersFNstickerLyPack: msg.body && msg.body.startsWith('https://sticker.ly/s/'),
-    stickersFNstickerCreator: (msg.hasMedia || (msg.hasQuotedMsg && aux.quotedMsg.hasMedia)) &&
+    stickersFNstickerCreator: (
+      (msg.hasMedia && ['image', 'video', 'document'].includes(msg.type)) ||
+      (msg.hasQuotedMsg && (aux.quotedMsg.hasMedia && ['image', 'video', 'document'].includes(aux.quotedMsg.type)))) &&
       ((aux.isStickerGroup && ['video', 'image', 'document'].includes(msg.type)) || !aux.isStickerGroup),
     stickersFNtextSticker: msg.body && msg.type === 'chat' && !aux.isStickerGroup
   }
@@ -150,6 +152,7 @@ export default async (msg) => {
 
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))
+      console.log(command)
       return {
         type: command.split('FN')[0],
         command: command.split('FN')[1]
