@@ -11,7 +11,7 @@ export default (msg) => {
     toFile: /^(tofile|file|arquivo|imagem|img|togif|image)$/.test(msg.aux.function),
     toUrl: /^(tourl|url)$/.test(msg.aux.function),
     ping: /^(ping|pong)$/.test(msg.aux.function),
-    speak: /^(speak|fale|falar|voz|diga|dizer)$/.test(msg.aux.function),
+    speak: /^(speak|fale|falar|voz|diga|dizer|fala)$/.test(msg.aux.function),
     transcribe: /^(transcribe|transcricao|transcrever|ts)$/.test(msg.aux.function)
   }
 }
