@@ -12,6 +12,8 @@ import mime from 'mime-types'
 import OpenAI from 'openai'
 import sharp from 'sharp'
 import dayjs from 'dayjs'
+import path from 'path'
+import fs from 'fs'
 
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
@@ -270,6 +272,45 @@ export async function speak (msg) {
   // hand make the media object
   const media = new wwebjs.MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte.opus')
   await msgToReply.reply(media, undefined, { sendAudioAsVoice: true })
+}
+
+/**
+ * Transcribes the audio message
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
+export async function transcribe (msg) {
+  let msgToReply = msg
+  let media = msg.hasMedia ? await msg.downloadMedia() : null
+  if (msg.hasQuotedMsg && !msg.hasMedia) {
+    const quotedMsg = await msg.getQuotedMessage()
+    media = await quotedMsg.downloadMedia()
+    msgToReply = quotedMsg
+  }
+
+  if (!media) {
+    await msg.reply(
+      spintax('Para usar o *{!transcribe|!transcricao|!transcrever}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um áudio!\n\nExemplo: `!transcrever` respondendo um áudio')
+    )
+    await msg.react(reactions.error)
+    return
+  }
+
+  await msg.react('🎙️')
+  await msg.aux.chat.sendStateTyping()
+
+  // save file to temp folder
+  const timestampish = Date.now().toString().slice(-10)
+  const filePath = `./temp/${timestampish}.mp3`
+  const nomalizedFilePath = path.resolve(filePath)
+  fs.writeFileSync(nomalizedFilePath, media.data, { encoding: 'base64' })
+
+  const transcription = await openai.audio.transcriptions.create({
+    file: fs.createReadStream(nomalizedFilePath),
+    model: 'whisper-1',
+    response_format: 'text'
+  })
+  fs.unlinkSync(nomalizedFilePath)
+  await msgToReply.reply(`🎙️ - ${transcription.trim()}`)
 }
 
 //
