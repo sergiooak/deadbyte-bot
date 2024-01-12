@@ -10,9 +10,9 @@ const commandless = (msg, aux) => {
     stickersFNstickerLyPack: msg.body && msg.body.startsWith('https://sticker.ly/s/'),
     stickersFNstickerCreator: (
       (msg.hasMedia && ['image', 'video', 'document'].includes(msg.type)) ||
-      (msg.hasQuotedMsg && (aux.quotedMsg.hasMedia && ['image', 'video', 'document'].includes(aux.quotedMsg.type)))) &&
-      ((aux.isStickerGroup && ['video', 'image', 'document'].includes(msg.type)) || !aux.isStickerGroup),
-    stickersFNtextSticker: msg.body && msg.type === 'chat' && !aux.isStickerGroup
+      (msg.hasQuotedMsg && (aux.quotedMsg.hasMedia && ['image', 'video', 'document'].includes(aux.quotedMsg.type)))),
+    stickersFNtextSticker: msg.body && msg.type === 'chat',
+    miscellaneousFNtranscribe: msg.hasMedia && ['audio', 'ptt'].includes(msg.type)
   }
 }
 //
@@ -142,13 +142,20 @@ export default async (msg) => {
     }
 
     msg.body = aux.originalBody
-    const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
-    if (!isStickerPack && // se não for sticker pack
-      (
-        ((aux.chat.isGroup && !aux.isStickerGroup) && // se for grupo e não for sticker group
-        !aux.mentionedMe) || // e não tiver sido marcado
-         aux.isFunction // ou se for um comando
-      )) return false
+
+    // Send incorrect function reaction
+    console.log(msg.type)
+    if (aux.isFunction) return false // if any function reach this point, it is an incorrect function
+    if (aux.chat.isGroup && !aux.mentionedMe) {
+      if (aux.isStickerGroup && msg.type === 'chat') {
+        return false // ignore texts in sticker group
+      }
+
+      const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
+      if (!isStickerPack && !['audio', 'ptt'].includes(msg.type)) {
+        return false
+      }
+    }
 
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))
