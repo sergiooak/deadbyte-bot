@@ -151,9 +151,11 @@ export default async (msg) => {
         return false // ignore texts in sticker group
       }
 
-      const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
-      if (!isStickerPack && !['audio', 'ptt'].includes(msg.type)) {
-        return false
+      if (!aux.isStickerGroup) {
+        const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
+        if (!isStickerPack && !['audio', 'ptt'].includes(msg.type)) {
+          return false
+        }
       }
     }
 
