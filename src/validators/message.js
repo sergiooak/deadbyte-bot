@@ -144,7 +144,6 @@ export default async (msg) => {
     msg.body = aux.originalBody
 
     // Send incorrect function reaction
-    console.log(msg.type)
     if (aux.isFunction) return false // if any function reach this point, it is an incorrect function
     if (aux.chat.isGroup && !aux.mentionedMe) {
       if (aux.isStickerGroup && msg.type === 'chat') {
