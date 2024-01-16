@@ -36,7 +36,6 @@ export async function gpt (msg) {
     clearTimeout(timeout)
 
     const data = await res.json()
-    console.log(data)
 
     await msg.reply(data.result)
     await msg.aux.chat.clearState()
@@ -82,7 +81,6 @@ export async function bot (msg) {
     clearTimeout(timeout)
 
     const data = await res.json()
-    console.log(data)
 
     await msg.reply(data.result)
     await msg.aux.chat.clearState()

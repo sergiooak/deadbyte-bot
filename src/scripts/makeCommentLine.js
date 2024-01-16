@@ -10,9 +10,13 @@ function generateCommentTitle (text) {
   const paddingLeft = '='.repeat(Math.floor(paddingLength / 2))
   const paddingRight = '='.repeat(Math.ceil(paddingLength / 2))
   const title = `// ${paddingLeft} ${text} ${paddingRight}`
-  console.log('//')
-  console.log(title)
-  console.log('//')
+  log('//')
+  log(title)
+  log('//')
+}
+
+function log (text) {
+  process.stdout.write(text + '\n')
 }
 
 generateCommentTitle(text)

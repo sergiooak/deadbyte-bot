@@ -7,6 +7,7 @@ import relativeTime from 'dayjs/plugin/relativeTime.js'
 import { createUrl } from '../../config/api.js'
 import FormData from 'form-data'
 import sharp from 'sharp'
+import logger from '../../logger.js'
 
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
@@ -30,14 +31,13 @@ export async function qrImageCreator (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'qr', { text: msg.body })
-  console.log(url)
 
   try {
     const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
     await msg.reply(media)
     await msg.react(reactions.success)
   } catch (error) {
-    console.log(error)
+    logger.error(error)
     await msg.reply('Erro ao criar QR Code')
     await msg.react(reactions.error)
   }
@@ -57,7 +57,6 @@ export async function qrTextCreator (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('text-creator', 'qr', { text: msg.body, margin: 0 })
-  console.log(url)
 
   try {
     const response = await fetch(url)
@@ -65,7 +64,7 @@ export async function qrTextCreator (msg) {
     await msg.reply('```' + data.result.string + '```')
     await msg.react(reactions.success)
   } catch (error) {
-    console.log(error)
+    logger.error(error)
     await msg.reply('Erro ao criar QR Code')
     await msg.react(reactions.error)
   }

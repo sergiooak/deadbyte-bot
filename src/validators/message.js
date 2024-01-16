@@ -160,7 +160,6 @@ export default async (msg) => {
 
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))
-      console.log(command)
       return {
         type: command.split('FN')[0],
         command: command.split('FN')[1]

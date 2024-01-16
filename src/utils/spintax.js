@@ -4,7 +4,7 @@
  * @returns {string}
  * @example
  * let text = 'Bom {dia|tarde|noite} {pessoal|galera|povo}!'
- * console.log(spintax(text)) // Bom dia pessoal!
+ * => 'Bom dia pessoal!'
  * @see https://medium.com/@instarazzo/what-is-spintax-format-and-what-are-its-applications-on-instarazzo-6e1b812cc208
  */
 

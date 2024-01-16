@@ -309,7 +309,7 @@ async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
       stickerCategories: ['💀', '🤖']
     })
   } catch (error) {
-    console.log(error)
+    logger.error(error)
   }
 }
 
@@ -400,7 +400,6 @@ async function getTempUrl (buffer) {
  * @param {string} packId
  */
 async function getPackFromStickerLy (packId) {
-  console.log('getPackFromStickerLy', `http://api.sticker.ly/v1/stickerPack/${packId}`)
   const packResponse = await fetch(`http://api.sticker.ly/v1/stickerPack/${packId}`, {
     method: 'GET',
     headers: {

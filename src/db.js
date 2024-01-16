@@ -285,8 +285,8 @@ export async function saveActionToDB (moduleName, functionName, msg) {
     const actionID = action.id
     return { action, actionID, commandGroup, commandGroupID, command, commandID, contact, contactID, chat, chatID }
   } catch (error) {
-    console.log(error)
-    console.log(action)
+    logger.error('Error saving action to database', error)
+    logger.error('Action:', action)
   }
 }
 

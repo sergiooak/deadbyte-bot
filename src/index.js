@@ -75,7 +75,7 @@ export function getClient () {
 }
 
 async function loadEvents () {
-  console.log('Loading events...', bot)
+  logger.info('Loading events...', bot)
   client = new wwebjs.Client({
     authStrategy: new wwebjs.LocalAuth({
       clientId: bot.name
@@ -93,7 +93,7 @@ async function loadEvents () {
     events.forEach(async event => {
       const eventModule = await import(`./services/events/${event}`)
       const eventName = snakeCase(event.split('.')[0])
-      console.log(`Loading event ${eventName} from file ${event}`)
+      logger.info(`Loading event ${eventName} from file ${event}`)
       client.on(eventName, eventModule.default)
     })
   }
