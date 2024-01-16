@@ -29,24 +29,14 @@ const openai = new OpenAI(process.env.OPENAI_API_KEY)
 export async function uptime (msg) {
   const uptime = process.uptime()
   const uptimeString = secondsToDhms(uptime)
-  const [days, hours, minutes, seconds] = uptimeString.split(':')
 
   const clock = '{⏳|⌚|⏰|⏱️|⏲️|🕰️|🕛|🕧|🕐|🕜|🕑|🕝}'
   await msg.react(spintax(clock)) // react with random clock emoji
 
   const saudation = `{${spintax(clock)}} - {Olá|Oi|Oie|E aí} ${msg.aux.sender.pushname || 'usuário'} tudo {jóia|bem}?`
-  const part1 = '{Eu estou|Estou|O bot {está|ta|tá}|O DeadByte {está|ta|tá}} {online|on|ligado}{ direto|} {a|á|tem}{:|}'
+  const part1 = '{Eu estou|Estou|O bot {está|ta|tá}|O DeadByte {está|ta|tá}} {online|on|ligado}{ direto|} {a|á|tem}{:|} '
 
-  let daysPart = parseInt(days) > 0 ? `${days}{ dias|d} ` : ''
-  if (parseInt(days) === 1) daysPart = daysPart.replace('dias', 'dia')
-
-  let hoursPart = `${parseInt(hours)}{ horas|h}`
-  if (parseInt(hours) === 1) hoursPart = hoursPart.replace('horas', 'hora')
-
-  const minutesPart = `${parseInt(minutes)}{ minutos|min|m}`
-  const secondsPart = `{ e ${parseInt(seconds)}{ segundos|s}}`
-
-  const message = spintax(`${saudation}\n\n${part1}\n*${daysPart}${hoursPart} ${minutesPart}${secondsPart}*`)
+  const message = spintax(`${saudation}\n\n${part1}*${uptimeString}*`)
   await msg.reply(message)
 }
 
