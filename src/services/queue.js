@@ -22,7 +22,7 @@ let waitTime = waitTimeMax // initial wait time
  * @param {import('whatsapp-web.js').ClientInfo} userId
  * @param {string} moduleName - Name of the module to be imported e.g. 'sticker'
  * @param {string} functionName - Name of the function to be called e.g. 'stickerText'
- * @param {import('whatsapp-web.js').Message} msg - Message object
+ * @param {import('../types.d.ts').WWebJSMessage} msg - Message object
  * @returns {Array<number>} [queueLength, userQueueLength]
  *
  */
@@ -74,16 +74,12 @@ async function processQueue () {
   try {
     const module = await importFresh(`services/functions/${moduleName}.js`) // import the module
     logger.debug(module)
-
     const fnPromisse = module[camelCaseFunctionName](msg)
     fnPromisse.then((_result) => {
       if (user.messagesQueue.length > 0) {
         queue.push(user) // if there are more messages on the user queue, push it back to the queue
       } else {
-        // mark the chat as read after 5 seconds
-        setTimeout(() => {
-          msg.aux.chat.sendSeen()
-        }, 5_000)
+        msg.aux.chat.delete()
       }
     }).catch((err) => {
       logger.error(err)
