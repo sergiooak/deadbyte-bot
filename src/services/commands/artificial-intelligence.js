@@ -18,6 +18,9 @@ export default (msg) => {
     (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(translate|traduzir|traduz)$/.test(msg.aux.originalFunction)),
 
     calculate: /^(calculate|calcular|calc)$/.test(msg.aux.function) ||
-    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(calculate|calcular|calc)$/.test(msg.aux.originalFunction))
+    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(calculate|calcular|calc)$/.test(msg.aux.originalFunction)),
+
+    simsimi: /^(simsimi|simi)$/.test(msg.aux.function) ||
+    (!msg.aux.isFunction && msg.aux.hasOriginalFunction && /^(simsimi|simi)$/.test(msg.aux.originalFunction))
   }
 }

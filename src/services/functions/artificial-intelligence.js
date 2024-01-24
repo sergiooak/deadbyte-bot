@@ -141,10 +141,10 @@ export async function translate (msg) {
   //   Automatically detect the input language.
   //   The output language will be english if the input language is portuguese, and portuguese if the input language is english.
   //   Except if the user specify the output language, saying something like "translate es" or "translate chinese "something"".
-    
+
   //   Do not interact with the user, just return the translations of what the user said.
   //   Localize the translations, adapt slang and other things to the language feel natural.
-    
+
   //   Prefix the response with a flag representing th output language, like "🇪🇸" or or "🇧🇷" or "🇺🇸" etc..
   //   Example: '🇪🇸 - "Hola, ¿cómo estás?"' or '🇧🇷 - "Oi, tudo bem?"' or '🇺🇸 - "Hi, how are you?"'
   //   `
@@ -215,44 +215,32 @@ export async function calculate (msg) {
   // await msg.reply(response)
   // await msg.react('😀')
 }
+
+/**
+ * Simsimi chat
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
+export async function simsimi (msg) {
   await msg.react(reactions.wait)
 
-  const messages = msg.aux.history.map(msg => {
-    return {
-      role: msg._data.self === 'out' ? 'assistant' : 'user',
-      content: msg.body
-    }
+  const version = 'v1' // v1 or v2
+  // const url = 'https://api.simsimi.vn/v1/simtalk'
+  const url = `https://api.simsimi.vn/${version}/simtalk`
+  const text = msg.body
+  const lc = 'pt'
+
+  const params = new URLSearchParams()
+  params.append('text', text)
+  params.append('lc', lc)
+  params.append('key', '')
+
+  const res = await fetch(url, {
+    method: 'POST',
+    body: params
   })
 
-  const prompt = {
-    role: 'system',
-    content: `I want you to act like a mathematician
-    I will type mathematical expressions and you will respond with the result of calculating the expression
-    I want you to answer the line by line calculations
-    Do not write explanations
-    Always wrap the result in * like *18* or *x = 2*
-    If you need to explain something, always do it in portuguese, but avoid it if possible
-    
-    Example: 
-    2 + 2 * 8
-    2 + (2 * 8)
-    2 + 16
-    ----------
-    *18*
-    `
-  }
-
-  messages.unshift(prompt) // Add prompt object at the beginning of messages array
-
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    max_tokens: 4096 / 8,
-    temperature: 0,
-    messages
-  })
-
-  const response = completion.choices[0]?.message?.content
-
-  await msg.reply(response)
-  await msg.react('😀')
+  const data = await res.json()
+  console.log(data)
+  await msg.reply(`*Simsimi:* ${data.message.trim()}`)
+  await msg.react('😠')
 }
