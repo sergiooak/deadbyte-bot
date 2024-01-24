@@ -1,4 +1,5 @@
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import { getLags } from '../../utils/lagMemory.js'
 import 'dayjs/locale/pt-br.js'
 import dayjs from 'dayjs'
 
@@ -18,4 +19,6 @@ export async function debug (msg) {
   await msg.react(debugEmoji)
 
   // debug code here
+  const lagsLastHour = getLags(60)
+  await msg.reply(JSON.stringify(lagsLastHour, null, 2))
 }

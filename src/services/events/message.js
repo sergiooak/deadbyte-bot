@@ -1,8 +1,9 @@
-import { addToQueue } from '../queue.js'
 import importFresh from '../../utils/importFresh.js'
-import logger from '../../logger.js'
-import { getClient } from '../../index.js'
+import { addLag } from '../../utils/lagMemory.js'
 import { saveActionToDB } from '../../db.js'
+import { getClient } from '../../index.js'
+import { addToQueue } from '../queue.js'
+import logger from '../../logger.js'
 
 const client = getClient()
 
@@ -18,7 +19,9 @@ export default async (msg) => {
   logger.trace(msg)
   msg.startedAt = Date.now()
   const nowInUnix = Math.floor(Date.now() / 1000)
-  msg.lag = Math.floor(nowInUnix - msg.timestamp) // time in seconds since message was sent
+  msg.lag = Math.floor(nowInUnix - msg.timestamp)
+  addLag(msg.lag)
+
   /**
    * Parse message and check if it is to respond, module is imported fresh to force it to be reloaded from disk.
    * @type {import('../../validators/message.js')}

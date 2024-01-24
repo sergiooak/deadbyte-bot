@@ -1,8 +1,9 @@
-import { getQueueLength } from '../queue.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import { getLags } from '../../utils/lagMemory.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
+import { getQueueLength } from '../queue.js'
 import wwebjs from 'whatsapp-web.js'
 import logger from '../../logger.js'
 import FormData from 'form-data'
@@ -84,22 +85,6 @@ export async function dice (msg) {
     })
   }
   await msg.reply(message)
-}
-
-/**
- * Tests functions
- * @param {import('../../types.d.ts').WWebJSMessage} msg
- */
-export async function debug (msg) {
-  const debugEmoji = '🐛'
-  await msg.react(debugEmoji)
-
-  const announceGroup = '120363094244463491@g.us'
-  const chat = await msg.aux.client.getChatById(announceGroup)
-  const admins = chat.participants.filter(p => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized)
-  const botIsAdmin = admins.includes(msg.aux.me)
-
-  await msg.reply(JSON.stringify(botIsAdmin, null, 2))
 }
 
 /**
@@ -201,7 +186,8 @@ export async function ping (msg) {
     message += `{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!\n\n`
   }
 
-  let lag = msg.lag
+  const lagsLastHour = getLags(60)
+  let lag = lagsLastHour[lagsLastHour.length - 1]?.averageLag
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
   lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
   lag = isNaN(lag) ? 0 : lag
@@ -214,6 +200,8 @@ export async function ping (msg) {
     const lagString = convertToHumanReadable(lag, 0, 's')
     message += `\n\nO WhatsApp demorou *${lagString}* para entregar essa mensagem pra mim!`
   }
+
+  // TODO create an image with the chart of the lags
 
   await msg.reply(spintax(message))
 }
