@@ -6,10 +6,10 @@ import path from 'node:path'
 //
 
 /**
-   * @typedef {Object} ModuleCacheItem
-   * @property {*} module - The imported module.
-   * @property {number} lastModified - The last modified time of the module file.
-   */
+ * @typedef {Object} ModuleCacheItem
+ * @property {*} module - The imported module.
+ * @property {number} lastModified - The last modified time of the module file.
+ */
 
 /** @type {Object<string, ModuleCacheItem>} */
 const moduleCache = {}
