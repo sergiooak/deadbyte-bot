@@ -45,12 +45,32 @@ export default async (msg) => {
 
   let msgCurrent = msg
   const msgPrevious = []
+  // Temp fix: there is a bug that says the message doesn't have a quoted message when it does...
+  // Right now, it is affecting the IA command, SimSimi is the only one activated so lets fix it for now
+  // if originalMsg starts with *SimSimi:*, replace the body with !simsimi to activate the command
+  const quotedPatterm = {
+    simsimi: '*SimSimi:*'
+  }
+  let patternFound = false
   while (msgCurrent.hasQuotedMsg) {
     msgPrevious.push(msgCurrent)
     msgCurrent = await msgCurrent.getQuotedMessage()
+    if (msgCurrent.fromMe) {
+      for (const [key, value] of Object.entries(quotedPatterm)) {
+        if (msgCurrent.body.startsWith(value)) {
+          patternFound = key
+          break
+        }
+      }
+    }
   }
   aux.originalMsg = msgCurrent
+  console.log(aux.originalMsg.body)
   msgPrevious.push(aux.originalMsg)
+  if (patternFound) {
+    console.log('pattern found', patternFound)
+    msgPrevious[msgPrevious.length - 1].body = `!${patternFound}`
+  }
   aux.history = msgPrevious.reverse()
 
   // Check if the message is a command

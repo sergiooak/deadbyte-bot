@@ -240,7 +240,6 @@ export async function simsimi (msg) {
   })
 
   const data = await res.json()
-  console.log(data)
-  await msg.reply(`*Simsimi:* ${data.message.trim()}`)
+  await msg.reply(`*SimSimi:* ${data.message.trim()}`)
   await msg.react('😠')
 }
