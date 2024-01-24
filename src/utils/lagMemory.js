@@ -123,8 +123,3 @@ function normalizeAndInterpolate (lags) {
 
   return [...lags, ...missing].sort((a, b) => dayjs(a.time, keyFormat).diff(dayjs(b.time, keyFormat)))
 }
-
-setInterval(() => {
-  console.log(lags, getLags())
-}
-, 10_000)
