@@ -65,10 +65,8 @@ export default async (msg) => {
     }
   }
   aux.originalMsg = msgCurrent
-  console.log(aux.originalMsg.body)
   msgPrevious.push(aux.originalMsg)
   if (patternFound) {
-    console.log('pattern found', patternFound)
     msgPrevious[msgPrevious.length - 1].body = `!${patternFound}`
   }
   aux.history = msgPrevious.reverse()
