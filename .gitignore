@@ -1,11 +1,10 @@
 node_modules
 
-.wwebjs_auth
-.wwebjs_cache
+auth_info_baileys
 
 .env
 package-lock.json
 errors.log
 
-temp/*
-!temp/.gitkeep
+src/temp/*
+!src/temp/.gitkeep
