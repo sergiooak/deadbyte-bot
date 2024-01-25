@@ -18,8 +18,8 @@ const client = getClient()
 export default async (msg) => {
   logger.trace(msg)
   msg.startedAt = Date.now()
-  const nowInUnix = Math.floor(Date.now() / 1000)
-  msg.lag = Math.floor(nowInUnix - msg.timestamp)
+  const nowInUnix = Math.ceil(Date.now() / 1000)
+  msg.lag = Math.max(nowInUnix - msg.timestamp, 0)
   addLag(msg.lag)
 
   /**
