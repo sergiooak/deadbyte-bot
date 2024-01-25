@@ -1,10 +1,12 @@
-import logger from '../../logger.js'
-import { getClient } from '../../index.js'
+import { getLags } from '../../utils/lagMemory.js'
 import spintax from '../../utils/spintax.js'
+import { getClient } from '../../index.js'
+import logger from '../../logger.js'
 
 // user is key, value is an object with the time of the warning and the number of warnings
 const warnings = {}
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+const ownerId = '553492003909@c.us'
 
 /**
  * Emitted when a call is received
@@ -15,11 +17,24 @@ const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 export default async (call) => {
   const emoji = '📞'
   logger.info(`${emoji} - Incoming call`, call)
-  await call.reject()
 
+  await call.reject()
   if (call.isGroup) return // Ignore group calls
 
   const client = getClient()
+
+  const lagsLastHour = getLags(60)
+  const lastMinuteLag = lagsLastHour[lagsLastHour.length - 1]
+
+  if (call.from === ownerId) {
+    return await client.sendMessage(call.from, JSON.stringify(lagsLastHour, null, 2))
+  }
+
+  const currentLag = lastMinuteLag.averageLag
+  if (currentLag >= 10) {
+    const message = `🚨 - O {bot|DeadByte|Dead} {está|tá|ta} {com um lag|uma lentidão} de ${currentLag} segundos para receber as mensagens do WhatsApp\n\n{Estou|To|Tô} {ciente|ligado} e tentando resolver {o|esse|este} problema, por favor, pare de ligar para o bot!!!`
+    return await client.sendMessage(call.from, spintax(message))
+  }
 
   if (!warnings[call.from]) {
     warnings[call.from] = {
