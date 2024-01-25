@@ -9,9 +9,9 @@ import { camelCase } from 'change-case'
 
 const client = getClient()
 const queue = []
-const waitTimeMax = 300
+const waitTimeMax = 0
 const waitTimeMin = 0
-const waitTimeMultiplier = 100
+const waitTimeMultiplier = 0
 let waitTime = waitTimeMax // initial wait time
 
 //
@@ -53,10 +53,10 @@ async function bypassQueue (moduleName, functionName, msg) {
 
 async function processQueue () {
   // set the wait time for the next round based on the queue length
-  const newWaitTime = Math.max(waitTimeMax - (queue.length * waitTimeMultiplier), waitTimeMin)
+  // const newWaitTime = Math.max(waitTimeMax - (queue.length * waitTimeMultiplier), waitTimeMin)
   // noise between -150ms and 150ms to make the wait time more human-like
-  const noise = Math.floor(Math.random() * 300) - 150
-  setWaitTime(newWaitTime + noise)
+  // const noise = Math.floor(Math.random() * 300) - 150
+  setWaitTime(100)
 
   if (queue.length === 0) return setTimeout(processQueue, waitTime) // if the queue is empty, wait and try again
 
