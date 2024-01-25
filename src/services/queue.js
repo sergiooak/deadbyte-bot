@@ -28,10 +28,10 @@ let waitTime = waitTimeMax // initial wait time
  */
 function addToQueue (userId, moduleName, functionName, msg) {
   // if is a group, bypass the queue
-  // if (msg.aux.chat.isGroup) {
-  bypassQueue(moduleName, functionName, msg)
-  return [0, 0]
-  // }
+  if (msg.aux.chat.isGroup) {
+    bypassQueue(moduleName, functionName, msg)
+    return [0, 0]
+  }
   const userIndex = queue.findIndex((user) => user.wid === userId)
   if (userIndex !== -1) {
     queue[userIndex].messagesQueue.push({ moduleName, functionName, message: msg })
