@@ -33,7 +33,7 @@ export default async (call) => {
   const currentLag = lastMinuteLag.averageLag
   if (currentLag >= 10) {
     const message = `🚨 - O {bot|DeadByte|Dead} {está|tá|ta} {com um lag|uma lentidão} de ${currentLag} segundos para receber as mensagens do WhatsApp\n\n{Estou|To|Tô} {ciente|ligado} e tentando resolver {o|esse|este} problema, por favor, pare de ligar para o bot!!!`
-    return await client.sendMessage(call.from, spintax(message))
+    await client.sendMessage(call.from, spintax(message))
   }
 
   if (!warnings[call.from]) {
@@ -43,7 +43,7 @@ export default async (call) => {
     }
     let message = '⚠️ - '
     message += '{Por favor, não ligue|Por favor, evite ligar|Peço que não ligue} para o bot!\n'
-    message += ' {Desculpe|Peço desculpas} se {você ligou por|se foi} engano, {irei|vou} {relevar|deixar passar|não irei fazer nada} {desta|dessa} vez, '
+    message += ' {Desculpe|Peço desculpas} se {você ligou por|se foi} engano, {irei|vou} {relevar|deixar passar} {desta|dessa} vez, '
     message += '{mas|porém} {da|na} próxima vez, você {será bloqueado(a)|levará block}!'
     return await client.sendMessage(call.from, spintax(message))
   }
