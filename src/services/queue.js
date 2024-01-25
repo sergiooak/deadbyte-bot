@@ -69,7 +69,7 @@ async function processQueue () {
 
   const number = await client.getFormattedNumber(msg.from)
   const camelCaseFunctionName = camelCase(functionName)
-  logger.info(`🛫 - ${number} - ${moduleName}.${camelCaseFunctionName}()`)
+  logger.info(`${msg.lag} - ${number} - ${moduleName}.${camelCaseFunctionName}()`)
 
   try {
     const module = await importFresh(`services/functions/${moduleName}.js`) // import the module
