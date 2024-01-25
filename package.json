@@ -1,6 +1,6 @@
 {
   "name": "deadbyte-v3",
-  "version": "3.0.0",
+  "version": "3.5.0",
   "description": "deadbyte 3rd generation",
   "author": "sergiooak",
   "main": "src/index.js",
@@ -23,6 +23,7 @@
     "filenamify": "^6.0.0",
     "form-data": "^4.0.0",
     "mime-types": "^2.1.35",
+    "node-cache": "^5.1.2",
     "node-cron": "^3.0.3",
     "openai": "^4.25.0",
     "pino": "^8.17.2",
