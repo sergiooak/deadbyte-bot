@@ -187,9 +187,9 @@ export async function ping (msg) {
   }
 
   const lagsLastHour = getLags(60)
-  let lag = lagsLastHour[lagsLastHour.length - 1]?.averageLag
+  console.log(lagsLastHour)
+  let lag = msg.lag
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
-  lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
   lag = isNaN(lag) ? 0 : lag
 
   const ping = Date.now() - msg.startedAt
