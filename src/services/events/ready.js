@@ -28,8 +28,8 @@ export default async () => {
   const client = getClient()
   await findCurrentBot(client)
 
-  const chats = await client.getChats()
-  handleUnreadMessages(chats)
+  // const chats = await client.getChats()
+  // handleUnreadMessages(chats)
 
   cron.schedule('* * * * *', async () => { // every minute
     await client.sendPresenceAvailable()
