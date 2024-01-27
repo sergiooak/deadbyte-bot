@@ -28,12 +28,12 @@ const okTypes = [
  */
 export default async (upsert) => {
   logger.trace('messages.upsert', upsert)
-  let msg = upsert.messages[0]
+  const meta = await importFresh('meta/message.js')
+  let msg = meta.default(upsert.messages[0])
   if (msg.key.fromMe) return // ignore self messages
-
   const messageType = await importFresh('validators/messageType.js')
-  const { type, editedMsg } = messageType.default(msg)
-  msg = editedMsg || msg
+  const { type, updatedMsg } = messageType.default(msg)
+  msg = updatedMsg
   if (!msg.key.fromMe) {
     if (!okTypes.includes(type)) return
 

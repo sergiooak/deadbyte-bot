@@ -88,7 +88,7 @@ export default (msg) => {
 
   const typeName = types[incomingType] || types.UNKNOWN
   logger.trace('messageType', { incomingType, typeName })
-  return { typeName, msg }
+  return { type: typeName, updatedMsg: msg }
 }
 
 //
