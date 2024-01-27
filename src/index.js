@@ -3,11 +3,11 @@ import 'dotenv/config'
 import * as baileys from '@whiskeysockets/baileys'
 import { defineCommand, runMain } from 'citty'
 import { apiKey } from './config/api.js'
-// import { snakeCase } from 'change-case'
+import { dotCase } from 'change-case'
 import NodeCache from 'node-cache'
 import bot from './config/bot.js'
 import logger from './logger.js'
-// import fs from 'fs/promises'
+import fs from 'fs/promises'
 import './db.js'
 
 let globalArgs = {}
@@ -94,20 +94,20 @@ export function getArgs () {
 const msgRetryCounterCache = new NodeCache()
 
 /**
- * Whatsapp Web Client
- * @type {wwebjs.Client}
+ * Baileys socket or null if not connected
+ * @type {import('./types').WSocket}
  */
-// let client = null
+let sock = null
 
 /**
- * Grabs Whatsapp Web Client
- * @returns {wwebjs.Client}
+ * Grabs the socket
+ * @returns {import('./types').WSocket}
  */
-// export function getClient () {
-//   return client
-// }
+export function getSocket () {
+  return sock
+}
 
-async function connectToWhatsApp () {
+export async function connectToWhatsApp () {
   // if no API KEY, kill the process
   if (!apiKey) {
     logger.fatal('API_KEY not found! Grab one at https://api.deadbyte.com.br')
@@ -115,13 +115,13 @@ async function connectToWhatsApp () {
   }
 
   logger.info('Connecting to WhatsApp...')
-  const { state, saveCreds } = await baileys.useMultiFileAuthState('auth_info_baileys')
+  const { state } = await baileys.useMultiFileAuthState('auth_info_baileys')
   // fetch latest version of WA Web
   // const { version, isLatest } = await baileys.fetchLatestBaileysVersion()
   const { version, isLatest } = await baileys.fetchLatestBaileysVersion()
   logger.info(`Using WA v${version.join('.')}, isLatest: ${isLatest}`)
 
-  const sock = baileys.makeWASocket({
+  sock = baileys.makeWASocket({
     version,
     logger,
     printQRInTerminal: !bot.usePairingCode,
@@ -141,33 +141,44 @@ async function connectToWhatsApp () {
 
   logger.info('Loading events...', bot)
 
-  sock.ev.on('creds.update', saveCreds)
-  sock.ev.on('connection.update', (update) => {
-    const { connection, lastDisconnect } = update
-    if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== baileys.DisconnectReason.loggedOut
-      console.log('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect)
-      // reconnect if not logged out
-      if (shouldReconnect) {
-        connectToWhatsApp()
-      }
-    } else if (connection === 'open') {
-      console.log('opened connection')
-    }
-  })
-  sock.ev.on('messages.upsert', async m => {
-    console.log(JSON.stringify(m, undefined, 2))
+  const events = await fs.readdir('./src/services/events')
+  console.log(events, bot.doReplies)
+  if (bot.doReplies) {
+    events.forEach(async event => {
+      const eventModule = await import(`./services/events/${event}`)
+      const eventName = dotCase(event.split('.')[0])
+      logger.info(`Loading event ${eventName} from file ${event}`)
+      sock.ev.on(eventName, eventModule.default)
+    })
+  }
 
-    const msg = m.messages[0]
+  // sock.ev.on('creds.update', saveCreds)
+  // sock.ev.on('connection.update', (update) => {
+  //   const { connection, lastDisconnect } = update
+  //   if (connection === 'close') {
+  //     const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== baileys.DisconnectReason.loggedOut
+  //     console.log('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect)
+  //     // reconnect if not logged out
+  //     if (shouldReconnect) {
+  //       connectToWhatsApp()
+  //     }
+  //   } else if (connection === 'open') {
+  //     console.log('opened connection')
+  //   }
+  // })
+  // sock.ev.on('messages.upsert', async m => {
+  //   console.log(JSON.stringify(m, undefined, 2))
 
-    if (!msg.key.fromMe) {
-      const sender = msg.key.remoteJid
-      console.log('replying to', sender)
-      await sock.sendMessage(sender, {
-        text: msg.message?.conversation || 'Hello there!'
-      })
-    }
-  })
+  //   const msg = m.messages[0]
+
+  //   if (!msg.key.fromMe) {
+  //     const sender = msg.key.remoteJid
+  //     console.log('replying to', sender)
+  //     await sock.sendMessage(sender, {
+  //       text: msg.message?.conversation || 'Hello there!'
+  //     })
+  //   }
+  // })
 
   logger.info('Client initialized!')
 
