@@ -7,7 +7,7 @@ import { connectToWhatsApp } from '../../index.js'
  * @param {import('@whiskeysockets/baileys').BaileysEventMap['connection.update']} update
  */
 export default async (update) => {
-  logger.info('Connection updated', update)
+  logger.trace('Connection updated', update)
   const { connection, lastDisconnect } = update
   if (connection === 'close') {
     const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut
