@@ -1,5 +1,6 @@
 import 'dotenv/config'
 
+import importFresh from './utils/importFresh.js'
 import * as baileys from '@whiskeysockets/baileys'
 import { defineCommand, runMain } from 'citty'
 import { apiKey } from './config/api.js'
@@ -145,10 +146,13 @@ export async function connectToWhatsApp () {
   console.log(events, bot.doReplies)
   if (bot.doReplies) {
     events.forEach(async event => {
-      const eventModule = await import(`./services/events/${event}`)
+      const eventPath = `services/events/${event}`
       const eventName = dotCase(event.split('.')[0])
       logger.info(`Loading event ${eventName} from file ${event}`)
-      sock.ev.on(eventName, eventModule.default)
+      sock.ev.on(eventName, async (event) => {
+        const module = await importFresh(eventPath)
+        module.default(event)
+      })
     })
   }
 
