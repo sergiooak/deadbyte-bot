@@ -1,9 +1,9 @@
-import { getQueueLength } from '../queue.js'
+// import { getQueueLength } from '../queue.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
-import wwebjs from 'whatsapp-web.js'
+// import wwebjs from 'whatsapp-web.js'
 import logger from '../../logger.js'
 import FormData from 'form-data'
 import 'dayjs/locale/pt-br.js'
@@ -33,10 +33,10 @@ export async function uptime (msg) {
   const clock = '{⏳|⌚|⏰|⏱️|⏲️|🕰️|🕛|🕧|🕐|🕜|🕑|🕝}'
   await msg.react(spintax(clock)) // react with random clock emoji
 
-  const saudation = `{${spintax(clock)}} - {Olá|Oi|Oie|E aí} ${msg.aux.sender.pushname || 'usuário'} tudo {jóia|bem}?`
+  const saudation = `{${spintax(clock)}} - {Olá|Oi|Oie|E aí} ${msg.aux?.sender?.pushname || 'usuário'} tudo {jóia|bem}?`
   const part1 = '{Eu estou|Estou|O bot {está|ta|tá}|O DeadByte {está|ta|tá}} {online|on|ligado}{ direto|} {a|á|tem}{:|} '
 
-  const message = spintax(`${saudation}\n\n${part1}*${uptimeString}*`)
+  const message = `${saudation}\n\n${part1}*${uptimeString}*`
   await msg.reply(message)
 }
 
@@ -49,7 +49,6 @@ export async function react (msg) {
   const json = await response.json()
   const emoji = String.fromCodePoint(...json.unicode.map(u => parseInt(u.replace('U+', '0x'), 16)))
   await msg.react(emoji)
-  await msg.aux.chat.sendSeen()
 }
 
 /**
@@ -93,13 +92,7 @@ export async function dice (msg) {
 export async function debug (msg) {
   const debugEmoji = '🐛'
   await msg.react(debugEmoji)
-
-  const announceGroup = '120363094244463491@g.us'
-  const chat = await msg.aux.client.getChatById(announceGroup)
-  const admins = chat.participants.filter(p => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized)
-  const botIsAdmin = admins.includes(msg.aux.me)
-
-  await msg.reply(JSON.stringify(botIsAdmin, null, 2))
+  // Debug code goes here
 }
 
 /**
@@ -107,50 +100,52 @@ export async function debug (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function toFile (msg) {
-  if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
-    await msg.react(reactions.error)
+  await msg.react('❌')
+  await msg.reply('❌ - Esse comando está desativado no momento!')
+  // if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
+  //   await msg.react(reactions.error)
 
-    const header = '☠️🤖'
-    const part1 = 'Para usar o *{!toFile|!arquivo}* você {precisa|tem que}'
-    const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
-    const end = '{!|!!|!!!}'
+  //   const header = '☠️🤖'
+  //   const part1 = 'Para usar o *{!toFile|!arquivo}* você {precisa|tem que}'
+  //   const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
+  //   const end = '{!|!!|!!!}'
 
-    const message = spintax(`${header} - ${part1} ${part2}${end}`)
-    return await msg.reply(message)
-  }
-  await msg.react('🗂️')
-  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  if (!media) throw new Error('Error downloading media')
+  //   const message = spintax(`${header} - ${part1} ${part2}${end}`)
+  //   return await msg.reply(message)
+  // }
+  // await msg.react('🗂️')
+  // const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
+  // if (!media) throw new Error('Error downloading media')
 
-  // the last 10 chars of the timestamp
-  const timestampish = Date.now().toString().slice(-10)
-  const filename = `deadbyte-${timestampish}.${mime.extension(media.mimetype)}`
-  media.filename = media.filename || filename
+  // // the last 10 chars of the timestamp
+  // const timestampish = Date.now().toString().slice(-10)
+  // const filename = `deadbyte-${timestampish}.${mime.extension(media.mimetype)}`
+  // media.filename = media.filename || filename
 
-  const buffer = Buffer.from(media.data, 'base64')
+  // const buffer = Buffer.from(media.data, 'base64')
 
-  let message = ''
-  message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
-  message += 'o arquivo{ que você {me |}{pediu|enviou}|}!\n\n'
+  // let message = ''
+  // message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
+  // message += 'o arquivo{ que você {me |}{pediu|enviou}|}!\n\n'
 
-  const isImage = media.mimetype.includes('image')
-  const isVideo = media.mimetype.includes('video')
-  // use sharp to check if the image is animated
-  const isAnimated = isImage ? await sharp(buffer).metadata().then(m => parseInt(m.pages) > 1) : false
+  // const isImage = media.mimetype.includes('image')
+  // const isVideo = media.mimetype.includes('video')
+  // // use sharp to check if the image is animated
+  // const isAnimated = isImage ? await sharp(buffer).metadata().then(m => parseInt(m.pages) > 1) : false
 
-  const finalExtension = isImage ? isAnimated ? 'webp' : 'png' : mime.extension(media.mimetype)
+  // const finalExtension = isImage ? isAnimated ? 'webp' : 'png' : mime.extension(media.mimetype)
 
-  message += `É ${isImage ? 'uma imagem' : isVideo ? 'um vídeo' : 'um arquivo'} ${finalExtension.toUpperCase()}`
-  message += isImage && isAnimated ? ' animada' : ''
+  // message += `É ${isImage ? 'uma imagem' : isVideo ? 'um vídeo' : 'um arquivo'} ${finalExtension.toUpperCase()}`
+  // message += isImage && isAnimated ? ' animada' : ''
 
-  if (isImage && !isAnimated) {
-    const converted = await sharp(buffer).toFormat('png').toBuffer()
-    media.data = converted.toString('base64')
-    media.mimetype = 'image/png'
-    media.filename = media.filename.split('.').slice(0, -1).join('.') + '.png'
-    return await msg.reply(media, undefined, { sendMediaAsDocument: false, caption: spintax(message) })
-  }
-  await msg.reply(media, undefined, { sendMediaAsDocument: true, caption: spintax(message) })
+  // if (isImage && !isAnimated) {
+  //   const converted = await sharp(buffer).toFormat('png').toBuffer()
+  //   media.data = converted.toString('base64')
+  //   media.mimetype = 'image/png'
+  //   media.filename = media.filename.split('.').slice(0, -1).join('.') + '.png'
+  //   return await msg.reply(media, undefined, { sendMediaAsDocument: false, caption: spintax(message) })
+  // }
+  // await msg.reply(media, undefined, { sendMediaAsDocument: true, caption: spintax(message) })
 
   // TODO convert to webp if animated to mp4 and send as "gif"
 }
@@ -160,30 +155,32 @@ export async function toFile (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function toUrl (msg) {
-  if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
-    await msg.react(reactions.error)
+  await msg.react('❌')
+  await msg.reply('❌ - Esse comando está desativado no momento!')
+  // if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
+  //   await msg.react(reactions.error)
 
-    const header = '☠️🤖'
-    const part1 = 'Para usar o *{!toUrl|!url}* você {precisa|tem que}'
-    const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
-    const end = '{!|!!|!!!}'
+  //   const header = '☠️🤖'
+  //   const part1 = 'Para usar o *{!toUrl|!url}* você {precisa|tem que}'
+  //   const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
+  //   const end = '{!|!!|!!!}'
 
-    const message = spintax(`${header} - ${part1} ${part2}${end}`)
-    return await msg.reply(message)
-  }
+  //   const message = spintax(`${header} - ${part1} ${part2}${end}`)
+  //   return await msg.reply(message)
+  // }
 
-  await msg.react('🔗')
-  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  if (!media) throw new Error('Error downloading media')
-  const tempUrl = (await getTempUrl(media)).replace('http://', 'https://')
+  // await msg.react('🔗')
+  // const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
+  // if (!media) throw new Error('Error downloading media')
+  // const tempUrl = (await getTempUrl(media)).replace('http://', 'https://')
 
-  let message = '🔗 - '
-  message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
-  message += '{a url temporária|o link temporário|o endereço temporário} '
-  message += '{para {o|esse}|desse} arquivo: '
-  message += `${tempUrl}\n\n`
-  message += '{Válido por {apenas|}|Com {validade|vigência} de|Por um período de} {3|03|três} dias'
-  await msg.reply(spintax(message))
+  // let message = '🔗 - '
+  // message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
+  // message += '{a url temporária|o link temporário|o endereço temporário} '
+  // message += '{para {o|esse}|desse} arquivo: '
+  // message += `${tempUrl}\n\n`
+  // message += '{Válido por {apenas|}|Com {validade|vigência} de|Por um período de} {3|03|três} dias'
+  // await msg.reply(spintax(message))
 }
 
 /**
@@ -195,15 +192,15 @@ export async function ping (msg) {
 
   let message = '🏓 - Pong!\n\n'
 
-  const usersInQueue = getQueueLength('user')
-  const messagesInQueue = getQueueLength('messages')
-  if (usersInQueue || messagesInQueue) {
-    message += `{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!\n\n`
-  }
+  // const usersInQueue = getQueueLength('user')
+  // const messagesInQueue = getQueueLength('messages')
+  // if (usersInQueue || messagesInQueue) {
+  //   message += `{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!\n\n`
+  // }
 
-  let lag = msg.lag
+  console.log(msg.lag)
+  let lag = msg.lag / 1000
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
-  lag = lag < 5 ? 0 : lag // ignore lag if it is less than 5 seconds
   lag = isNaN(lag) ? 0 : lag
 
   const ping = Date.now() - msg.startedAt
@@ -223,57 +220,59 @@ export async function ping (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function speak (msg) {
-  let msgToReply = msg
-  let input = msg.body
-  if (msg.hasQuotedMsg && !msg.body) {
-    const quotedMsg = await msg.getQuotedMessage()
-    input = quotedMsg.body
-    msgToReply = quotedMsg
-  }
+  await msg.react('❌')
+  await msg.reply('❌ - Esse comando está desativado no momento!')
+  // let msgToReply = msg
+  // let input = msg.body
+  // if (msg.hasQuotedMsg && !msg.body) {
+  //   const quotedMsg = await msg.getQuotedMessage()
+  //   input = quotedMsg.body
+  //   msgToReply = quotedMsg
+  // }
 
-  if (!input) {
-    await msg.reply(
-      spintax('Para usar o *{!speak|!fale|!falar|!voz|!diga|!dizer}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um texto!\n\nExemplo: `!diga Olá, eu sou o DeadByte!`')
-    )
-    await msg.react(reactions.error)
-    return
-  }
+  // if (!input) {
+  //   await msg.reply(
+  //     spintax('Para usar o *{!speak|!fale|!falar|!voz|!diga|!dizer}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um texto!\n\nExemplo: `!diga Olá, eu sou o DeadByte!`')
+  //   )
+  //   await msg.react(reactions.error)
+  //   return
+  // }
 
-  const inputLimit = 1000
-  const originalInputSize = input.length
+  // const inputLimit = 1000
+  // const originalInputSize = input.length
 
-  if (originalInputSize > inputLimit) {
-    await msg.reply(`O texto não pode ter mais de ${inputLimit} caracteres!\n\nO seu texto tem ${originalInputSize} caracteres!\nVou cortar o texto para você!`)
-    input = input.slice(0, inputLimit)
-  }
+  // if (originalInputSize > inputLimit) {
+  //   await msg.reply(`O texto não pode ter mais de ${inputLimit} caracteres!\n\nO seu texto tem ${originalInputSize} caracteres!\nVou cortar o texto para você!`)
+  //   input = input.slice(0, inputLimit)
+  // }
 
-  await msg.react('🗣️')
-  await msg.aux.chat.sendStateRecording()
+  // await msg.react('🗣️')
+  // await msg.aux.chat.sendStateRecording()
 
-  const voices = ['onyx', 'echo', 'fable', 'nova', 'shimmer']
+  // const voices = ['onyx', 'echo', 'fable', 'nova', 'shimmer']
 
-  // function can be called with !speak1, !speak2, !speak3, !speak4, !speak5
-  let voiceId = parseInt(msg.aux.function.slice(-1)) - 1 || 0
-  // say if the voice is invalid
-  if (voiceId > voices.length - 1) {
-    await msg.reply(`Essa voz não existe!\n\nAs vozes disponíveis são:\n${voices.map((v, i) => `${i + 1} - ${v}`).join('\n')}\n\nIrei usar a voz padrão!`)
-    voiceId = 0
-  }
+  // // function can be called with !speak1, !speak2, !speak3, !speak4, !speak5
+  // let voiceId = parseInt(msg.aux.function.slice(-1)) - 1 || 0
+  // // say if the voice is invalid
+  // if (voiceId > voices.length - 1) {
+  //   await msg.reply(`Essa voz não existe!\n\nAs vozes disponíveis são:\n${voices.map((v, i) => `${i + 1} - ${v}`).join('\n')}\n\nIrei usar a voz padrão!`)
+  //   voiceId = 0
+  // }
 
-  const voice = voices[voiceId]
+  // const voice = voices[voiceId]
 
-  const opus = await openai.audio.speech.create({
-    input,
-    voice,
-    model: 'tts-1',
-    response_format: 'opus'
-  })
+  // const opus = await openai.audio.speech.create({
+  //   input,
+  //   voice,
+  //   model: 'tts-1',
+  //   response_format: 'opus'
+  // })
 
-  const buffer = Buffer.from(await opus.arrayBuffer())
+  // const buffer = Buffer.from(await opus.arrayBuffer())
 
-  // hand make the media object
-  const media = new wwebjs.MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte.opus')
-  await msgToReply.reply(media, undefined, { sendAudioAsVoice: true })
+  // // hand make the media object
+  // const media = new wwebjs.MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte.opus')
+  // await msgToReply.reply(media, undefined, { sendAudioAsVoice: true })
 }
 
 /**
@@ -281,38 +280,41 @@ export async function speak (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function transcribe (msg) {
-  let msgToReply = msg
-  let media = msg.hasMedia ? await msg.downloadMedia() : null
-  if (msg.hasQuotedMsg && !msg.hasMedia) {
-    const quotedMsg = await msg.getQuotedMessage()
-    media = await quotedMsg.downloadMedia()
-    msgToReply = quotedMsg
-  }
+  await msg.react('❌')
+  await msg.reply('❌ - Esse comando está desativado no momento!')
 
-  if (!media) {
-    await msg.reply(
-      spintax('Para usar o *{!transcribe|!transcricao|!transcrever}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um áudio!\n\nExemplo: `!transcrever` respondendo um áudio')
-    )
-    await msg.react(reactions.error)
-    return
-  }
+  // let msgToReply = msg
+  // let media = msg.hasMedia ? await msg.downloadMedia() : null
+  // if (msg.hasQuotedMsg && !msg.hasMedia) {
+  //   const quotedMsg = await msg.getQuotedMessage()
+  //   media = await quotedMsg.downloadMedia()
+  //   msgToReply = quotedMsg
+  // }
 
-  await msg.react('🎙️')
-  await msg.aux.chat.sendStateTyping()
+  // if (!media) {
+  //   await msg.reply(
+  //     spintax('Para usar o *{!transcribe|!transcricao|!transcrever}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um áudio!\n\nExemplo: `!transcrever` respondendo um áudio')
+  //   )
+  //   await msg.react(reactions.error)
+  //   return
+  // }
 
-  // save file to temp folder
-  const timestampish = Date.now().toString().slice(-10)
-  const filePath = `./src/temp/${timestampish}.mp3`
-  const nomalizedFilePath = path.resolve(filePath)
-  fs.writeFileSync(nomalizedFilePath, media.data, { encoding: 'base64' })
+  // await msg.react('🎙️')
+  // await msg.aux.chat.sendStateTyping()
 
-  const transcription = await openai.audio.transcriptions.create({
-    file: fs.createReadStream(nomalizedFilePath),
-    model: 'whisper-1',
-    response_format: 'text'
-  })
-  fs.unlinkSync(nomalizedFilePath)
-  await msgToReply.reply(`🎙️ - ${transcription.trim()}`)
+  // // save file to temp folder
+  // const timestampish = Date.now().toString().slice(-10)
+  // const filePath = `./src/temp/${timestampish}.mp3`
+  // const nomalizedFilePath = path.resolve(filePath)
+  // fs.writeFileSync(nomalizedFilePath, media.data, { encoding: 'base64' })
+
+  // const transcription = await openai.audio.transcriptions.create({
+  //   file: fs.createReadStream(nomalizedFilePath),
+  //   model: 'whisper-1',
+  //   response_format: 'text'
+  // })
+  // fs.unlinkSync(nomalizedFilePath)
+  // await msgToReply.reply(`🎙️ - ${transcription.trim()}`)
 }
 
 //
