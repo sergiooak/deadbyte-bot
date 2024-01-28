@@ -73,7 +73,7 @@ const processMessage = (msg) => {
     mentionedIds: firstItem.contextInfo?.mentionedJid,
     mentionedGroups: firstItem.contextInfo?.groupMentions,
     // orderId: undefined,
-    // timestamp: msg.messageTimestamp,
+    startedAt: Date.now(),
     timestamp: typeof msg.messageTimestamp === 'number'
       ? msg.messageTimestamp
       : msg.messageTimestamp.toInt(),
@@ -84,7 +84,7 @@ const processMessage = (msg) => {
     // to: msg.key.fromMe ? msg.key.remoteJid : botId,
     vCards: type === 'multi_vcard' ? firstItem.contacts : type === 'vcard' ? [firstItem] : undefined,
     raw: structuredClone(msg),
-    client: sock
+    sock
   }
 
   for (const property in properties) {
