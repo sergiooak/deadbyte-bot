@@ -30,28 +30,32 @@ const commandless = (msg, aux) => {
  */
 export default async (msg) => {
   const aux = {} // auxiliar variables
-  aux.client = (await import('../index.js')).getClient()
-  aux.chat = await msg.getChat()
-  aux.sender = await msg.getContact()
+  // aux.client = (await import('../index.js')).getClient()
+  // aux.chat = await msg.getChat()
+  // aux.sender = await msg.getContact()
   aux.senderIsMe = msg.fromMe
-  aux.mentionedMe = msg.mentionedIds.includes(aux.client.info.wid._serialized)
+  aux.me = msg.sock.user.id.split(':')[0] + '@s.whatsapp.net'
+  aux.mentionedMe = msg.mentionedIds ? msg.mentionedIds.includes(aux.me) : false
   if (aux.mentionedMe) {
-    msg.body = msg.body.replace(new RegExp(`@${aux.client.info.wid.user}`, 'g'), '').trim()
+    msg.body = msg.body.replace(new RegExp(`@${aux.me.split('@')[0]}`, 'g'), '').trim()
   }
 
-  if (msg.hasQuotedMsg) {
-    aux.quotedMsg = await msg.getQuotedMessage()
-  }
+  // TODO: create getQuotedMessage() method
+  // if (msg.hasQuotedMsg) {
+  //   aux.quotedMsg = await msg.getQuotedMessage()
+  // }
 
-  let msgCurrent = msg
-  const msgPrevious = []
-  while (msgCurrent.hasQuotedMsg) {
-    msgPrevious.push(msgCurrent)
-    msgCurrent = await msgCurrent.getQuotedMessage()
-  }
-  aux.originalMsg = msgCurrent
-  msgPrevious.push(aux.originalMsg)
-  aux.history = msgPrevious.reverse()
+  // let msgCurrent = msg
+  // const msgPrevious = []
+  // while (msgCurrent.hasQuotedMsg) {
+  //   msgPrevious.push(msgCurrent)
+  //   msgCurrent = await msgCurrent.getQuotedMessage()
+  // }
+  // aux.originalMsg = msgCurrent
+  aux.originalMsg = msg
+  // msgPrevious.push(aux.originalMsg)
+  // aux.history = msgPrevious.reverse()
+  aux.history = [aux.originalMsg]
 
   // Check if the message is a command
   const prefixes = await importFresh('config/bot.js').then(config => config.prefixes)
@@ -74,21 +78,16 @@ export default async (msg) => {
     }
   }
 
-  aux.me = aux.client.info.wid._serialized ? aux.client.info.wid._serialized : aux.client.info.wid
   aux.mentions = msg.mentionedIds
-  if (typeof aux.mentions[0] !== 'string') {
-    // sometimes is an array of objects, sometimes is an array of strings
-    aux.mentions = aux.mentions.map((mention) => mention._serialized) // convert to array of strings
-  }
 
-  aux.amIMentioned = aux.mentions.includes(aux.me)
-  aux.participants = aux.chat.isGroup ? aux.chat.participants : []
-  aux.admins = aux.chat.isGroup ? aux.participants.filter((p) => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized) : []
-  aux.isSenderAdmin = aux.admins.includes(msg.author)
-  aux.isBotAdmin = aux.admins.includes(aux.me)
+  aux.amIMentioned = aux.mentions ? aux.mentions.includes(aux.me) : false
+  // aux.participants = aux.chat.isGroup ? aux.chat.participants : []
+  // aux.admins = aux.chat.isGroup ? aux.participants.filter((p) => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized) : []
+  // aux.isSenderAdmin = aux.admins.includes(msg.author)
+  // aux.isBotAdmin = aux.admins.includes(aux.me)
 
-  const stickerGroup = '120363187692992289@g.us'
-  aux.isStickerGroup = aux.chat.isGroup ? aux.chat.id._serialized === stickerGroup : false
+  // const stickerGroup = '120363187692992289@g.us'
+  // aux.isStickerGroup = aux.chat.isGroup ? aux.chat.id._serialized === stickerGroup : false
 
   try {
     msg.aux = aux
@@ -145,18 +144,18 @@ export default async (msg) => {
 
     // Send incorrect function reaction
     if (aux.isFunction) return false // if any function reach this point, it is an incorrect function
-    if (aux.chat.isGroup && !aux.mentionedMe) {
-      if (aux.isStickerGroup && msg.type === 'chat') {
-        return false // ignore texts in sticker group
-      }
+    // if (aux.chat.isGroup && !aux.mentionedMe) {
+    //   if (aux.isStickerGroup && msg.type === 'chat') {
+    //     return false // ignore texts in sticker group
+    //   }
 
-      if (!aux.isStickerGroup) {
-        const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
-        if (!isStickerPack && !['audio', 'ptt'].includes(msg.type)) {
-          return false
-        }
-      }
-    }
+    //   if (!aux.isStickerGroup) {
+    //     const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
+    //     if (!isStickerPack && !['audio', 'ptt'].includes(msg.type)) {
+    //       return false
+    //     }
+    //   }
+    // }
 
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))
