@@ -1,7 +1,6 @@
 import importFresh from '../../utils/importFresh.js'
-import spintax from '../../utils/spintax.js'
-import { getSocket } from '../../index.js'
 import logger from '../../logger.js'
+import { getSocket } from '../../index.js'
 //
 // ================================ Variables =================================
 //
@@ -29,48 +28,23 @@ const okTypes = [
 export default async (upsert) => {
   logger.trace('messages.upsert', upsert)
   const meta = await importFresh('meta/message.js')
-  let msg = meta.default(upsert.messages[0])
-  if (msg.key.fromMe) return // ignore self messages
-  const messageType = await importFresh('validators/messageType.js')
-  const { type, updatedMsg } = messageType.default(msg)
-  msg = updatedMsg
-  if (!msg.key.fromMe) {
-    if (!okTypes.includes(type)) return
+  const msg = meta.default(upsert.messages[0])
+  if (!msg) return
+  if (msg.fromMe) return // ignore self messages
 
-    const sender = msg.key.remoteJid
-    const sock = getSocket()
-    if (type === 'revoked') {
-      // TODO: send random "Deus viu o que você apagou" sticker
-      await sock.sendMessage(sender, {
-        react: {
-          text: '👀',
-          key: msg.key
-        }
-      })
-      return await sock.sendMessage(sender, {
-        text: '👀'
-      })
-    }
-    if (type === 'edited') {
-      // TODO: send random "Mensagem editada" sticker
-      await sock.sendMessage(sender, {
-        react: {
-          text: '👀',
-          key: msg.key
-        }
-      })
-      return await sock.sendMessage(sender, {
-        text: spintax(
-          '👀 - {Haha eu|Kkkk eu|Eu} {vi|sei} {oq|o que} {tava antes|tu tinha escrito}{ ein| kk|!|!!!}'
-        )
-      }, {
-        quoted: msg
-      })
-    }
-    await sock.sendMessage(sender, {
-      text: type
-    }, {
-      quoted: msg
-    })
+  if (!okTypes.includes(msg.type)) return
+  await msg.sendSeen()
+
+  if (msg.type === 'revoked') {
+    // TODO: send random "Deus viu o que você apagou" sticker
+    return await msg.reply('👀 - Eu vi o que você apagou')
   }
+  if (msg.type === 'edited') {
+    await msg.react('👀')
+    return await msg.reply('👀 - {Haha eu|Kkkk eu|Eu} {vi|sei} {oq|o que} {tava antes|tu tinha escrito}{ ein| kk|!|!!!}')
+  }
+  await msg.reply(msg.type)
+
+  const sock = getSocket()
+  await sock.sendPresenceUpdate('available')
 }
