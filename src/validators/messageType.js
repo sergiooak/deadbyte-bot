@@ -4,6 +4,7 @@ import logger from '../logger.js'
 //
 const types = {
   conversation: 'chat',
+  extendedTextMessage: 'chat',
   audioMessage: 'audio',
   pttMessage: 'ptt',
   imageMessage: 'image',
@@ -48,23 +49,37 @@ export default (msg) => {
   const keys = Object.keys(msg.message)
     .filter(key => !keysToIgnore.includes(key))
   if (keys.length === 0) return types.UNKNOWN
-  if (keys.length > 1) {
-    logger.warn('Message has more than one key', msg)
-  }
+
   const firstKey = keys[0]
   let incomingType = firstKey
 
-  /**
-   * Handle editMessage
-   */
-  if (incomingType === 'editedMessage') {
-    console.log('editedMessage')
+  if (keys.length > 1) {
+    // senderKeyDistributionMessage
+    if (keys.includes('senderKeyDistributionMessage')) {
+      // delete this key and continue from msg.message
+      delete msg.message.senderKeyDistributionMessage
+      // and make sure that the other key is the FIRST key of msg.message
+      const newMessage = {}
+      const leftOverKeys = Object.keys(msg.message)
+      const keyName = keys[1]
+      incomingType = keyName
+      newMessage[keyName] = msg.message[keyName]
+      leftOverKeys.forEach(key => {
+        if (key !== keyName) newMessage[key] = msg.message[key]
+      })
+      msg.message = newMessage
+    } else {
+      logger.warn('Message has more than one key', msg)
+    }
   }
 
   /**
-   * Handle viewOnceMessage
+   * Handle viewOnceMessage && groupMentionedMessage
    */
-  if (incomingType.startsWith('viewOnce')) {
+  if (
+    incomingType.startsWith('viewOnce') ||
+    incomingType === 'groupMentionedMessage'
+  ) {
     const keys = Object.keys(msg.message[firstKey].message).filter(key => !keysToIgnore.includes(key))
     if (keys.length) {
       incomingType = keys[0]
