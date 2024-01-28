@@ -143,7 +143,6 @@ export async function connectToWhatsApp () {
   logger.info('Loading events...', bot)
 
   const events = await fs.readdir('./src/services/events')
-  console.log(events, bot.doReplies)
   if (bot.doReplies) {
     events.forEach(async event => {
       const eventPath = `services/events/${event}`
@@ -155,34 +154,6 @@ export async function connectToWhatsApp () {
       })
     })
   }
-
-  // sock.ev.on('creds.update', saveCreds)
-  // sock.ev.on('connection.update', (update) => {
-  //   const { connection, lastDisconnect } = update
-  //   if (connection === 'close') {
-  //     const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== baileys.DisconnectReason.loggedOut
-  //     console.log('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect)
-  //     // reconnect if not logged out
-  //     if (shouldReconnect) {
-  //       connectToWhatsApp()
-  //     }
-  //   } else if (connection === 'open') {
-  //     console.log('opened connection')
-  //   }
-  // })
-  // sock.ev.on('messages.upsert', async m => {
-  //   console.log(JSON.stringify(m, undefined, 2))
-
-  //   const msg = m.messages[0]
-
-  //   if (!msg.key.fromMe) {
-  //     const sender = msg.key.remoteJid
-  //     console.log('replying to', sender)
-  //     await sock.sendMessage(sender, {
-  //       text: msg.message?.conversation || 'Hello there!'
-  //     })
-  //   }
-  // })
 
   logger.info('Client initialized!')
 
