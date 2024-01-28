@@ -1,6 +1,8 @@
 import importFresh from '../../utils/importFresh.js'
-import logger from '../../logger.js'
+// import { saveActionToDB } from '../../db.js'
 import { getSocket } from '../../index.js'
+import { camelCase } from 'change-case'
+import logger from '../../logger.js'
 //
 // ================================ Variables =================================
 //
@@ -43,8 +45,34 @@ export default async (upsert) => {
     await msg.react('👀')
     return await msg.reply('👀 - {Haha eu|Kkkk eu|Eu} {vi|sei} {oq|o que} {tava antes|tu tinha escrito}{ ein| kk|!|!!!}')
   }
-  await msg.reply(msg.type)
+  // await msg.reply(msg.type)
 
   const sock = getSocket()
   await sock.sendPresenceUpdate('available')
+
+  const messageParser = await importFresh('validators/message.js')
+  const handlerModule = await messageParser.default(msg)
+  logger.trace('handlerModule: ', handlerModule)
+  console.log('handlerModule: ', handlerModule)
+
+  if (!handlerModule) return logger.debug('handlerModule is undefined')
+
+  // TODO: make legacy db works
+  // msg.aux.db = await saveActionToDB(handlerModule.type, handlerModule.command, msg)
+
+  // only works with db
+  // const checkDisabled = await importFresh('validators/checkDisabled.js')
+  // const isEnabled = await checkDisabled.default(msg)
+  // if (!isEnabled) return logger.info(`⛔ - ${msg.from} - ${handlerModule.command} - Disabled`)
+
+  // const checkOwnerOnly = await importFresh('validators/checkOwnerOnly.js')
+  // const isOwnerOnly = await checkOwnerOnly.default(msg)
+  // if (isOwnerOnly) return logger.info(`🛂 - ${msg.from} - ${handlerModule.command} - Restricted to admins`)
+
+  // TODO: implement queue system
+  const moduleName = handlerModule.type
+  const functionName = handlerModule.command
+  const module = await importFresh(`services/functions/${moduleName}.js`)
+  const camelCaseFunctionName = camelCase(functionName)
+  module[camelCaseFunctionName](msg)
 }
