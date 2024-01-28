@@ -10,7 +10,7 @@ const commandless = (msg, aux) => {
     stickersFNstickerLyPack: msg.body && msg.body.startsWith('https://sticker.ly/s/'),
     stickersFNstickerCreator: (
       (msg.hasMedia && ['image', 'video', 'document'].includes(msg.type)) ||
-      (msg.hasQuotedMsg && (aux.quotedMsg.hasMedia && ['image', 'video', 'document'].includes(aux.quotedMsg.type)))),
+      (msg.hasQuotedMsg && (msg.quotedMsg.hasMedia && ['image', 'video', 'document'].includes(msg.quotedMsg.type)))),
     stickersFNtextSticker: msg.body && msg.type === 'chat',
     miscellaneousFNtranscribe: msg.hasMedia && ['audio', 'ptt'].includes(msg.type)
   }

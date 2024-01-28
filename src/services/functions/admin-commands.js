@@ -16,11 +16,10 @@ dayjs.extend(relativeTime)
 export async function debug (msg) {
   const debugEmoji = '🐛'
   await msg.react(debugEmoji)
+  // Debug code goes here
 
-  const announceGroup = '120363094244463491@g.us'
-  const chat = await msg.aux.client.getChatById(announceGroup)
-  const admins = chat.participants.filter(p => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized)
-  const botIsAdmin = admins.includes(msg.aux.me)
+  const readMore = '​'.repeat(783)
+  const message = `Dead${readMore}Byte`
 
-  await msg.reply(JSON.stringify(botIsAdmin, null, 2))
+  await msg.reply(message)
 }

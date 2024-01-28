@@ -1,41 +1,47 @@
-// import wwebjs from 'whatsapp-web.js'
-import Util from '../../utils/sticker.js'
-import sharp from 'sharp'
-import { createUrl } from '../../config/api.js'
+import { MessageMedia } from '../../meta/messageMedia.js'
 import reactions from '../../config/reactions.js'
-import logger from '../../logger.js'
+import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
-import fetch from 'node-fetch'
-import FormData from 'form-data'
 import { getSocket } from '../../index.js'
+import Util from '../../utils/sticker.js'
+import logger from '../../logger.js'
+import FormData from 'form-data'
+import fetch from 'node-fetch'
+import sharp from 'sharp'
 
 const sock = getSocket()
 
 /**
  * Make sticker from media (image, video, gif)
  * @param {import('../../types.d.ts').WWebJSMessage} msg
- * @param {boolean} [crop=false] - crop the image to a square
- * @param {string} StickerAuthor - sticker author name
- * @param {string} StickerPack - sticker pack name
+ * @param {string} stickerName
+ * @param {string} stickerAuthor
  */
-export async function stickerCreator (msg, crop = false, stickerAuthor, stickerPack) {
-  await msg.react('❌')
-  await msg.reply('❌ - Esse comando está desativado no momento!')
-  // await msg.react(reactions.wait)
+export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite = true) {
+  await msg.react(reactions.wait)
 
-  // const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  // if (!media) throw new Error('Error downloading media')
+  const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
+  const metadata = media.metadata
 
-  // let stickerMedia = await Util.formatToWebpSticker(media, {}, crop)
-  // if (msg.type === 'document') msg.body = '' // remove file name from caption
-  // if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
+  const promises = []
+  promises.push(Util.formatToWebpSticker(media, {}, false))
 
-  // await sendMediaAsSticker(msg.aux.chat, stickerMedia, stickerAuthor, stickerPack)
+  const ratioDistanceFromSquare = Math.abs(metadata.ratio - 1)
+  const needToCrop = ratioDistanceFromSquare > 0.1
 
-  // if (!crop) {
-  //   await stickerCreator(msg, true) // make cropped version
-  //   await msg.react(reactions.success)
-  // }
+  if (needToCrop) {
+    promises.push(Util.formatToWebpSticker(media, {}, true))
+  }
+
+  for (const promise of promises) {
+    let stickerMedia = await promise
+
+    if (msg.type === 'document') msg.body = '' // remove file name from caption
+    if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
+
+    await sendMediaAsSticker(msg, stickerMedia, stickerName, stickerAuthor, overwrite)
+  }
+  await msg.react(reactions.success)
 }
 
 /**
@@ -46,18 +52,11 @@ export async function textSticker (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp', { message: msg.body })
-  // await msg.reply(url)
 
-  const buffer = await fetch(url).then((res) => res.buffer())
-  const webp = await sharp(buffer).webp().toBuffer()
+  let media = await MessageMedia.fromUrl(url)
+  media = await Util.formatToWebpSticker(media, {}, false)
 
-  await sock.sendMessage(msg.from, {
-    sticker: webp
-  })
-  // const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
-  // if (!media) throw new Error('Error downloading media')
-
-  // await sendMediaAsSticker(msg.aux.chat, media)
+  await sendMediaAsSticker(msg, media)
   await msg.react(reactions.success)
 }
 
@@ -69,17 +68,10 @@ export async function textSticker2 (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp2', { message: msg.body })
-  const buffer = await fetch(url).then((res) => res.buffer())
-  const webp = await sharp(buffer).webp().toBuffer()
+  let media = await MessageMedia.fromUrl(url)
+  media = await Util.formatToWebpSticker(media, {}, false)
 
-  await sock.sendMessage(msg.from, {
-    sticker: webp
-  })
-
-  // const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
-  // if (!media) throw new Error('Error downloading media')
-
-  // await sendMediaAsSticker(msg.aux.chat, media)
+  await sendMediaAsSticker(msg, media)
   await msg.react(reactions.success)
 }
 
@@ -91,17 +83,10 @@ export async function textSticker3 (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp3', { message: msg.body })
-  const buffer = await fetch(url).then((res) => res.buffer())
-  const webp = await sharp(buffer).webp().toBuffer()
+  let media = await MessageMedia.fromUrl(url)
+  media = await Util.formatToWebpSticker(media, {}, false)
 
-  await sock.sendMessage(msg.from, {
-    sticker: webp
-  })
-
-  // const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
-  // if (!media) throw new Error('Error downloading media')
-
-  // await sendMediaAsSticker(msg.aux.chat, media)
+  await sendMediaAsSticker(msg, media)
   await msg.react(reactions.success)
 }
 
@@ -111,45 +96,42 @@ export async function textSticker3 (msg) {
  *
  */
 export async function removeBg (msg) {
-  await msg.react('❌')
-  await msg.reply('❌ - Esse comando está desativado no momento!')
-  // await msg.react(reactions.wait)
+  await msg.react(reactions.wait)
+  if (!msg.hasMedia || (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
+    await msg.react(reactions.error)
 
-  // if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
-  //   await msg.react(reactions.error)
+    const header = '☠️🤖'
+    const part1 = 'Para usar o {remove.bg|removedor de fundo|*!bg*} você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {junto com|na legenda de} uma {imagem|foto}'
+    const end = '{!|!!|!!!}'
 
-  //   const header = '☠️🤖'
-  //   const part1 = 'Para usar o {remove.bg|removedor de fundo|*!bg*} você {precisa|tem que}'
-  //   const part2 = '{enviar|mandar} {esse|o} comando {junto com|na legenda de} uma {imagem|foto}'
-  //   const end = '{!|!!|!!!}'
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
 
-  //   const message = spintax(`${header} - ${part1} ${part2}${end}`)
-  //   return await msg.reply(message)
-  // }
+  const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
+  if (!media) throw new Error('Error downloading media')
+  if (!media.mimetype.includes('image')) {
+    await msg.react(reactions.error)
+    return await msg.reply('❌ Só consigo remover o fundo de imagens')
+  }
 
-  // const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  // if (!media) throw new Error('Error downloading media')
-  // if (!media.mimetype.includes('image')) {
-  //   await msg.react(reactions.error)
-  //   return await msg.reply('❌ Só consigo remover o fundo de imagens')
-  // }
+  // use sharp to convert to a max 512 (bigger side) jpg image, crank up the contrast
+  const buffer = Buffer.from(media.data, 'base64')
+  const resizedBuffer = await sharp(buffer)
+    .resize(1024, 1024, { fit: 'inside' })
+    .jpeg()
+    .toBuffer()
 
-  // // use shapr to convert to a max 512 (bigger side) jpg image, crank up the contrast
-  // const buffer = Buffer.from(media.data, 'base64')
-  // const resizedBuffer = await sharp(buffer)
-  //   .resize(1024, 1024, { fit: 'inside' })
-  //   .jpeg()
-  //   .toBuffer()
+  const tempUrl = await getTempUrl(resizedBuffer)
+  const url = await createUrl('image-processing', 'removebg', { img: tempUrl, trim: true })
+  const bgMedia = await MessageMedia.fromUrl(url, { unsafeMime: true })
 
-  // const tempUrl = await getTempUrl(resizedBuffer)
-  // const url = await createUrl('image-processing', 'removebg', { img: tempUrl, trim: true })
-  // const bgMedia = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
+  let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})
+  if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
 
-  // let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})
-  // if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
-
-  // await sendMediaAsSticker(msg.aux.chat, stickerMedia)
-  // await msg.react(reactions.success)
+  await sendMediaAsSticker(msg, stickerMedia)
+  await msg.react(reactions.success)
 }
 
 /**
@@ -158,9 +140,11 @@ export async function removeBg (msg) {
  *
  */
 export async function stealSticker (msg) {
+  if (!msg.hasQuotedMsg && (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia) && !msg.hasMedia) {
+    await msg.react(reactions.error)
+    return await msg.reply('❌ - Você precisa responder a uma figurinha para usar esse comando')
+  }
   await msg.react(reactions.wait)
-
-  const quotedMsg = await msg.getQuotedMessage()
 
   const delimiters = ['|', '/', '\\']
   let messageParts = [msg.body] // default to the whole message
@@ -168,13 +152,13 @@ export async function stealSticker (msg) {
     if (messageParts.length > 1) break
     messageParts = msg.body.split(delimiter)
   }
-  const stickerName = messageParts[0]?.trim() || msg.aux.sender.pushname
-  const stickerAuthor = messageParts[1]?.trim() || 'DeadByte.com.br'
+  const stickerName = messageParts[0]?.trim() || undefined
+  const stickerAuthor = messageParts[1]?.trim() || undefined
 
-  if (!msg.hasQuotedMsg || !quotedMsg.hasMedia) {
+  if (!msg.hasQuotedMsg || !msg.quotedMsg.hasMedia) {
     if (msg.hasMedia && (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker')) {
       msg.body = ''
-      return await stickerCreator(msg, undefined, stickerName, stickerAuthor)
+      return await stickerCreator(msg, stickerName, stickerAuthor, false)
     }
 
     await msg.react(reactions.error)
@@ -188,10 +172,10 @@ export async function stealSticker (msg) {
     return await msg.reply(message)
   }
 
-  const media = await quotedMsg.downloadMedia()
+  const media = await msg.downloadMedia(true)
   if (!media) throw new Error('Error downloading media')
 
-  await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
+  await sendMediaAsSticker(msg, media, stickerName, stickerAuthor)
   await msg.react(reactions.success)
 }
 
@@ -200,7 +184,8 @@ export async function stealSticker (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function stickerLySearch (msg) {
-  const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+  // const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+  const isStickerGroup = false
   const limit = getStickerLimit(isStickerGroup)
 
   if (!msg.body) {
@@ -242,7 +227,7 @@ export async function stickerLySearch (msg) {
     await msg.reply(spintax(message))
   }
 
-  // await sendStickers(stickersPaginated, msg.aux.chat)
+  await sendStickers(stickersPaginated, msg)
   await msg.react(reactions.success)
 }
 
@@ -254,7 +239,8 @@ export async function stickerLyPack (msg) {
   // remove https://sticker.ly/s/ from the beginning of the message if it exists
   msg.body = msg.body.replace('https://sticker.ly/s/', '')
 
-  const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+  // const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+  const isStickerGroup = false
   const limit = getStickerLimit(isStickerGroup)
 
   if (!msg.body) {
@@ -299,7 +285,7 @@ export async function stickerLyPack (msg) {
     await msg.reply(spintax(message))
   }
 
-  // await sendStickers(stickersPaginated, msg.aux.chat)
+  await sendStickers(stickersPaginated, msg)
   await msg.react(reactions.success)
 }
 
@@ -315,28 +301,37 @@ export async function stickerLyPack (msg) {
  * @param {import ('whatsapp-web.js').MessageMedia} media - The media to send as a sticker.
  * @param {string} [stickerName='DeadByte.com.br'] - The name of the sticker.
  * @param {string} [stickerAuthor='bot de figurinhas'] - The author of the sticker.
+ * @param {boolean} [overwrite=true] - Whether to overwrite the sticker pack or not.
  * @returns {Promise<import ('whatsapp-web.js').Message>} A Promise that resolves with the Message object of the sent sticker.
  */
-async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
-  // const buffer = Buffer.from(media.data, 'base64')
+async function sendMediaAsSticker (msg, media, author, pack, overwrite = true) {
+  const stickerMedia = await Util.formatToWebpSticker(media, {
+    author: author || (overwrite ? 'DeadByte.com.br' : undefined),
+    pack: pack || (overwrite ? 'bot de figurinhas' : undefined)
+  }, false)
+  const buffer = Buffer.from(stickerMedia.data, 'base64')
 
-  // // if heavier than 1MB, compress it
-  // if (buffer.byteLength > 1_000_000) {
-  //   media = await compressMediaBuffer(buffer)
-  // }
+  // if heavier than 1MB, compress it
+  if (buffer.byteLength > 1_000_000) {
+    media = await compressMediaBuffer(buffer, media)
+    media = await Util.formatToWebpSticker(media, {
+      author: author || (overwrite ? 'DeadByte.com.br' : undefined),
+      pack: pack || (overwrite ? 'bot de figurinhas' : undefined)
+    }, false)
+  }
+  const firstKey = Object.keys(msg.raw.message)[0]
+  const firstItem = msg.raw.message[firstKey]
+  const isEphemeral = !!firstItem.contextInfo?.expiration
 
-  // media = new wwebjs.MessageMedia(media.mimetype || 'image/webp', media.data, media.filename || 'sticker.webp')
-
-  // try {
-  //   return await chat.sendMessage(media, {
-  //     sendMediaAsSticker: true,
-  //     stickerName: stickerName || 'DeadByte.com.br',
-  //     stickerAuthor: stickerAuthor || 'bot de figurinhas',
-  //     stickerCategories: ['💀', '🤖']
-  //   })
-  // } catch (error) {
-  //   logger.error(error)
-  // }
+  try {
+    return await sock.sendMessage(msg.from, {
+      sticker: buffer
+    }, {
+      ephemeralExpiration: isEphemeral ? firstItem.contextInfo?.expiration : undefined
+    })
+  } catch (error) {
+    logger.error(error)
+  }
 }
 
 /**
@@ -348,32 +343,29 @@ async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
  * @returns {Promise<import ('whatsapp-web.js').MessageMedia>} A Promise that resolves with a new MessageMedia object containing the media with the subtitle overlayed.
  * @throws {Error} If there was an error downloading the subtitle media.
  */
-// async function overlaySubtitle (text, stickerMedia) {
-// const mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
+async function overlaySubtitle (text, stickerMedia) {
+  const mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
 
-// const url = await createUrl('image-creator', 'ttp', {
-//   message: text,
-//   subtitle: true
-// })
-// const subtitleMedia = await wwebjs.MessageMedia.fromUrl(url, {
-//   unsafeMime: true
-// })
-// if (!subtitleMedia) throw new Error('Error downloading subtitle media')
+  const url = await createUrl('image-creator', 'ttp', {
+    message: text,
+    subtitle: true
+  })
 
-// const subtitleBuffer = Buffer.from(subtitleMedia.data, 'base64')
-// const finalBuffer = await sharp(mediaBuffer, { animated: true })
-//   .composite([{
-//     input: subtitleBuffer,
-//     gravity: 'south',
-//     animated: true,
-//     tile: true
-//   }])
-//   .webp()
-//   .toBuffer()
+  const subtitleBuffer = await fetch(url).then((res) => res.buffer())
+  const finalBuffer = await sharp(mediaBuffer, { animated: true })
+    .composite([{
+      input: subtitleBuffer,
+      gravity: 'south',
+      animated: true,
+      tile: true
+    }])
+    .webp()
+    .toBuffer()
 
-// // replace media data with the new data from sharp
-// return new wwebjs.MessageMedia('image/webp', finalBuffer.toString('base64'), 'deadbyte.webp', true)
-// }
+  stickerMedia.data = finalBuffer.toString('base64')
+  stickerMedia.filesize = finalBuffer.byteLength
+  return stickerMedia
+}
 
 /**
  * Compresses a media buffer for a sticker image.
@@ -383,43 +375,46 @@ async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
  * @returns {Promise<wwebjs.MessageMedia>} A Promise that resolves with a compressed MessageMedia object.
  * @throws {Error} If the compressed buffer is still too heavy.
  */
-// async function compressMediaBuffer (mediaBuffer) {
-//   logger.debug('compressing sticker...', mediaBuffer.byteLength)
-//   const compressedBuffer = await sharp(mediaBuffer, { animated: true })
-//     .webp({ quality: 33 })
-//     .toBuffer()
-//   logger.debug('compressed sticker!', mediaBuffer.byteLength, '->', compressedBuffer.byteLength)
+async function compressMediaBuffer (mediaBuffer, media) {
+  logger.debug('compressing sticker...', mediaBuffer.byteLength)
+  const compressedBuffer = await sharp(mediaBuffer, { animated: true })
+    .webp({ quality: 33 })
+    .toBuffer()
+  logger.debug('compressed sticker!', mediaBuffer.byteLength, '->', compressedBuffer.byteLength)
 
-//   if (compressedBuffer.byteLength > 1_000_000) throw new Error('Sticker is still too heavy!', mediaBuffer.byteLength)
+  if (compressedBuffer.byteLength > 1_000_000) throw new Error('Sticker is still too heavy!', mediaBuffer.byteLength)
 
-//   return new wwebjs.MessageMedia('image/webp', compressedBuffer.toString('base64'), 'deadbyte.webp', true)
-// }
+  media.data = compressedBuffer.toString('base64')
+  media.filesize = compressedBuffer.byteLength
+
+  return media
+}
 
 /**
  * Uploads an image to get a temporary URL
  * @param {import ('whatsapp-web.js').MessageMedia} media - The media to upload
  * @returns {promise<string>} A Promise that resolves with the temporary URL of the uploaded image.
  */
-// async function getTempUrl (buffer) {
-//   const formData = new FormData()
-//   formData.append('file', buffer, 'sticker.png')
+async function getTempUrl (buffer) {
+  const formData = new FormData()
+  formData.append('file', buffer, 'sticker.png')
 
-//   const url = await createUrl('uploader', 'tempurl', {})
-//   const response = await fetch(url, {
-//     method: 'POST',
-//     body: formData
-//   })
+  const url = await createUrl('uploader', 'tempurl', {})
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData
+  })
 
-//   if (!response.ok) {
-//     logger.error('Error uploading image to remove.bg')
-//     throw new Error('Error uploading image to remove.bg')
-//   }
+  if (!response.ok) {
+    logger.error('Error uploading image to remove.bg')
+    throw new Error('Error uploading image to remove.bg')
+  }
 
-//   const json = await response.json()
-//   const tempUrl = json.result
+  const json = await response.json()
+  const tempUrl = json.result
 
-//   return tempUrl
-// }
+  return tempUrl
+}
 
 /**
  * Get a sticker pack from sticker.ly
@@ -540,10 +535,10 @@ function addPaginationToTheMessage (message, prefix, command, term, limit, total
  * @param {string} chatId
  * @returns {boolean}
  */
-function checkStickerGroup (chatId) {
-  const stickerGroup = '120363187692992289@g.us'
-  return chatId._serialized === stickerGroup
-}
+// function checkStickerGroup (chatId) {
+//   const stickerGroup = '120363187692992289@g.us'
+//   return chatId._serialized === stickerGroup
+// }
 
 /**
  * Get the limit of stickers based on the chat type
@@ -583,22 +578,24 @@ function paginateStickers (stickers, cursor, limit) {
  * @param {Object} chat
  * @returns {Promise}
  */
-// async function sendStickers (stickersPaginated, chat) {
-//   for (const s of stickersPaginated) {
-//     const media = await wwebjs.MessageMedia.fromUrl(s.url)
-//     await sendMediaAsSticker(chat, media)
-//     await waitRandomTime()
-//   }
-// }
+async function sendStickers (stickersPaginated, msg) {
+  for (const s of stickersPaginated) {
+    // const media = await wwebjs.MessageMedia.fromUrl(s.url)
+    let media = await MessageMedia.fromUrl(s.url)
+    media = await Util.formatToWebpSticker(media, {}, false)
+    await sendMediaAsSticker(msg, media)
+    await waitRandomTime()
+  }
+}
 
 /**
  * Wait random time
- * @param {number} min @default 50
- * @param {number} max @default 500
+ * @param {number} min @default 25
+ * @param {number} max @default 250
  * @returns {Promise}
  */
-// function waitRandomTime (min = 50, max = 500) {
-//   return new Promise((resolve) => {
-//     setTimeout(resolve, Math.random() * (max - min) + min)
-//   })
-// }
+function waitRandomTime (min = 25, max = 250) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, Math.random() * (max - min) + min)
+  })
+}

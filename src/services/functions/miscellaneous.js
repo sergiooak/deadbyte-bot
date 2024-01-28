@@ -1,5 +1,7 @@
 // import { getQueueLength } from '../queue.js'
+import { MessageMedia } from '../../meta/messageMedia.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import { webpToMp4 } from '../../utils/converters.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
@@ -12,8 +14,6 @@ import mime from 'mime-types'
 import OpenAI from 'openai'
 import sharp from 'sharp'
 import dayjs from 'dayjs'
-import path from 'path'
-import fs from 'fs'
 
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
@@ -33,7 +33,7 @@ export async function uptime (msg) {
   const clock = '{⏳|⌚|⏰|⏱️|⏲️|🕰️|🕛|🕧|🕐|🕜|🕑|🕝}'
   await msg.react(spintax(clock)) // react with random clock emoji
 
-  const saudation = `{${spintax(clock)}} - {Olá|Oi|Oie|E aí} ${msg.aux?.sender?.pushname || 'usuário'} tudo {jóia|bem}?`
+  const saudation = `{${spintax(clock)}} - {Olá|Oi|Oie|E aí} ${msg.pushname || 'usuário'} tudo {jóia|bem}?`
   const part1 = '{Eu estou|Estou|O bot {está|ta|tá}|O DeadByte {está|ta|tá}} {online|on|ligado}{ direto|} {a|á|tem}{:|} '
 
   const message = `${saudation}\n\n${part1}*${uptimeString}*`
@@ -86,68 +86,59 @@ export async function dice (msg) {
 }
 
 /**
- * Tests functions
- * @param {import('../../types.d.ts').WWebJSMessage} msg
- */
-export async function debug (msg) {
-  const debugEmoji = '🐛'
-  await msg.react(debugEmoji)
-  // Debug code goes here
-}
-
-/**
  * Send the files as a document
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function toFile (msg) {
-  await msg.react('❌')
-  await msg.reply('❌ - Esse comando está desativado no momento!')
-  // if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
-  //   await msg.react(reactions.error)
+  if (!msg.hasMedia || (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
+    await msg.react(reactions.error)
 
-  //   const header = '☠️🤖'
-  //   const part1 = 'Para usar o *{!toFile|!arquivo}* você {precisa|tem que}'
-  //   const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
-  //   const end = '{!|!!|!!!}'
+    const header = '☠️🤖'
+    const part1 = 'Para usar o *{!toFile|!arquivo}* você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
+    const end = '{!|!!|!!!}'
 
-  //   const message = spintax(`${header} - ${part1} ${part2}${end}`)
-  //   return await msg.reply(message)
-  // }
-  // await msg.react('🗂️')
-  // const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  // if (!media) throw new Error('Error downloading media')
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
+  let media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
+  if (!media) throw new Error('Error downloading media')
 
-  // // the last 10 chars of the timestamp
-  // const timestampish = Date.now().toString().slice(-10)
-  // const filename = `deadbyte-${timestampish}.${mime.extension(media.mimetype)}`
-  // media.filename = media.filename || filename
+  // the last 10 chars of the timestamp
+  const timestampish = Date.now().toString().slice(-10)
+  const filename = `deadbyte-${timestampish}.${mime.extension(media.mimetype)}`
+  media.filename = media.filename || filename
 
-  // const buffer = Buffer.from(media.data, 'base64')
+  const buffer = Buffer.from(media.data, 'base64')
 
-  // let message = ''
-  // message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
-  // message += 'o arquivo{ que você {me |}{pediu|enviou}|}!\n\n'
+  const isImage = media.mimetype.includes('image')
+  const isVideo = media.mimetype.includes('video')
+  // use sharp to check if the image is animated
+  const isAnimated = isImage ? await sharp(buffer).metadata().then(m => parseInt(m.pages) > 1) : false
 
-  // const isImage = media.mimetype.includes('image')
-  // const isVideo = media.mimetype.includes('video')
-  // // use sharp to check if the image is animated
-  // const isAnimated = isImage ? await sharp(buffer).metadata().then(m => parseInt(m.pages) > 1) : false
+  if (isImage && !isAnimated) {
+    const converted = await sharp(buffer).toFormat('png').toBuffer()
+    media.data = converted.toString('base64')
+    media.mimetype = 'image/png'
+    media.filename = media.filename.split('.').slice(0, -1).join('.') + '.png'
+    await msg.reply({ media, caption: 'DeadByte.com.br - bot de figurinhas' })
+  }
 
-  // const finalExtension = isImage ? isAnimated ? 'webp' : 'png' : mime.extension(media.mimetype)
+  if (isImage && isAnimated) {
+    await msg.reply({ media, caption: 'Espere um pouco que vou converter esse *webp* formato melhor para você...' })
+    await msg.react(reactions.loading)
 
-  // message += `É ${isImage ? 'uma imagem' : isVideo ? 'um vídeo' : 'um arquivo'} ${finalExtension.toUpperCase()}`
-  // message += isImage && isAnimated ? ' animada' : ''
+    const tempUrl = await getTempUrl(media)
+    const url = await webpToMp4(tempUrl)
+    media = await MessageMedia.fromUrl(url)
+    await msg.reply({ media, gifPlayback: true, caption: 'DeadByte.com.br - bot de figurinhas' })
+  }
 
-  // if (isImage && !isAnimated) {
-  //   const converted = await sharp(buffer).toFormat('png').toBuffer()
-  //   media.data = converted.toString('base64')
-  //   media.mimetype = 'image/png'
-  //   media.filename = media.filename.split('.').slice(0, -1).join('.') + '.png'
-  //   return await msg.reply(media, undefined, { sendMediaAsDocument: false, caption: spintax(message) })
-  // }
-  // await msg.reply(media, undefined, { sendMediaAsDocument: true, caption: spintax(message) })
+  if (isVideo) {
+    await msg.reply({ media, caption: 'DeadByte.com.br - bot de figurinhas' })
+  }
 
-  // TODO convert to webp if animated to mp4 and send as "gif"
+  await msg.react('🗂️')
 }
 
 /**
@@ -198,7 +189,6 @@ export async function ping (msg) {
   //   message += `{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!\n\n`
   // }
 
-  console.log(msg.lag)
   let lag = msg.lag / 1000
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
   lag = isNaN(lag) ? 0 : lag
@@ -377,7 +367,7 @@ async function getTempUrl (media) {
   const json = await response.json()
   const tempUrl = json.result
 
-  return tempUrl
+  return tempUrl.replace('http://', 'https://')
 }
 
 /**

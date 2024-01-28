@@ -1,13 +1,12 @@
-import wwebjs from 'whatsapp-web.js'
-import fetch from 'node-fetch'
-import reactions from '../../config/reactions.js'
-import dayjs from 'dayjs'
-import 'dayjs/locale/pt-br.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
-import FormData from 'form-data'
-import sharp from 'sharp'
 import logger from '../../logger.js'
+import FormData from 'form-data'
+import 'dayjs/locale/pt-br.js'
+import fetch from 'node-fetch'
+import dayjs from 'dayjs'
+import sharp from 'sharp'
 
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
@@ -31,10 +30,16 @@ export async function qrImageCreator (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'qr', { text: msg.body })
+  console.log(url)
 
   try {
-    const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
-    await msg.reply(media)
+    // const media = await MessageMedia.fromUrl(url, { unsafeMime: true })
+    // console.log(media)
+    await msg.reply({
+      image: {
+        url
+      }
+    })
     await msg.react(reactions.success)
   } catch (error) {
     logger.error(error)

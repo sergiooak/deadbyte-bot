@@ -29,10 +29,10 @@ const okTypes = [
  */
 export default async (upsert) => {
   logger.trace('messages.upsert', upsert)
+  if (upsert.messages[0].key.fromMe) return // ignore self messages
   const meta = await importFresh('meta/message.js')
   const msg = meta.default(upsert.messages[0])
   if (!msg) return
-  if (msg.fromMe) return // ignore self messages
 
   if (!okTypes.includes(msg.type)) return
   await msg.sendSeen()
@@ -45,11 +45,9 @@ export default async (upsert) => {
     await msg.react('👀')
     return await msg.reply('👀 - {Haha eu|Kkkk eu|Eu} {vi|sei} {oq|o que} {tava antes|tu tinha escrito}{ ein| kk|!|!!!}')
   }
-  // await msg.reply(msg.type)
 
   const sock = getSocket()
   await sock.sendPresenceUpdate('available')
-
   const messageParser = await importFresh('validators/message.js')
   const handlerModule = await messageParser.default(msg)
   logger.trace('handlerModule: ', handlerModule)

@@ -1,10 +1,13 @@
 import messageTypeValidator from '../validators/messageType.js'
-import spintax from '../utils/spintax.js'
-import { getSocket } from '../index.js'
-import fetch from 'node-fetch'
-import logger from '../logger.js'
+import { downloadMediaMessage, downloadContentFromMessage } from '@whiskeysockets/baileys'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import spintax from '../utils/spintax.js'
+import { MessageMedia } from './messageMedia.js'
+import { getSocket } from '../index.js'
+import logger from '../logger.js'
+import fetch from 'node-fetch'
 import 'dayjs/locale/pt-br.js'
+import fs from 'fs/promises'
 import dayjs from 'dayjs'
 
 //
@@ -43,8 +46,17 @@ const processMessage = (msg) => {
     ? firstItem
     : firstItem.caption || firstItem.text || ''
 
+  const quotedMsg = firstItem.contextInfo?.quotedMessage
+  if (quotedMsg) {
+    const { type } = messageTypeValidator(quotedMsg)
+    quotedMsg.type = type
+    const firstKey = Object.keys(quotedMsg)[0]
+    quotedMsg.hasMedia = !!quotedMsg[firstKey].mediaKey
+  }
+
   const properties = {
     id: msg.key.id,
+    pushname: msg.pushName,
     type,
     duration: firstItem.seconds,
     from: msg.key.remoteJid,
@@ -94,7 +106,8 @@ const processMessage = (msg) => {
   const methods = {
     react,
     reply,
-    sendSeen
+    sendSeen,
+    downloadMedia
   }
 
   for (const method in methods) {
@@ -142,17 +155,54 @@ async function react (reaction) {
  * @returns {Promise<void>}
  */
 async function reply (content, chatId, options) {
-  // TODO: Add better support for media messages
+  const mode = typeof content === 'string' ? 'text' : 'media'
+  let messageObject = {}
+  let tempPath = ''
+  if (mode === 'text') messageObject.text = spintax(content)
+  if (mode === 'media') {
+    messageObject = content
+
+    if (messageObject.caption) {
+      messageObject.caption = spintax(messageObject.caption)
+    }
+
+    if (messageObject.media) {
+      const media = messageObject.media
+      delete messageObject.media
+
+      tempPath = `./src/temp/${media.filename}`
+      await fs.writeFile(tempPath, media.data, 'base64')
+
+      let type = 'document'
+      if (media.mimetype.split('/')[0] === 'image') type = 'image'
+      if (media.mimetype.split('/')[0] === 'video') type = 'video'
+      if (media.mimetype.split('/')[0] === 'audio') type = 'audio'
+
+      if (type === 'image' && media.mimetype === 'image/webp') {
+        // if is a webp iamge send as documment
+        type = 'document'
+      }
+
+      messageObject[type] = { url: tempPath }
+      messageObject.mimetype = media.mimetype
+      messageObject.fileName = media.filename
+    }
+  }
   /**
    * Message object itself
    * @type {import('@whiskeysockets/baileys').proto.WebMessageInfo}
    */
   const msg = this
-  await sock.sendMessage(chatId || msg.key.remoteJid, {
-    text: spintax(content)
-  }, {
-    quoted: msg
+
+  const firstKey = Object.keys(msg.message)[0]
+  const firstItem = msg.message[firstKey]
+  const isEphemeral = !!firstItem.contextInfo?.expiration
+
+  await sock.sendMessage(chatId || msg.key.remoteJid, messageObject, {
+    quoted: msg,
+    ephemeralExpiration: isEphemeral ? firstItem.contextInfo?.expiration : undefined
   })
+  if (tempPath) await fs.unlink(tempPath)
 }
 
 /**
@@ -167,6 +217,51 @@ async function sendSeen () {
   const msg = this
   await sock.readMessages([msg.key])
 }
+
+/**
+ * Downloads the media of this message
+ * @returns {Promise<void>}
+ */
+async function downloadMedia (quoted = false) {
+  /**
+   * Message object itself
+   * @type {import('@whiskeysockets/baileys').proto.WebMessageInfo}
+   */
+  const msg = this
+  const firstKey = Object.keys(msg.message)[0]
+  const firstItem = msg.message[firstKey]
+  const firstKeyFromQuoted = quoted ? Object.keys(firstItem.contextInfo.quotedMessage)[0] : undefined
+  const firstItemFromQuoted = quoted ? firstItem.contextInfo.quotedMessage[firstKeyFromQuoted] : undefined
+  const downloadType = quoted
+    ? firstKeyFromQuoted.replace('Message', '')
+    : firstKey.replace('Message', '')
+
+  try {
+    const stream = await downloadContentFromMessage(!quoted ? firstItem : firstItemFromQuoted, downloadType)
+    let buffer = Buffer.from([])
+    for await (const chunk of stream) {
+      buffer = Buffer.concat([buffer, chunk])
+    }
+
+    // const buffer = await downloadMediaMessage(msg, 'buffer', {}, {
+    //   logger,
+    //   reuploadRequest: sock.updateMediaMessage
+    // })
+    const media = await MessageMedia.fromBuffer(buffer)
+    const metadataSource = quoted ? firstItemFromQuoted : firstItem
+    media.metadata = {
+      width: metadataSource.width,
+      height: metadataSource.height,
+      ratio: metadataSource.width / metadataSource.height,
+      duration: metadataSource.seconds
+    }
+    return media
+  } catch (error) {
+    logger.error('downloadMedia ERROR', { error })
+    throw error
+  }
+}
+
 //
 // ================================== Helper Functions ==================================
 //

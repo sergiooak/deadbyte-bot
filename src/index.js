@@ -157,6 +157,10 @@ export async function connectToWhatsApp () {
 
   logger.info('Client initialized!')
 
+  // await sock.sendMessage('asd', {
+  //   document:
+  // })
+
   return sock
 
   /**

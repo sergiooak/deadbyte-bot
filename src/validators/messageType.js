@@ -46,30 +46,35 @@ const types = {
  */
 export default (msg) => {
   const keysToIgnore = ['messageContextInfo']
-  const keys = Object.keys(msg.message)
-    .filter(key => !keysToIgnore.includes(key))
-  if (keys.length === 0) return types.UNKNOWN
-
-  const firstKey = keys[0]
+  const hasKeys = Object.keys(msg).length > 1
+  let firstKey = Object.keys(msg)[0]
   let incomingType = firstKey
+  if (hasKeys) {
+    const keys = Object.keys(msg.message)
+      .filter(key => !keysToIgnore.includes(key))
+    if (keys.length === 0) return types.UNKNOWN
 
-  if (keys.length > 1) {
-    // senderKeyDistributionMessage
-    if (keys.includes('senderKeyDistributionMessage')) {
-      // delete this key and continue from msg.message
-      delete msg.message.senderKeyDistributionMessage
-      // and make sure that the other key is the FIRST key of msg.message
-      const newMessage = {}
-      const leftOverKeys = Object.keys(msg.message)
-      const keyName = keys[1]
-      incomingType = keyName
-      newMessage[keyName] = msg.message[keyName]
-      leftOverKeys.forEach(key => {
-        if (key !== keyName) newMessage[key] = msg.message[key]
-      })
-      msg.message = newMessage
-    } else {
-      logger.warn('Message has more than one key', msg)
+    firstKey = keys[0]
+    incomingType = firstKey
+
+    if (keys.length > 1) {
+      // senderKeyDistributionMessage
+      if (keys.includes('senderKeyDistributionMessage')) {
+        // delete this key and continue from msg.message
+        delete msg.message.senderKeyDistributionMessage
+        // and make sure that the other key is the FIRST key of msg.message
+        const newMessage = {}
+        const leftOverKeys = Object.keys(msg.message)
+        const keyName = keys[1]
+        incomingType = keyName
+        newMessage[keyName] = msg.message[keyName]
+        leftOverKeys.forEach(key => {
+          if (key !== keyName) newMessage[key] = msg.message[key]
+        })
+        msg.message = newMessage
+      } else {
+        logger.warn('Message has more than one key', msg)
+      }
     }
   }
 
