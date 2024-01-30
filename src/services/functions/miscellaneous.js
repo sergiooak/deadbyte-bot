@@ -14,6 +14,8 @@ import mime from 'mime-types'
 import OpenAI from 'openai'
 import sharp from 'sharp'
 import dayjs from 'dayjs'
+import path from 'path'
+import fs from 'fs'
 
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
@@ -146,32 +148,31 @@ export async function toFile (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function toUrl (msg) {
-  await msg.react('❌')
-  await msg.reply('❌ - Esse comando está desativado no momento!')
-  // if ((!msg.hasQuotedMsg && !msg.hasMedia) || (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
-  //   await msg.react(reactions.error)
+  if (!msg.hasMedia || (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
+    await msg.react(reactions.error)
 
-  //   const header = '☠️🤖'
-  //   const part1 = 'Para usar o *{!toUrl|!url}* você {precisa|tem que}'
-  //   const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
-  //   const end = '{!|!!|!!!}'
+    const header = '☠️🤖'
+    const part1 = 'Para usar o *{!toUrl|!url}* você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {respondendo ou na legenda} um {arquivo}'
+    const end = '{!|!!|!!!}'
 
-  //   const message = spintax(`${header} - ${part1} ${part2}${end}`)
-  //   return await msg.reply(message)
-  // }
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
 
-  // await msg.react('🔗')
-  // const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  // if (!media) throw new Error('Error downloading media')
-  // const tempUrl = (await getTempUrl(media)).replace('http://', 'https://')
+  await msg.react('🔗')
+  const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
+  if (!media) throw new Error('Error downloading media')
+  const tempUrl = (await getTempUrl(media))
+  console.log('tempUrl', tempUrl)
 
-  // let message = '🔗 - '
-  // message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
-  // message += '{a url temporária|o link temporário|o endereço temporário} '
-  // message += '{para {o|esse}|desse} arquivo: '
-  // message += `${tempUrl}\n\n`
-  // message += '{Válido por {apenas|}|Com {validade|vigência} de|Por um período de} {3|03|três} dias'
-  // await msg.reply(spintax(message))
+  let message = '🔗 - '
+  message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
+  message += '{a url temporária|o link temporário|o endereço temporário} '
+  message += '{para {o|esse}|desse} arquivo: '
+  message += `${tempUrl}\n\n`
+  message += '{Válido por {apenas|}|Com {validade|vigência} de|Por um período de} {3|03|três} dias'
+  await msg.reply(message)
 }
 
 /**
@@ -210,59 +211,66 @@ export async function ping (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function speak (msg) {
-  await msg.react('❌')
-  await msg.reply('❌ - Esse comando está desativado no momento!')
-  // let msgToReply = msg
-  // let input = msg.body
-  // if (msg.hasQuotedMsg && !msg.body) {
-  //   const quotedMsg = await msg.getQuotedMessage()
-  //   input = quotedMsg.body
-  //   msgToReply = quotedMsg
-  // }
+  let input = msg.body
+  console.log('msg.hasQuotedMsg', msg.hasQuotedMsg)
+  console.log('!msg.body', !msg.body)
+  if (msg.hasQuotedMsg && !msg.body) {
+    const quotedMsg = msg.quotedMsg
+    console.log('quotedMsg', quotedMsg)
+    console.log('quotedMsg.text', quotedMsg.text)
+    const keys = Object.keys(quotedMsg)
+    const firstItem = quotedMsg[keys[0]]
+    console.log('keys', keys)
+    input = typeof firstItem === 'string'
+      ? firstItem
+      : firstItem.caption || firstItem.text || ''
+    console.log('input', input)
+  }
 
-  // if (!input) {
-  //   await msg.reply(
-  //     spintax('Para usar o *{!speak|!fale|!falar|!voz|!diga|!dizer}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um texto!\n\nExemplo: `!diga Olá, eu sou o DeadByte!`')
-  //   )
-  //   await msg.react(reactions.error)
-  //   return
-  // }
+  if (!input) {
+    await msg.reply(
+      spintax('Para usar o *{!speak|!fale|!falar|!voz|!diga|!dizer}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um texto!\n\nExemplo: `!diga Olá, eu sou o DeadByte!`')
+    )
+    await msg.react(reactions.error)
+    return
+  }
 
-  // const inputLimit = 1000
-  // const originalInputSize = input.length
+  const inputLimit = 1000
+  const originalInputSize = input.length
 
-  // if (originalInputSize > inputLimit) {
-  //   await msg.reply(`O texto não pode ter mais de ${inputLimit} caracteres!\n\nO seu texto tem ${originalInputSize} caracteres!\nVou cortar o texto para você!`)
-  //   input = input.slice(0, inputLimit)
-  // }
+  if (originalInputSize > inputLimit) {
+    await msg.reply(`O texto não pode ter mais de ${inputLimit} caracteres!\n\nO seu texto tem ${originalInputSize} caracteres!\nVou cortar o texto para você!`)
+    input = input.slice(0, inputLimit)
+  }
 
-  // await msg.react('🗣️')
+  await msg.react('🗣️')
   // await msg.aux.chat.sendStateRecording()
 
-  // const voices = ['onyx', 'echo', 'fable', 'nova', 'shimmer']
+  const voices = ['onyx', 'echo', 'fable', 'nova', 'shimmer']
 
-  // // function can be called with !speak1, !speak2, !speak3, !speak4, !speak5
-  // let voiceId = parseInt(msg.aux.function.slice(-1)) - 1 || 0
-  // // say if the voice is invalid
-  // if (voiceId > voices.length - 1) {
-  //   await msg.reply(`Essa voz não existe!\n\nAs vozes disponíveis são:\n${voices.map((v, i) => `${i + 1} - ${v}`).join('\n')}\n\nIrei usar a voz padrão!`)
-  //   voiceId = 0
-  // }
+  // function can be called with !speak1, !speak2, !speak3, !speak4, !speak5
+  let voiceId = parseInt(msg.aux.function.slice(-1)) - 1 || 0
+  // say if the voice is invalid
+  if (voiceId > voices.length - 1) {
+    await msg.reply(`Essa voz não existe!\n\nAs vozes disponíveis são:\n${voices.map((v, i) => `${i + 1} - ${v}`).join('\n')}\n\nIrei usar a voz padrão!`)
+    voiceId = 0
+  }
 
-  // const voice = voices[voiceId]
+  const voice = voices[voiceId]
 
-  // const opus = await openai.audio.speech.create({
-  //   input,
-  //   voice,
-  //   model: 'tts-1',
-  //   response_format: 'opus'
-  // })
+  const opus = await openai.audio.speech.create({
+    input,
+    voice,
+    model: 'tts-1',
+    response_format: 'opus'
+  })
 
-  // const buffer = Buffer.from(await opus.arrayBuffer())
+  const buffer = Buffer.from(await opus.arrayBuffer())
 
-  // // hand make the media object
-  // const media = new wwebjs.MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte.opus')
-  // await msgToReply.reply(media, undefined, { sendAudioAsVoice: true })
+  // hand make the media object
+  const media = new MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte' + Date.now() + '.opus'
+    , buffer.length)
+  await msg.reply({ media }, undefined, { ptt: true })
 }
 
 /**
@@ -270,41 +278,35 @@ export async function speak (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function transcribe (msg) {
-  await msg.react('❌')
-  await msg.reply('❌ - Esse comando está desativado no momento!')
+  let media = msg.hasMedia ? await msg.downloadMedia() : null
+  if (msg.hasQuotedMsg && !msg.hasMedia) {
+    media = await msg.downloadMedia(true)
+  }
 
-  // let msgToReply = msg
-  // let media = msg.hasMedia ? await msg.downloadMedia() : null
-  // if (msg.hasQuotedMsg && !msg.hasMedia) {
-  //   const quotedMsg = await msg.getQuotedMessage()
-  //   media = await quotedMsg.downloadMedia()
-  //   msgToReply = quotedMsg
-  // }
+  if (!media) {
+    await msg.reply(
+      spintax('Para usar o *{!transcribe|!transcricao|!transcrever}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um áudio!\n\nExemplo: `!transcrever` respondendo um áudio')
+    )
+    await msg.react(reactions.error)
+    return
+  }
 
-  // if (!media) {
-  //   await msg.reply(
-  //     spintax('Para usar o *{!transcribe|!transcricao|!transcrever}* você {precisa|tem que} {enviar|mandar} {esse|o} comando junto com um áudio!\n\nExemplo: `!transcrever` respondendo um áudio')
-  //   )
-  //   await msg.react(reactions.error)
-  //   return
-  // }
-
-  // await msg.react('🎙️')
+  await msg.react('🎙️')
   // await msg.aux.chat.sendStateTyping()
 
-  // // save file to temp folder
-  // const timestampish = Date.now().toString().slice(-10)
-  // const filePath = `./src/temp/${timestampish}.mp3`
-  // const nomalizedFilePath = path.resolve(filePath)
-  // fs.writeFileSync(nomalizedFilePath, media.data, { encoding: 'base64' })
+  // save file to temp folder
+  const timestampish = Date.now().toString().slice(-10)
+  const filePath = `./src/temp/${timestampish}.mp3`
+  const nomalizedFilePath = path.resolve(filePath)
+  fs.writeFileSync(nomalizedFilePath, media.data, { encoding: 'base64' })
 
-  // const transcription = await openai.audio.transcriptions.create({
-  //   file: fs.createReadStream(nomalizedFilePath),
-  //   model: 'whisper-1',
-  //   response_format: 'text'
-  // })
-  // fs.unlinkSync(nomalizedFilePath)
-  // await msgToReply.reply(`🎙️ - ${transcription.trim()}`)
+  const transcription = await openai.audio.transcriptions.create({
+    file: fs.createReadStream(nomalizedFilePath),
+    model: 'whisper-1',
+    response_format: 'text'
+  })
+  fs.unlinkSync(nomalizedFilePath)
+  await msg.reply(`🎙️ - ${transcription.trim()}`)
 }
 
 //

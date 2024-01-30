@@ -1,6 +1,6 @@
-import fetch from 'node-fetch'
-import logger from './logger.js'
 import { kebabCase } from 'change-case'
+import logger from './logger.js'
+import fetch from 'node-fetch'
 import qs from 'qs'
 //
 // ===================================== Variables ======================================
@@ -98,7 +98,6 @@ export async function loadCommands () {
 
 /**
  * Get the commands
- *
  * @returns {object} commands
  */
 export function getCommands () {
@@ -129,14 +128,16 @@ export function getBot () {
  * @param {import('whatsapp-web.js').Contact} contact
  */
 export async function findOrCreateContact (contact) {
-  // 1 - Check if contact.id._serialized is on the cache
-  if (contactsCache[contact.id._serialized]) {
-    contactsCache[contact.id._serialized].lastSeen = new Date()
-    return contactsCache[contact.id._serialized]
+  const id = contact.id.replace('@s.whatsapp.net', '@c.us')
+
+  // 1 - Check if contact is on the cache
+  if (contactsCache[id]) {
+    contactsCache[id].lastSeen = new Date()
+    return contactsCache[id]
   }
 
   // 2 - If not, fetch from the database
-  const response = await fetch(`${dbUrl}/contacts/${contact.id._serialized}`, {
+  const response = await fetch(`${dbUrl}/contacts/${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -144,20 +145,18 @@ export async function findOrCreateContact (contact) {
     },
     body: JSON.stringify({
       data: {
-        name: contact.name,
-        number: contact.id.user,
+        number: id.split('@')[0],
         pushname: contact.pushname,
-        isMyContact: contact.isMyContact,
-        wid: contact.id._serialized
+        wid: id
       }
     })
   })
   const data = await response.json()
 
   // 3 - Save on the cache
-  contactsCache[contact.id._serialized] = data
-  contactsCache[contact.id._serialized].lastSeen = new Date()
-  return contactsCache[contact.id._serialized]
+  contactsCache[id] = data
+  contactsCache[id].lastSeen = new Date()
+  return contactsCache[id]
 }
 
 // mini cache system for contacts, every minute filter out the contacts that haven't been seen in the last 5 minutes
@@ -173,18 +172,20 @@ setInterval(() => {
 
 /**
  * Find or create a chat on the database
- *
- * @param {import('whatsapp-web.js').Chat} chat
  */
-export async function findOrCreateChat (chat) {
+export async function findOrCreateChat (msg) {
   // 1 - Check if chat.id._serialized is on the cache
-  if (chatsCache[chat.id._serialized]) {
-    chatsCache[chat.id._serialized].lastSeen = new Date()
-    return chatsCache[chat.id._serialized]
+  const id = msg.isGroup
+    ? msg.aux.group.id
+    : msg.contact.replace('@s.whatsapp.net', '@c.us')
+
+  if (chatsCache[id]) {
+    chatsCache[id].lastSeen = new Date()
+    return chatsCache[id]
   }
 
   // 2 - If not, fetch from the database
-  const response = await fetch(`${dbUrl}/chats/${chat.id._serialized}`, {
+  const response = await fetch(`${dbUrl}/chats/${id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -192,17 +193,17 @@ export async function findOrCreateChat (chat) {
     },
     body: JSON.stringify({
       data: {
-        name: chat.name,
-        isGroup: chat.isGroup,
-        wid: chat.id._serialized
+        name: msg.isGroup ? msg.aux.group.subject : msg.pushname,
+        isGroup: msg.isGroup,
+        wid: id
       }
     })
   })
   const data = await response.json()
 
   // 3 - Save on the cache
-  chatsCache[chat.id._serialized] = data
-  chatsCache[chat.id._serialized].lastSeen = new Date()
+  chatsCache[id] = data
+  chatsCache[id].lastSeen = new Date()
 
   return data
 }
@@ -274,30 +275,27 @@ export async function saveActionToDB (moduleName, functionName, msg) {
   const commandGroupID = commandGroup?.id
   const command = commandGroup.commands.find((command) => command.slug === kebabCase(functionName))
   const commandID = command?.id
-  const contact = await findOrCreateContact(msg.aux.sender)
+  const contact = await findOrCreateContact(msg.contact)
   const contactID = contact.id
-  const chat = await findOrCreateChat(msg.aux.chat)
+  const chat = await findOrCreateChat(msg)
   const chatID = chat.id
-
-  const action = await createAction(commandGroupID, commandID, chatID, contactID)
-
+  const action = createAction(commandGroupID, commandID, chatID, contactID)
   try {
-    const actionID = action.id
-    return { action, actionID, commandGroup, commandGroupID, command, commandID, contact, contactID, chat, chatID }
+    return { action, commandGroup, commandGroupID, command, commandID, contact, contactID, chat, chatID }
   } catch (error) {
     logger.error('Error saving action to database', error)
     logger.error('Action:', action)
   }
 }
 
-export async function findCurrentBot (client) {
+export async function findCurrentBot (socket) {
+  const id = socket.user.id.split(':')[0] + '@c.us'
   // 1 - Check if bot already exists on db
-
   const findQuery = qs.stringify(
     {
       filters: {
         wid: {
-          $eq: client.info.wid._serialized
+          $eq: id
         }
       }
     },
@@ -305,6 +303,9 @@ export async function findCurrentBot (client) {
       encodeValuesOnly: true // prettify URL
     }
   )
+  while (!token) { // wait token to be populated
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
   const find = await fetch(`${dbUrl}/bots?${findQuery}`, {
     method: 'GET',
     headers: {
@@ -312,7 +313,6 @@ export async function findCurrentBot (client) {
       Authorization: `Bearer ${token}`
     }
   })
-
   const { data: findData } = await find.json()
 
   if (findData.length) {
@@ -321,7 +321,6 @@ export async function findCurrentBot (client) {
   }
 
   // 2 - If not, create it
-
   const create = await fetch(`${dbUrl}/bots`, {
     method: 'POST',
     headers: {
@@ -330,12 +329,12 @@ export async function findCurrentBot (client) {
     },
     body: JSON.stringify({
       data: {
-        wid: client.info.wid._serialized,
-        pushname: client.info.pushname,
-        platform: client.info.platform
+        wid: id,
+        pushname: socket.user.name
       }
     })
   })
+
   const { data: createData } = await create.json()
   bot = createData.id
 }

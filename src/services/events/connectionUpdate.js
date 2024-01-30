@@ -8,15 +8,13 @@ import { connectToWhatsApp } from '../../index.js'
  */
 export default async (update) => {
   logger.trace('Connection updated', update)
+  if (global.qr !== update.qr) {
+    global.qr = update.qr
+  }
   const { connection, lastDisconnect } = update
   if (connection === 'close') {
-    const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut
-    logger.warn('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect)
-    // reconnect if not logged out
-    if (shouldReconnect) {
-      connectToWhatsApp()
-    }
-  } else if (connection === 'open') {
-    logger.warn('opened connection')
+    lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
+      ? connectToWhatsApp()
+      : logger.fatal('connection logged out...')
   }
 }

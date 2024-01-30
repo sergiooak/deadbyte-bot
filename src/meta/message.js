@@ -1,8 +1,8 @@
+import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 import messageTypeValidator from '../validators/messageType.js'
-import { downloadMediaMessage, downloadContentFromMessage } from '@whiskeysockets/baileys'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
-import spintax from '../utils/spintax.js'
 import { MessageMedia } from './messageMedia.js'
+import spintax from '../utils/spintax.js'
 import { getSocket } from '../index.js'
 import logger from '../logger.js'
 import fetch from 'node-fetch'
@@ -15,11 +15,8 @@ import dayjs from 'dayjs'
 //
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
-/**
- * Socket instance
- * @type {import('@whiskeysockets/baileys').Baileys}
- */
-let sock = null
+
+const socket = getSocket()
 //
 // ================================ Main Functions =================================
 //
@@ -27,58 +24,88 @@ let sock = null
  * Inject functions into the message object to be drop in replacement for wwebjs
  * @param {import('@whiskeysockets/baileys').proto.IWebMessageInfo} msg
  */
-const processMessage = (msg) => {
-  if (!msg?.message) return false
-  const { type, updatedMsg } = messageTypeValidator(msg)
-  msg = updatedMsg
-
-  sock = getSocket()
-
+const serializeMessage = (msg) => {
+  msg.raw = structuredClone(msg)
   const newMsgObject = {}
+  const { type } = messageTypeValidator(msg)
 
-  const firstKey = Object.keys(msg.message)[0]
-  const firstItem = msg.message[firstKey]
+  newMsgObject.type = type
+  try {
+    const berak = Object.keys(msg.message)[0]
+    newMsgObject.originalType = berak
+  } catch {
+    newMsgObject.originalType = null
+  }
 
-  const quotedDeep = structuredClone(msg)
-  quotedDeep.message = firstItem.contextInfo?.quotedMessage
-
-  const body = typeof firstItem === 'string'
+  const firstItem = msg.message[newMsgObject.originalType]
+  newMsgObject.body = typeof firstItem === 'string'
     ? firstItem
     : firstItem.caption || firstItem.text || ''
 
-  const quotedMsg = firstItem.contextInfo?.quotedMessage
-  if (quotedMsg) {
-    const { type } = messageTypeValidator(quotedMsg)
-    quotedMsg.type = type
-    const firstKey = Object.keys(quotedMsg)[0]
-    quotedMsg.hasMedia = !!quotedMsg[firstKey].mediaKey
+  newMsgObject.hasQuotedMsg = false
+  newMsgObject.quotedMsg = firstItem.contextInfo?.quotedMessage?.ephemeralMessage
+    ? firstItem.contextInfo.quotedMessage.ephemeralMessage.message
+    : firstItem.contextInfo?.quotedMessage
+
+  if (newMsgObject.quotedMsg) {
+    newMsgObject.hasQuotedMsg = true
+    newMsgObject.quotedMsg.type = Object.keys(newMsgObject.quotedMsg)[0]
+    const firstItem = newMsgObject.quotedMsg[newMsgObject.quotedMsg.type]
+    newMsgObject.quotedMsg.body = typeof firstItem === 'string'
+      ? firstItem
+      : firstItem.caption || firstItem.text || ''
+    newMsgObject.quotedMsg.sender = msg.message[msg.originalType].contextInfo.participant
+    newMsgObject.quotedMsg.fromMe = msg.quotedMsg.sender === socket.user.id.split(':')[0] + '@s.whatsapp.net'
+    const ane = msg.quotedMsg
+    newMsgObject.quotedMsg.chats = (ane.type === 'conversation' && ane.conversation) ? ane.conversation : (ane.type === 'imageMessage') && ane.imageMessage.caption ? ane.imageMessage.caption : (ane.type === 'documentMessage') && ane.documentMessage.caption ? ane.documentMessage.caption : (ane.type === 'videoMessage') && ane.videoMessage.caption ? ane.videoMessage.caption : (ane.type === 'extendedTextMessage') && ane.extendedTextMessage.text ? ane.extendedTextMessage.text : (ane.type === 'buttonsMessage') && ane.buttonsMessage.contentText ? ane.buttonsMessage.contentText : ''
+    msg.quotedMsg.id = msg.message[msg.originalType].contextInfo.stanzaId
   }
+
+  try {
+    const mention = msg.message[msg.originalType].contextInfo.mentionedJid
+    newMsgObject.mentioned = mention
+  } catch {
+    newMsgObject.mentioned = []
+  }
+
+  newMsgObject.isGroup = msg.key.remoteJid.endsWith('@g.us')
+  if (newMsgObject.isGroup) {
+    newMsgObject.sender = msg.participant
+  } else {
+    newMsgObject.sender = msg.key.remoteJid
+  }
+  if (msg.key.fromMe) {
+    newMsgObject.sender = socket.user.id.split(':')[0] + '@s.whatsapp.net'
+  }
+
+  newMsgObject.isBaileys = msg.key.id.startsWith('BAE5') || msg.key.id.startsWith('3EB0')
 
   const properties = {
     id: msg.key.id,
     pushname: msg.pushName,
-    type,
+    contact: {
+      id: newMsgObject.sender || msg.key.participant,
+      pushname: msg.pushName
+    },
+    author: newMsgObject.isGroup ? msg.key.participant : undefined,
     duration: firstItem.seconds,
     from: msg.key.remoteJid,
     fromMe: msg.key.fromMe,
-    body,
     // ack: undefined,
-    author: undefined,
     broadcast: msg.broadcast,
+    bot: socket.user,
     // deviceType: undefined,
     fowardScore: firstItem.contextInfo?.forwardingScore,
     isForwarded: firstItem.contextInfo?.isForwarded,
     hasMedia: !!firstItem.mediaKey,
     mediaKey: firstItem.mediaKey,
-    hasQuotedMsg: !!firstItem.contextInfo?.quotedMessage,
-    quotedMsg: firstItem.contextInfo?.quotedMessage, // TODO: Fix this
     // hasReaction: undefined,
     inviteV4: type === 'groups_v4_invite' ? firstItem : undefined,
     isEphemeral: !!firstItem.contextInfo?.expiration,
     isGif: !!firstItem.gifPlayback,
     // isStarred: undefined,
     // isStatus: undefined,
-    links: extractLinks(body),
+    links: extractLinks(newMsgObject.body),
     location: ['location', 'live_location'].includes(type)
       ? firstItem
       : undefined,
@@ -92,11 +119,9 @@ const processMessage = (msg) => {
     timestampIso: dayjs(msg.messageTimestamp * 1000).toISOString(),
     // lag is the difference between local time and the time of the sender in ms
     // using dayjs to convert
-    lag: dayjs().diff(dayjs(msg.messageTimestamp * 1000), 'ms'),
+    lag: dayjs().diff(dayjs(msg.messageTimestamp * 1000), 'second'),
     // to: msg.key.fromMe ? msg.key.remoteJid : botId,
-    vCards: type === 'multi_vcard' ? firstItem.contacts : type === 'vcard' ? [firstItem] : undefined,
-    raw: structuredClone(msg),
-    sock
+    vCards: type === 'multi_vcard' ? firstItem.contacts : type === 'vcard' ? [firstItem] : undefined
   }
 
   for (const property in properties) {
@@ -123,7 +148,7 @@ const processMessage = (msg) => {
   return newMsgObject
 }
 
-export default processMessage
+export default serializeMessage
 
 //
 // ================================== Methods ==================================
@@ -139,7 +164,7 @@ async function react (reaction) {
    * @type {import('@whiskeysockets/baileys').proto.WebMessageInfo}
    */
   const msg = this
-  await sock.sendMessage(msg.key.remoteJid, {
+  await socket.sendMessage(msg.key.remoteJid, {
     react: {
       text: spintax(reaction),
       key: msg.key
@@ -198,7 +223,7 @@ async function reply (content, chatId, options) {
   const firstItem = msg.message[firstKey]
   const isEphemeral = !!firstItem.contextInfo?.expiration
 
-  await sock.sendMessage(chatId || msg.key.remoteJid, messageObject, {
+  await socket.sendMessage(chatId || msg.key.remoteJid, messageObject, {
     quoted: msg,
     ephemeralExpiration: isEphemeral ? firstItem.contextInfo?.expiration : undefined
   })
@@ -215,7 +240,7 @@ async function sendSeen () {
    * @type {import('@whiskeysockets/baileys').proto.WebMessageInfo}
    */
   const msg = this
-  await sock.readMessages([msg.key])
+  await socket.readMessages([msg.key])
 }
 
 /**

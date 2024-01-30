@@ -2,6 +2,7 @@ import importFresh from '../utils/importFresh.js'
 import fs from 'fs/promises'
 import logger from '../logger.js'
 import reactions from '../config/reactions.js'
+import { getSocket } from '../index.js'
 //
 // ================================ Variables =================================
 //
@@ -15,6 +16,8 @@ const commandless = (msg, aux) => {
     miscellaneousFNtranscribe: msg.hasMedia && ['audio', 'ptt'].includes(msg.type)
   }
 }
+
+const socket = getSocket()
 //
 // ================================ Main Functions =================================
 //
@@ -30,31 +33,14 @@ const commandless = (msg, aux) => {
  */
 export default async (msg) => {
   const aux = {} // auxiliar variables
-  // aux.client = (await import('../index.js')).getClient()
-  // aux.chat = await msg.getChat()
-  // aux.sender = await msg.getContact()
   aux.senderIsMe = msg.fromMe
-  aux.me = msg.sock.user.id.split(':')[0] + '@s.whatsapp.net'
+  aux.me = msg.bot.id.split(':')[0] + '@s.whatsapp.net'
   aux.mentionedMe = msg.mentionedIds ? msg.mentionedIds.includes(aux.me) : false
   if (aux.mentionedMe) {
     msg.body = msg.body.replace(new RegExp(`@${aux.me.split('@')[0]}`, 'g'), '').trim()
   }
 
-  // TODO: create getQuotedMessage() method
-  // if (msg.hasQuotedMsg) {
-  //   aux.quotedMsg = await msg.getQuotedMessage()
-  // }
-
-  // let msgCurrent = msg
-  // const msgPrevious = []
-  // while (msgCurrent.hasQuotedMsg) {
-  //   msgPrevious.push(msgCurrent)
-  //   msgCurrent = await msgCurrent.getQuotedMessage()
-  // }
-  // aux.originalMsg = msgCurrent
   aux.originalMsg = msg
-  // msgPrevious.push(aux.originalMsg)
-  // aux.history = msgPrevious.reverse()
   aux.history = [aux.originalMsg]
 
   // Check if the message is a command
@@ -79,15 +65,15 @@ export default async (msg) => {
   }
 
   aux.mentions = msg.mentionedIds
-
   aux.amIMentioned = aux.mentions ? aux.mentions.includes(aux.me) : false
-  // aux.participants = aux.chat.isGroup ? aux.chat.participants : []
-  // aux.admins = aux.chat.isGroup ? aux.participants.filter((p) => p.isAdmin || p.isSuperAdmin).map((p) => p.id._serialized) : []
-  // aux.isSenderAdmin = aux.admins.includes(msg.author)
-  // aux.isBotAdmin = aux.admins.includes(aux.me)
+  aux.group = msg.isGroup ? await socket.groupMetadata(msg.from) : ''
+  aux.participants = msg.isGroup ? aux.group.participants : []
+  aux.admins = msg.isGroup ? aux.participants.filter((p) => !!p.admin).map((p) => p.id) : []
+  aux.isSenderAdmin = aux.admins.includes(msg.author)
+  aux.isBotAdmin = aux.admins.includes(aux.me)
 
-  // const stickerGroup = '120363187692992289@g.us'
-  // aux.isStickerGroup = aux.chat.isGroup ? aux.chat.id._serialized === stickerGroup : false
+  const stickerGroup = '120363187692992289@g.us'
+  aux.isStickerGroup = msg.isGroup ? msg.from === stickerGroup : false
 
   try {
     msg.aux = aux
@@ -143,19 +129,21 @@ export default async (msg) => {
     msg.body = aux.originalBody
 
     // Send incorrect function reaction
-    if (aux.isFunction) return false // if any function reach this point, it is an incorrect function
-    // if (aux.chat.isGroup && !aux.mentionedMe) {
-    //   if (aux.isStickerGroup && msg.type === 'chat') {
-    //     return false // ignore texts in sticker group
-    //   }
+    if (aux.isFunction) {
+      return false // if any function reach this point, it is an incorrect function
+    }
+    if (msg.isGroup && !aux.mentionedMe) {
+      if (aux.isStickerGroup && msg.type === 'chat') {
+        return false // ignore texts in sticker group
+      }
 
-    //   if (!aux.isStickerGroup) {
-    //     const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
-    //     if (!isStickerPack && !['audio', 'ptt'].includes(msg.type)) {
-    //       return false
-    //     }
-    //   }
-    // }
+      if (!aux.isStickerGroup) {
+        const isStickerPack = msg.body.startsWith('https://sticker.ly/s/')
+        if (!isStickerPack && !['audio', 'ptt'].includes(msg.type)) {
+          return false
+        }
+      }
+    }
 
     if (isOneOf(commandless(msg, aux))) {
       const command = getFirstMatch(commandless(msg, aux))

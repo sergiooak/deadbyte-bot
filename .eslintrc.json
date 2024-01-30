@@ -3,6 +3,9 @@
     "rules": {
         "no-useless-escape": [
             "off"
+        ],
+        "no-unmodified-loop-condition": [
+            "off"
         ]
     }
 }

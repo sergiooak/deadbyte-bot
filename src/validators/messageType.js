@@ -78,6 +78,24 @@ export default (msg) => {
     }
   }
 
+  while (incomingType === 'ephemeralMessage') {
+    msg.message = msg.message[firstKey].message
+    firstKey = Object.keys(msg.message)[0]
+    if (!firstKey) throw new Error('firstKey is undefined')
+    incomingType = firstKey
+  }
+  // while (incomingType === 'ephemeralMessage') {
+  //   const firstInside = msg[]
+  // }
+  // nometime msg.message comes with layers of "ephemeralMessage"
+  // loop digging until it finds something that is not ephemeralMessage
+  // if (incomingType === 'ephemeralMessage') {
+  //   msg = msg[firstKey].message
+  //   console.log(incomingType, msg)
+  //   // firstKey = Object.keys(msg)[0]
+  //   // incomingType = firstKey
+  // }
+
   /**
    * Handle viewOnceMessage && groupMentionedMessage
    */
@@ -85,10 +103,11 @@ export default (msg) => {
     incomingType.startsWith('viewOnce') ||
     incomingType === 'groupMentionedMessage'
   ) {
-    const keys = Object.keys(msg.message[firstKey].message).filter(key => !keysToIgnore.includes(key))
+    const keys = Object.keys((msg.message ? msg.message : msg)[firstKey].message).filter(key => !keysToIgnore.includes(key))
     if (keys.length) {
       incomingType = keys[0]
-      msg.message = msg.message[firstKey].message
+      if (msg.message) msg.message = msg.message[firstKey].message
+      else msg = msg[firstKey].message
     }
   }
 
@@ -119,15 +138,15 @@ export default (msg) => {
  * @param {import('@whiskeysockets/baileys').proto.IWebMessageInfo} msg
  */
 function parseAudioTypes (msg) {
-  const audioType = msg.message.audioMessage.ptt ? 'pttMessage' : 'audioMessage'
+  const audioType = (msg.message ? msg.message : msg).audioMessage.ptt ? 'pttMessage' : 'audioMessage'
   if (audioType === 'pttMessage') return audioType
 
   // if it is audio, and still can be a forwarded ppt
-  if (msg.message.audioMessage.contextInfo?.isForwarded) {
-    const hasWaveform = !!msg.message.audioMessage.waveform
+  if ((msg.message ? msg.message : msg).audioMessage.contextInfo?.isForwarded) {
+    const hasWaveform = !!(msg.message ? msg.message : msg).audioMessage.waveform
     if (hasWaveform) return 'pttMessage'
 
-    const mimetype = msg.message.audioMessage.mimetype
+    const mimetype = (msg.message ? msg.message : msg).audioMessage.mimetype
     const isOpus = mimetype === 'audio/ogg; codecs=opus'
     if (isOpus) return 'pttMessage'
   }

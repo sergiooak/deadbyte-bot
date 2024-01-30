@@ -5,12 +5,11 @@ import * as baileys from '@whiskeysockets/baileys'
 import { defineCommand, runMain } from 'citty'
 import { apiKey } from './config/api.js'
 import { dotCase } from 'change-case'
-import NodeCache from 'node-cache'
 import bot from './config/bot.js'
 import logger from './logger.js'
-import pino from 'pino'
+import * as db from './db.js'
 import fs from 'fs/promises'
-import './db.js'
+import pino from 'pino'
 
 let globalArgs = {}
 
@@ -147,6 +146,7 @@ export async function connectToWhatsApp () {
   socket.ev.on('creds.update', saveCreds)
 
   logger.info('Client initialized!')
+  await db.findCurrentBot(socket) // find the current bot on the database
   return socket
 }
 
