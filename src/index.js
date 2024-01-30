@@ -8,6 +8,7 @@ import { dotCase } from 'change-case'
 import NodeCache from 'node-cache'
 import bot from './config/bot.js'
 import logger from './logger.js'
+import pino from 'pino'
 import fs from 'fs/promises'
 import './db.js'
 
@@ -64,9 +65,9 @@ const main = defineCommand({
     bot.stickerOnly = args.stickerOnly
     logger.info(`Sticker only mode: ${bot.stickerOnly ? 'on' : 'off'}`)
 
-    // the store maintains the data of the WA connection in memory
-    // can be written out to a file & read from it
-    const store = bot.useStore ? baileys.makeInMemoryStore({ logger }) : undefined
+    const store = bot.useStore
+      ? baileys.makeInMemoryStore({ logger: pino().child({ level: 'fatal', stream: 'store' }) })
+      : undefined
 
     const storePath = `./src/temp/${bot.name}.json`
     store.readFromFile(storePath)
@@ -90,22 +91,18 @@ export function getArgs () {
   return globalArgs
 }
 
-// external map to store retry counts of messages when decryption/encryption fails
-// keep this out of the socket itself, so as to prevent a message decryption/encryption loop across socket restarts
-const msgRetryCounterCache = new NodeCache()
-
 /**
  * Baileys socket or null if not connected
- * @type {import('./types').WSocket}
- */
-let sock = null
+*/
+// @type {import('@whiskeysockets/baileys').WSocket | null}
+let socket = null
 
 /**
  * Grabs the socket
  * @returns {import('./types').WSocket}
  */
 export function getSocket () {
-  return sock
+  return socket
 }
 
 export async function connectToWhatsApp () {
@@ -116,67 +113,41 @@ export async function connectToWhatsApp () {
   }
 
   logger.info('Connecting to WhatsApp...')
-  const { state } = await baileys.useMultiFileAuthState('auth_info_baileys')
-  // fetch latest version of WA Web
-  // const { version, isLatest } = await baileys.fetchLatestBaileysVersion()
-  const { version, isLatest } = await baileys.fetchLatestBaileysVersion()
-  logger.info(`Using WA v${version.join('.')}, isLatest: ${isLatest}`)
 
-  sock = baileys.makeWASocket({
-    version,
-    logger,
-    printQRInTerminal: !bot.usePairingCode,
-    mobile: bot.useMobile,
-    auth: {
-      creds: state.creds,
-      /** caching makes the store faster to send/recv messages */
-      keys: baileys.makeCacheableSignalKeyStore(state.keys, logger)
-    },
-    msgRetryCounterCache,
+  const { state, saveCreds } = await baileys.useMultiFileAuthState('auth_info_baileys')
+
+  socket = baileys.makeWASocket({
+    printQRInTerminal: true,
+    logger: pino({ level: 'fatal' }),
+    auth: state,
+    browser: ['DeadByte', 'Safari', '3.0'],
     generateHighQualityLinkPreview: true,
-    shouldIgnoreJid: jid => baileys.isJidBroadcast(jid),
-    getMessage
+    shouldIgnoreJid: jid => baileys.isJidBroadcast(jid), // TODO: make a stories downloader
+    getMessage: async key => { return { } }
   })
 
-  store?.bind(sock.ev)
+  store?.bind(socket.ev)
 
   logger.info('Loading events...', bot)
 
   const events = await fs.readdir('./src/services/events')
-  if (bot.doReplies) {
-    events.forEach(async event => {
-      const eventPath = `services/events/${event}`
-      const eventName = dotCase(event.split('.')[0])
-      logger.info(`Loading event ${eventName} from file ${event}`)
-      sock.ev.on(eventName, async (event) => {
-        const module = await importFresh(eventPath)
-        module.default(event)
-      })
+  events.forEach(async event => {
+    if (!bot.doReplies) {
+      const ignoreEvents = ['call.js', 'messagesUpsert.js']
+      if (ignoreEvents.includes(event)) return
+    }
+    const eventPath = `services/events/${event}`
+    const eventName = dotCase(event.split('.')[0])
+    logger.trace(`Loading event ${eventName} from file ${event}`)
+    socket.ev.on(eventName, async (event) => {
+      const module = await importFresh(eventPath)
+      module.default(event)
     })
-  }
+  })
+  socket.ev.on('creds.update', saveCreds)
 
   logger.info('Client initialized!')
-
-  // await sock.sendMessage('asd', {
-  //   document:
-  // })
-
-  return sock
-
-  /**
-   * Retrieves a message from the store based on the provided key.
-   * @param {import('@whiskeysockets/baileys').WAMessageKey} key - The key of the message to retrieve.
-   * @returns {Promise<WAMessageContent | undefined>} The retrieved message content, or undefined if not found.
-   */
-  async function getMessage (key) {
-    if (store) {
-      const msg = await store.loadMessage(key.remoteJid, key.id)
-      return msg?.message || undefined
-    }
-
-    // only if store is present
-    return baileys.proto.Message.fromObject({})
-  }
+  return socket
 }
 
 // clear terminal
