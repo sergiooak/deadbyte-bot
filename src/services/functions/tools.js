@@ -11,7 +11,7 @@ import sharp from 'sharp'
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+// const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 //
 // ================================ Main Functions =================================
@@ -30,11 +30,8 @@ export async function qrImageCreator (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'qr', { text: msg.body })
-  console.log(url)
 
   try {
-    // const media = await MessageMedia.fromUrl(url, { unsafeMime: true })
-    // console.log(media)
     await msg.reply({
       image: {
         url
@@ -81,7 +78,7 @@ export async function qrTextCreator (msg) {
  */
 export async function qrReader (msg) {
   // if is not replying to a image
-  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
+  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
     await msg.reply('Para ler um QR Code, responda uma imagem com !qr')
     await msg.react(reactions.error)
     return
@@ -89,30 +86,31 @@ export async function qrReader (msg) {
 
   await msg.react(reactions.wait)
 
-  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
+  const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
   if (!media) throw new Error('Error downloading media')
   if (!media.mimetype.includes('image')) {
     await msg.react(reactions.error)
     return await msg.reply('❌ Só consigo ler QR Codes em imagens')
   }
-
+  await msg.react(reactions.wait)
   // a clock doing a full circle
-  const spinner = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚']
-  let spinnerIndex = 0
+  // const spinner = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚']
+  // let spinnerIndex = 0
 
-  const reply = await msg.reply(`${spinner[spinnerIndex]} - Lendo QR code da imagem`) // send the first message
-  const interval = setInterval(async () => {
-    spinnerIndex++
-    if (spinnerIndex === spinner.length) spinnerIndex = 0
+  // const reply = await msg.reply(`${spinner[spinnerIndex]} - Lendo QR code da imagem`) // send the first message
+  // console.log('reply', reply)
+  // const interval = setInterval(async () => {
+  //   spinnerIndex++
+  //   if (spinnerIndex === spinner.length) spinnerIndex = 0
 
-    await reply.edit(`${spinner[spinnerIndex]} - Lendo QR code da imagem`) // edit the message
-  }, 1000)
+  //   await reply.edit(`${spinner[spinnerIndex]} - Lendo QR code da imagem`) // edit the message
+  // }, 1000)
 
   // auto cancel if the process takes more than 30 seconds
   const timeout = setTimeout(async () => {
-    clearInterval(interval)
+    // clearInterval(interval)
     await msg.react(reactions.error)
-    await reply.edit('❌ - Tempo limite excedido')
+    await msg.reply('❌ - Tempo limite excedido')
     throw new Error('Timeout')
   }, 30_000)
 
@@ -134,11 +132,11 @@ export async function qrReader (msg) {
   const qrResponse = await fetch(qrUrl)
   const qrData = await qrResponse.json()
 
-  clearInterval(interval) // stop the interval
+  // clearInterval(interval) // stop the interval
   clearTimeout(timeout) // stop the timeout
 
-  await reply.edit(`✅ - ${qrData.result}`)
-  await wait(1000)
-  await reply.edit(`✅ - ${qrData.result}`)
+  await msg.reply(`✅ - ${qrData.result}`)
+  // await wait(1000)
+  // await reply.edit(`✅ - ${qrData.result}`)
   await msg.react(reactions.success)
 }

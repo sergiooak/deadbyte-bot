@@ -1,4 +1,6 @@
 import spintax from '../../utils/spintax.js'
+import { getSocket } from '../../index.js'
+const socket = getSocket()
 /**
  * Ban user from group
  * @param {import('../../types.d.ts').WWebJSMessage} msg
@@ -16,11 +18,34 @@ export async function ban (msg) {
     return await msg.reply('para usar o !ban *você* precisa ser admin')
   }
 
-  const quotedMsg = await msg.getQuotedMessage()
-  const author = await quotedMsg.getContact()
+  const author = await msg.quotedMsg.sender
+  const admins = msg.aux.admins
+  if (admins.includes(author)) {
+    await msg.react('🤡')
+    return await msg.reply('Desculpe, mas eu não posso banir administradores')
+  }
 
-  await msg.aux.chat.removeParticipants([author.id._serialized])
+  await socket.groupParticipantsUpdate(msg.from, [author], 'remove')
   await msg.react('🔨')
+}
+
+export async function unban (msg) {
+  if (!msg.hasQuotedMsg) {
+    return await msg.reply('para usar o !unban você precisa responder a mensagem da pessoa que deseja banir')
+  }
+
+  if (!msg.aux.isBotAdmin) {
+    return await msg.reply('para usar o !unban *o bot* precisa ser admin')
+  }
+
+  if (!msg.aux.isSenderAdmin) {
+    return await msg.reply('para usar o !unban *você* precisa ser admin')
+  }
+
+  const author = await msg.quotedMsg.sender
+
+  await socket.groupParticipantsUpdate(msg.from, [author], 'add')
+  await msg.react('🔄')
 }
 
 /**
@@ -39,8 +64,7 @@ export async function promote (msg) {
   if (!msg.aux.isSenderAdmin) {
     return await msg.reply('para usar o !promove *você* precisa ser admin')
   }
-
-  await msg.aux.chat.promoteParticipants(msg.aux.mentions)
+  await socket.groupParticipantsUpdate(msg.from, msg.aux.mentions, 'promote')
   await msg.react('↗️')
 }
 
@@ -49,8 +73,8 @@ export async function promote (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function demote (msg) {
-  if (!msg.aux.mentions.length === 0) {
-    return await msg.reply('para usar o !demote você precisa *mensionar* o @ da pessoa que deseja rebaixar')
+  if (msg.aux.mentions.length === 0) {
+    return await msg.reply('Para usar o !demote você precisa *mensionar* o @ da pessoa que deseja rebaixar')
   }
 
   if (!msg.aux.isBotAdmin) {
@@ -61,7 +85,7 @@ export async function demote (msg) {
     return await msg.reply('para usar o !demote *você* precisa ser admin')
   }
 
-  await msg.aux.chat.demoteParticipants(msg.aux.mentions)
+  await socket.groupParticipantsUpdate(msg.from, msg.aux.mentions, 'demote')
   await msg.react('↘️')
 }
 
@@ -73,19 +97,15 @@ export async function giveaway (msg) {
   const hasText = !!msg.body.trim()
 
   let participants = await msg.aux.participants
-  const botId = msg.aux.client.info.wid._serialized
-  participants = participants.filter((p) => p.id._serialized !== botId)
+  const botId = msg.aux.me
+  participants = participants.filter((p) => p.id !== botId)
 
   const random = Math.floor(Math.random() * (participants.length))
   const winner = participants[random]
 
-  const winnerContact = await msg.aux.client.getContactById(winner.id._serialized)
-
-  let message = `{🎉|🎊|🥳|✨|🌟} - {@${winnerContact.id.user} parabéns| {Meus p|P}arabéns @${winnerContact.id.user}}! {Você|Tu|Vc} {ganhou|venceu|acaba de ganhar} o {incrível |super |magnífico |maravilhoso |fantástico |excepcional |}{sorteio|concurso|prêmio}`
+  let message = `{🎉|🎊|🥳|✨|🌟} - {@${winner.id.split('@')[0]} parabéns|Meus parabéns @${winner.id.split('@')[0]}}! {Você|Tu|Vc} {ganhou|venceu|acaba de ganhar} o {incrível |super |magnífico |maravilhoso |fantástico |excepcional |}{sorteio|concurso|prêmio}`
   message = hasText ? `${message} de *${msg.body.trim()}*!` : message + '!'
-  await msg.aux.chat.sendMessage(spintax(message), {
-    mentions: [winnerContact]
-  })
+  await socket.sendMessage(msg.from, { text: spintax(message), mentions: [winner.id] }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
 
   await msg.react(spintax('{🎉|🎊|🥳}'))
 }
@@ -98,20 +118,16 @@ export async function giveawayAdminsOnly (msg) {
   const hasText = msg.body.split(' ').length > 1
   const text = hasText ? msg.body : ''
 
-  let participants = await msg.aux.participants.filter((p) => p.isAdmin || p.isSuperAdmin)
-  const botId = msg.aux.client.info.wid._serialized
-  participants = participants.filter((p) => p.id._serialized !== botId)
+  let participants = await msg.aux.participants.filter((p) => p.admin)
+  const botId = msg.aux.me
+  participants = participants.filter((p) => p.id !== botId)
 
   const random = Math.floor(Math.random() * (participants.length))
   const winner = participants[random]
 
-  const winnerContact = await msg.aux.client.getContactById(winner.id._serialized)
-
-  let message = `🎉 - @${winnerContact.id.user} parabéns! Você ganhou o sorteio`
+  let message = `🎉 - @${winner.id.split('@')[0]} parabéns! Você ganhou o sorteio`
   message = hasText ? `${message} *${text.trim()}*!` : message + '!'
-  await msg.aux.chat.sendMessage(message, {
-    mentions: [winnerContact]
-  })
+  await socket.sendMessage(msg.from, { text: spintax(message), mentions: [winner.id] }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
 
   await msg.react('🎉')
 }
@@ -127,13 +143,12 @@ export async function markAllMembers (msg) {
 
   msg.body = msg.body.charAt(0).toUpperCase() + msg.body.slice(1)
 
-  const participants = msg.aux.participants.map((p) => p.id._serialized)
-  const contactArray = []
-  for (let i = 0; i < participants.length; i++) {
-    contactArray.push(await msg.aux.client.getContactById(participants[i]))
-  }
+  const participants = msg.aux.participants.map((p) => p.id)
 
-  await msg.aux.chat.sendMessage(msg.body ? `📣 - ${msg.body}` : '📣', { mentions: contactArray })
+  await socket.sendMessage(msg.from, {
+    text: msg.body ? `📣 - ${msg.body}` : '📣',
+    mentions: participants
+  }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
   await msg.react('📣')
 }
 
@@ -143,11 +158,10 @@ export async function markAllMembers (msg) {
  */
 export async function callAdmins (msg) {
   const admins = msg.aux.admins
-  const contactArray = []
-  for (let i = 0; i < admins.length; i++) {
-    contactArray.push(await msg.aux.client.getContactById(admins[i]))
-  }
-  await msg.aux.chat.sendMessage('👑 - Atenção administradores!', { mentions: contactArray })
+  await socket.sendMessage(msg.from, {
+    text: '👑 - Atenção administradores!',
+    mentions: admins
+  }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
   await msg.react('👑')
 }
 
@@ -156,6 +170,7 @@ export async function callAdmins (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function closeGroup (msg) {
+  await msg.react('🔒')
   if (!msg.aux.isBotAdmin) {
     return await msg.reply('para usar o !fechar *o bot* precisa ser admin')
   }
@@ -163,9 +178,7 @@ export async function closeGroup (msg) {
   if (!msg.aux.isSenderAdmin) {
     return await msg.reply('para usar o !fechar *você* precisa ser admin')
   }
-
-  await msg.aux.chat.setMessagesAdminsOnly(true)
-  await msg.react('🔒')
+  await socket.groupSettingUpdate(msg.from, 'announcement')
 }
 
 /**
@@ -173,6 +186,7 @@ export async function closeGroup (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function openGroup (msg) {
+  await msg.react('🔓')
   if (!msg.aux.isBotAdmin) {
     return await msg.reply('para usar o !abrir *o bot* precisa ser admin')
   }
@@ -181,6 +195,5 @@ export async function openGroup (msg) {
     return await msg.reply('para usar o !abrir *você* precisa ser admin')
   }
 
-  await msg.aux.chat.setMessagesAdminsOnly(false)
-  await msg.react('🔓')
+  await socket.groupSettingUpdate(msg.from, 'not_announcement')
 }

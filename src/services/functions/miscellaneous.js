@@ -164,7 +164,6 @@ export async function toUrl (msg) {
   const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
   if (!media) throw new Error('Error downloading media')
   const tempUrl = (await getTempUrl(media))
-  console.log('tempUrl', tempUrl)
 
   let message = '🔗 - '
   message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
@@ -212,19 +211,13 @@ export async function ping (msg) {
  */
 export async function speak (msg) {
   let input = msg.body
-  console.log('msg.hasQuotedMsg', msg.hasQuotedMsg)
-  console.log('!msg.body', !msg.body)
   if (msg.hasQuotedMsg && !msg.body) {
     const quotedMsg = msg.quotedMsg
-    console.log('quotedMsg', quotedMsg)
-    console.log('quotedMsg.text', quotedMsg.text)
     const keys = Object.keys(quotedMsg)
     const firstItem = quotedMsg[keys[0]]
-    console.log('keys', keys)
     input = typeof firstItem === 'string'
       ? firstItem
       : firstItem.caption || firstItem.text || ''
-    console.log('input', input)
   }
 
   if (!input) {

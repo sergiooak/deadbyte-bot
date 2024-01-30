@@ -30,7 +30,7 @@ export async function stats (msg) {
   const stats = await fetchStats(contactID)
 
   const emojis = '{📊|📈|📉|🔍|🔬|📚}'
-  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
+  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.pushname}!\n\n`
   // 📊 - Olá, Sergio Carvalho!
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
@@ -73,7 +73,7 @@ export async function botStats (msg) {
   const stats = await fetchStats()
 
   const emojis = '{🤖|👾|💀}'
-  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!`
+  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.pushname}!`
   // 🤖 - Olá, Sergio Carvalho!
 
   message += '\n\n```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
@@ -122,7 +122,7 @@ export async function weekStats (msg) {
   const stats = await fetchStats(contactID, 'week')
 
   const emojis = '{📊|📈|📉|🔍|🔬|📚}'
-  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
+  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.pushname}!\n\n`
   // 📊 - Olá, Sergio Carvalho!
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
@@ -166,7 +166,7 @@ export async function dayStats (msg) {
   const stats = await fetchStats(contactID, 'day')
 
   const emojis = '{📊|📈|📉|🔍|🔬|📚}'
-  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
+  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.pushname}!\n\n`
   // 📊 - Olá, Sergio Carvalho!
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
@@ -210,7 +210,7 @@ export async function hourStats (msg) {
   const stats = await fetchStats(contactID, 'hour')
 
   const emojis = '{📊|📈|📉|🔍|🔬|📚}'
-  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
+  let message = `${emojis} - {Olá|Oi|Oie|${saudation}} ${msg.pushname}!\n\n`
   // 📊 - Olá, Sergio Carvalho!
 
   message += '```━━━━━━━━━━ {📊|📈|📉|🔍|🔬|📚} ━━━━━━━━━━```\n\n'
@@ -288,7 +288,7 @@ async function waitForMinimumTime (startedAt) {
  */
 async function reactAndReply (msg, emojis, reply, message) {
   await msg.react(spintax(emojis))
-  if (reply) { return await reply.edit(spintax(message)) }
+  // if (reply) { return await reply.edit(spintax(message)) }
   await msg.reply(spintax(message))
 }
 
@@ -325,17 +325,19 @@ export async function fetchStats (contact = undefined, mode = undefined, bot = u
  * @returns {Promise}
  */
 async function sendInitialReply (msg, sufix) {
+  await msg.react(reactions.wait)
   const saudation = getSaudation()
-  let initialMessage = `{⏳|⌛|🕰️|🕛|🕒|🕞} - {Olá|Oi|Oie|${saudation}} ${msg.aux.sender.pushname}!\n\n`
-  // ⏳ - Olá, Sergio Carvalho!
-  initialMessage += `{Espere|Espera|Péra} um {pouco|pouquinho|momento|segundo} enquanto eu {pego|busco|procuro} as {suas |}estatísticas${sufix ? ' ' + sufix : ''}...`
-  // Espere um pouco enquanto eu pego as suas estatísticas...
-  let reply = null
-  if (!msg.aux.chat.isGroup) {
-    reply = await msg.reply(spintax(initialMessage))
-  }
   const startedAt = Date.now()
-  return { saudation, startedAt, reply }
+  return { saudation, startedAt, reply: null }
+  // let initialMessage = `{⏳|⌛|🕰️|🕛|🕒|🕞} - {Olá|Oi|Oie|${saudation}} ${msg.pushname}!\n\n`
+  // // ⏳ - Olá, Sergio Carvalho!
+  // initialMessage += `{Espere|Espera|Péra} um {pouco|pouquinho|momento|segundo} enquanto eu {pego|busco|procuro} as {suas |}estatísticas${sufix ? ' ' + sufix : ''}...`
+  // // Espere um pouco enquanto eu pego as suas estatísticas...
+  // let reply = null
+  // if (!msg.aux.chat.isGroup) {
+  //   reply = await msg.reply(spintax(initialMessage))
+  // }
+  // return { saudation, startedAt, reply }
 }
 
 /**

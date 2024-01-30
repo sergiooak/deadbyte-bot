@@ -25,17 +25,14 @@ const socket = getSocket()
  * @param {import('@whiskeysockets/baileys').proto.IWebMessageInfo} msg
  */
 const serializeMessage = (msg) => {
-  msg.raw = structuredClone(msg)
+  const raw = structuredClone(msg)
   const newMsgObject = {}
   const { type } = messageTypeValidator(msg)
 
   newMsgObject.type = type
-  try {
-    const berak = Object.keys(msg.message)[0]
-    newMsgObject.originalType = berak
-  } catch {
-    newMsgObject.originalType = null
-  }
+
+  const berak = Object.keys(msg.message)[0]
+  newMsgObject.originalType = berak
 
   const firstItem = msg.message[newMsgObject.originalType]
   newMsgObject.body = typeof firstItem === 'string'
@@ -49,16 +46,16 @@ const serializeMessage = (msg) => {
 
   if (newMsgObject.quotedMsg) {
     newMsgObject.hasQuotedMsg = true
+    newMsgObject.quotedMsg.id = msg.message[newMsgObject.originalType].contextInfo?.stanzaId
+
     newMsgObject.quotedMsg.type = Object.keys(newMsgObject.quotedMsg)[0]
     const firstItem = newMsgObject.quotedMsg[newMsgObject.quotedMsg.type]
+    newMsgObject.quotedMsg.hasMedia = Object.keys(firstItem).includes('mediaKey')
     newMsgObject.quotedMsg.body = typeof firstItem === 'string'
       ? firstItem
       : firstItem.caption || firstItem.text || ''
-    newMsgObject.quotedMsg.sender = msg.message[msg.originalType].contextInfo.participant
-    newMsgObject.quotedMsg.fromMe = msg.quotedMsg.sender === socket.user.id.split(':')[0] + '@s.whatsapp.net'
-    const ane = msg.quotedMsg
-    newMsgObject.quotedMsg.chats = (ane.type === 'conversation' && ane.conversation) ? ane.conversation : (ane.type === 'imageMessage') && ane.imageMessage.caption ? ane.imageMessage.caption : (ane.type === 'documentMessage') && ane.documentMessage.caption ? ane.documentMessage.caption : (ane.type === 'videoMessage') && ane.videoMessage.caption ? ane.videoMessage.caption : (ane.type === 'extendedTextMessage') && ane.extendedTextMessage.text ? ane.extendedTextMessage.text : (ane.type === 'buttonsMessage') && ane.buttonsMessage.contentText ? ane.buttonsMessage.contentText : ''
-    msg.quotedMsg.id = msg.message[msg.originalType].contextInfo.stanzaId
+    newMsgObject.quotedMsg.sender = msg.message[newMsgObject.originalType].contextInfo?.participant
+    newMsgObject.quotedMsg.fromMe = newMsgObject.quotedMsg.sender === socket.user.id.split(':')[0] + '@s.whatsapp.net'
   }
 
   try {
@@ -97,8 +94,8 @@ const serializeMessage = (msg) => {
     // deviceType: undefined,
     fowardScore: firstItem.contextInfo?.forwardingScore,
     isForwarded: firstItem.contextInfo?.isForwarded,
-    hasMedia: !!firstItem.mediaKey,
-    mediaKey: firstItem.mediaKey,
+    hasMedia: Object.keys(firstItem).includes('mediaKey'),
+    mediaKey: Object.keys(firstItem).includes('mediaKey') ? firstItem.mediaKey : undefined,
     // hasReaction: undefined,
     inviteV4: type === 'groups_v4_invite' ? firstItem : undefined,
     isEphemeral: !!firstItem.contextInfo?.expiration,
@@ -121,7 +118,8 @@ const serializeMessage = (msg) => {
     // using dayjs to convert
     lag: dayjs().diff(dayjs(msg.messageTimestamp * 1000), 'second'),
     // to: msg.key.fromMe ? msg.key.remoteJid : botId,
-    vCards: type === 'multi_vcard' ? firstItem.contacts : type === 'vcard' ? [firstItem] : undefined
+    vCards: type === 'multi_vcard' ? firstItem.contacts : type === 'vcard' ? [firstItem] : undefined,
+    raw
   }
 
   for (const property in properties) {
@@ -177,7 +175,7 @@ async function react (reaction) {
  * @param {string} content The message to send
  * @param {string} [chatId] The chat to send the message in
  * @param {import('@whiskeysockets/baileys').proto.IMessageOptions} [options] Additional options
- * @returns {Promise<void>}
+ * @returns {import('@whiskeysockets/baileys').proto.WebMessageInfo}
  */
 async function reply (content, chatId, options) {
   const mode = typeof content === 'string' ? 'text' : 'media'
@@ -219,15 +217,12 @@ async function reply (content, chatId, options) {
    */
   const msg = this
 
-  const firstKey = Object.keys(msg.message)[0]
-  const firstItem = msg.message[firstKey]
-  const isEphemeral = !!firstItem.contextInfo?.expiration
-
-  await socket.sendMessage(chatId || msg.key.remoteJid, messageObject, {
+  const message = await socket.sendMessage(chatId || msg.key.remoteJid, messageObject, {
     quoted: msg,
-    ephemeralExpiration: isEphemeral ? firstItem.contextInfo?.expiration : undefined
+    ephemeralExpiration: msg.message[Object.keys(msg.message)[0]].contextInfo?.expiration || undefined
   })
   if (tempPath) await fs.unlink(tempPath)
+  return message
 }
 
 /**

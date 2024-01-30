@@ -18,7 +18,6 @@ const sock = getSocket()
  * @param {string} stickerAuthor
  */
 export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite = true) {
-  console.log('toUrl', msg)
   await msg.react(reactions.wait)
 
   const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()

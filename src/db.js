@@ -177,7 +177,7 @@ export async function findOrCreateChat (msg) {
   // 1 - Check if chat.id._serialized is on the cache
   const id = msg.isGroup
     ? msg.aux.group.id
-    : msg.contact.replace('@s.whatsapp.net', '@c.us')
+    : msg.contact.id.replace('@s.whatsapp.net', '@c.us')
 
   if (chatsCache[id]) {
     chatsCache[id].lastSeen = new Date()

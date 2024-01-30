@@ -38,7 +38,6 @@ export default async (upsert) => {
   const messageParser = await importFresh('validators/message.js')
   const handlerModule = await messageParser.default(msg)
   logger.trace('handlerModule: ', handlerModule)
-  console.log('handlerModule: ', handlerModule)
 
   if (!handlerModule) return logger.debug('handlerModule is undefined')
 

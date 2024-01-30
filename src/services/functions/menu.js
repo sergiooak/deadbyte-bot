@@ -1,7 +1,7 @@
+import { MessageMedia } from '../../meta/messageMedia.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
 import spintax from '../../utils/spintax.js'
 import { getCommands } from '../../db.js'
-import wwebjs from 'whatsapp-web.js'
 import 'dayjs/locale/pt-br.js'
 import dayjs from 'dayjs'
 
@@ -36,7 +36,7 @@ export async function menu (msg) {
   ]
   const randomImage = menuImages[Math.floor(Math.random() * menuImages.length)]
 
-  const media = await wwebjs.MessageMedia.fromUrl(randomImage, { unsafeMime: true })
+  const media = await MessageMedia.fromUrl(randomImage)
   if (!media) throw new Error('Error downloading media')
 
   // remove CommandGroups where hideFromMenu is true
@@ -69,6 +69,8 @@ export async function menu (msg) {
   // Tell About prefix
   message += 'Os seguintes prefixos são aceitos para os comandos: *! . # /*\n\n'
 
+  const readMore = '​'.repeat(783)
+  message += readMore
   // const menuEmojis = '{📋|🗒️|📜}'
   // message += '```━━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━━```\n\n'
 
@@ -95,7 +97,7 @@ export async function menu (msg) {
   // remove the last \n
   message = message.trim().replace(/\n$/, '').trim()
   // await msg.reply(JSON.stringify(msg.aux, null, 2))
-  await msg.reply(spintax(message), undefined, { media })
+  await msg.reply({ media, caption: spintax(message) }, undefined)
 }
 
 export async function menuGroup (msg) {
@@ -109,7 +111,7 @@ export async function menuGroup (msg) {
   // if there is image, send it
   let media
   if (commandGroups[0].menuImageUrl) {
-    media = await wwebjs.MessageMedia.fromUrl(commandGroups[0].menuImageUrl, { unsafeMime: true })
+    media = await MessageMedia.fromUrl(commandGroups[0].menuImageUrl)
     if (!media) throw new Error('Error downloading media')
   }
 
