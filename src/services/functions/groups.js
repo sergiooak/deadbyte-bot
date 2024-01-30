@@ -6,8 +6,11 @@ const socket = getSocket()
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function ban (msg) {
-  if (!msg.hasQuotedMsg) {
-    return await msg.reply('para usar o !ban você precisa responder a mensagem da pessoa que deseja banir')
+  const hasMentions = msg.aux.mentions.length > 0
+  const hasQuotedMsg = msg.hasQuotedMsg
+
+  if (!hasMentions && !hasQuotedMsg) {
+    return await msg.reply('para usar o !ban você precisa responder a mensagem da pessoa que deseja banir ou *mensionar* o @ da pessoa que deseja banir')
   }
 
   if (!msg.aux.isBotAdmin) {
@@ -18,20 +21,28 @@ export async function ban (msg) {
     return await msg.reply('para usar o !ban *você* precisa ser admin')
   }
 
-  const author = await msg.quotedMsg.sender
+  let target = []
+  if (hasMentions) { target.push(...msg.aux.mentions) }
+  if (hasQuotedMsg) { target.push(await msg.quotedMsg.sender) }
   const admins = msg.aux.admins
-  if (admins.includes(author)) {
+
+  target = target.filter((t) => !admins.includes(t))
+  if (target.length === 0) {
     await msg.react('🤡')
     return await msg.reply('Desculpe, mas eu não posso banir administradores')
   }
 
-  await socket.groupParticipantsUpdate(msg.from, [author], 'remove')
+  await socket.groupParticipantsUpdate(msg.from, target, 'remove')
   await msg.react('🔨')
 }
 
 export async function unban (msg) {
-  if (!msg.hasQuotedMsg) {
-    return await msg.reply('para usar o !unban você precisa responder a mensagem da pessoa que deseja banir')
+  // TODO: Verify if can add to avoid ban
+  const hasMentions = msg.aux.mentions.length > 0
+  const hasQuotedMsg = msg.hasQuotedMsg
+
+  if (!hasMentions && !hasQuotedMsg) {
+    return await msg.reply('para usar o !unban você precisa responder a mensagem da pessoa que deseja banir ou *mensionar* o @ da pessoa que deseja banir')
   }
 
   if (!msg.aux.isBotAdmin) {
@@ -42,9 +53,11 @@ export async function unban (msg) {
     return await msg.reply('para usar o !unban *você* precisa ser admin')
   }
 
-  const author = await msg.quotedMsg.sender
+  const target = []
+  if (hasMentions) { target.push(...msg.aux.mentions) }
+  if (hasQuotedMsg) { target.push(await msg.quotedMsg.sender) }
 
-  await socket.groupParticipantsUpdate(msg.from, [author], 'add')
+  await socket.groupParticipantsUpdate(msg.from, target, 'add')
   await msg.react('🔄')
 }
 

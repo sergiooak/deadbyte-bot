@@ -113,7 +113,7 @@ export async function connectToWhatsApp () {
 
   logger.info('Connecting to WhatsApp...')
 
-  const { state, saveCreds } = await baileys.useMultiFileAuthState('auth_info_baileys')
+  const { state, saveCreds } = await baileys.useMultiFileAuthState(`./src/temp/${bot.name}`)
 
   socket = baileys.makeWASocket({
     printQRInTerminal: true,

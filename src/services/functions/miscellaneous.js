@@ -296,7 +296,8 @@ export async function transcribe (msg) {
   const transcription = await openai.audio.transcriptions.create({
     file: fs.createReadStream(nomalizedFilePath),
     model: 'whisper-1',
-    response_format: 'text'
+    response_format: 'text',
+    prompt: '"DeadByte" sticker.ly'
   })
   fs.unlinkSync(nomalizedFilePath)
   await msg.reply(`🎙️ - ${transcription.trim()}`)
