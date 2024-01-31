@@ -156,10 +156,6 @@ process.stdout.write('\x1B[2J\x1B[0f')
 // catch unhandled rejections and errors to avoid crashing
 process.on('unhandledRejection', (err) => {
   console.log('unhandledRejection')
-  logger.fatal(err)
-})
-process.on('uncaughtException', (err) => {
-  console.log('uncaughtException')
   // Connection Closed try connectToWhatsApp
   if (err.message.includes('Connection Closed')) {
     logger.fatal('Connection Closed AAAAAAAAAAA')
