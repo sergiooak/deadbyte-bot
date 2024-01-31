@@ -72,12 +72,12 @@ export async function menu (msg) {
   const readMore = '​'.repeat(783)
   message += readMore
   // const menuEmojis = '{📋|🗒️|📜}'
-  // message += '```━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━```\n\n'
+  // message += '```━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━```\n\n'
 
   // await msg.reply(JSON.stringify(commands, null, 2))
 
   commandGroups.forEach((commandGroup, i) => {
-    message += '```━━━━━━━━━ ' + commandGroup.emoji + ' ━━━━━━━━━```\n\n'
+    message += '```━━━━━━━━ ' + commandGroup.emoji + ' ━━━━━━━━```\n\n'
     message += `*${commandGroup.description}*\n\n`
     commandGroup.commands.forEach(command => {
       command = structuredClone(command)
@@ -132,12 +132,12 @@ export async function menuGroup (msg) {
   message += 'Os seguintes prefixos são aceitos para os comandos: *! . # /*\n\n'
 
   // const menuEmojis = '{📋|🗒️|📜}'
-  // message += '```━━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━━```\n\n'
+  // message += '```━━━━━━━━ ' + menuEmojis + ' ━━━━━━━━```\n\n'
 
   // await msg.reply(JSON.stringify(commands, null, 2))
 
   commandGroups.forEach((commandGroup, i) => {
-    message += '```━━━━━━━━━ ' + commandGroup.emoji + ' ━━━━━━━━━```\n\n'
+    message += '```━━━━━━━━ ' + commandGroup.emoji + ' ━━━━━━━━```\n\n'
     message += `*${commandGroup.description}*\n\n`
     commandGroup.commands.forEach(command => {
       command = structuredClone(command)
