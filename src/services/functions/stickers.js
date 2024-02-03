@@ -97,7 +97,7 @@ export async function textSticker3 (msg) {
  */
 export async function removeBg (msg) {
   await msg.react(reactions.wait)
-  if (!msg.hasMedia || (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
+  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
     await msg.react(reactions.error)
 
     const header = '☠️🤖'

@@ -92,7 +92,7 @@ export async function dice (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function toFile (msg) {
-  if (!msg.hasMedia || (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
+  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
     await msg.react(reactions.error)
 
     const header = '☠️🤖'
@@ -127,8 +127,8 @@ export async function toFile (msg) {
   }
 
   if (isImage && isAnimated) {
-    await msg.reply({ media, caption: 'Espere um pouco que vou converter esse *webp* formato melhor para você...' })
-    await msg.react(reactions.loading)
+    await msg.reply({ media, caption: 'Espere um pouco que vou converter esse *webp* para um formato melhor para você...' })
+    await msg.react(reactions.wait)
 
     const tempUrl = await getTempUrl(media)
     const url = await webpToMp4(tempUrl)
@@ -148,7 +148,7 @@ export async function toFile (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function toUrl (msg) {
-  if (!msg.hasMedia || (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
+  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.quotedMsg.hasMedia)) {
     await msg.react(reactions.error)
 
     const header = '☠️🤖'
