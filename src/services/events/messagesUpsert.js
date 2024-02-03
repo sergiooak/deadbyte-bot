@@ -61,5 +61,17 @@ export default async (upsert) => {
   const functionName = handlerModule.command
   const module = await importFresh(`services/functions/${moduleName}.js`)
   const camelCaseFunctionName = camelCase(functionName)
-  module[camelCaseFunctionName](msg)
+  try {
+    await module[camelCaseFunctionName](msg)
+  } catch (error) {
+    logger.error(`Error with command ${camelCaseFunctionName}`, error)
+    const readMore = '​'.repeat(783)
+    const prefix = msg.aux.prefix ?? '!'
+    msg.react('❌')
+    let message = `❌ - Ocorreu um erro inesperado com o comando *${prefix}${msg.aux.function}*\n\n`
+    message += 'Se for possível, tira um print e manda para meu administrador nesse grupo aqui: '
+    message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR\n\n'
+    message += `${readMore}\n${error}`
+    msg.reply(message)
+  }
 }
