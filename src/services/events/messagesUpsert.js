@@ -49,7 +49,7 @@ export default async (upsert) => {
   )
 
   // TODO: improve bot vip system
-  if (msg.bot.name === 'DeadByte - VIP') {
+  if (!msg.isGroup && msg.bot.name === 'DeadByte - VIP') {
     const sender = msg.aux.db.contact.attributes
     const hasDonated = sender?.hasDonated === true
     if (!hasDonated) {
