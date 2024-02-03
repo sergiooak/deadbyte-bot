@@ -17,9 +17,4 @@ export async function debug (msg) {
   const debugEmoji = '🐛'
   await msg.react(debugEmoji)
   // Debug code goes here
-
-  const readMore = '​'.repeat(783)
-  const message = `Dead${readMore}Byte`
-
-  await msg.reply(message)
 }
