@@ -111,7 +111,6 @@ export default async (msg) => {
           }
         }
         const prefixesWithFallback = await importFresh('config/bot.js').then(config => config.prefixesWithFallback)
-        console.log('here', msg.aux.originalBody)
         if (prefixesWithFallback.includes(aux.prefix) === false && msg.aux.originalBody !== '...') {
           if (!aux.hasOriginalFunction) {
             await msg.react(reactions.confused)
