@@ -42,14 +42,15 @@ export default async (upsert) => {
   if (!handlerModule) return logger.debug('handlerModule is undefined')
 
   await msg.sendSeen()
-  msg.aux.db = await saveActionToDB(
-    handlerModule.type,
-    handlerModule.command,
-    msg
-  )
+
+  try {
+    msg.aux.db = await saveActionToDB(handlerModule.type, handlerModule.command, msg)
+  } catch (error) {
+    logger.trace('Error saving action to DB', error)
+  }
 
   // TODO: improve bot vip system
-  if (!msg.isGroup && msg.bot.name === 'DeadByte - VIP') {
+  if (!msg.isGroup && msg.bot.name === 'DeadByte - VIP' && msg.aux.db) {
     const sender = msg.aux.db.contact.attributes
     const hasDonated = sender?.hasDonated === true
     if (!hasDonated) {
