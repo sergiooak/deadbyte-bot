@@ -17,7 +17,7 @@ const sock = getSocket()
  * @param {string} stickerName
  * @param {string} stickerAuthor
  */
-export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite = true) {
+export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite = false) {
   await msg.react(reactions.wait)
 
   const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
@@ -158,7 +158,7 @@ export async function stealSticker (msg) {
   if (!msg.hasQuotedMsg || !msg.quotedMsg.hasMedia) {
     if (msg.hasMedia && (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker')) {
       msg.body = ''
-      return await stickerCreator(msg, stickerName, stickerAuthor, false)
+      return await stickerCreator(msg, stickerName, stickerAuthor, true)
     }
 
     await msg.react(reactions.error)
@@ -175,7 +175,7 @@ export async function stealSticker (msg) {
   const media = await msg.downloadMedia(true)
   if (!media) throw new Error('Error downloading media')
 
-  await sendMediaAsSticker(msg, media, stickerName, stickerAuthor)
+  await sendMediaAsSticker(msg, media, stickerName, stickerAuthor, true)
   await msg.react(reactions.success)
 }
 
@@ -244,8 +244,7 @@ export async function stickerLyPack (msg) {
   const limit = getStickerLimit(isStickerGroup)
 
   if (!msg.body) {
-    await msg.reply('🤖 - Para usar o *!pack* você precisa enviar um código de pacote do sticker.ly.\nEx: *!pack 2RY2AQ*')
-    throw new Error('No search term')
+    return await msg.reply('🤖 - Para usar o *!pack* você precisa enviar um código de pacote do sticker.ly.\nEx: *!pack 2RY2AQ*')
   }
 
   await msg.react(reactions.wait)
@@ -253,7 +252,7 @@ export async function stickerLyPack (msg) {
   // if the term is a pack id, send the pack
   const packRegex = /^[a-zA-Z0-9]{6}$/
   if (!packRegex.test(msg.body)) {
-    await msg.reply('🤖 - Para usar o *!pack* você precisa enviar um código de pacote do sticker.ly.\nEx: *!pack 2RY2AQ*')
+    return await msg.reply('🤖 - Para usar o *!pack* você precisa enviar um código de pacote do sticker.ly.\nEx: *!pack 2RY2AQ*')
   }
   const packId = msg.body.toUpperCase()
 
@@ -301,13 +300,23 @@ export async function stickerLyPack (msg) {
  * @param {import ('whatsapp-web.js').MessageMedia} media - The media to send as a sticker.
  * @param {string} [stickerName='DeadByte.com.br'] - The name of the sticker.
  * @param {string} [stickerAuthor='bot de figurinhas'] - The author of the sticker.
- * @param {boolean} [overwrite=true] - Whether to overwrite the sticker pack or not.
+ * @param {boolean} [overwrite=false] - Whether to overwrite the sticker pack or not.
  * @returns {Promise<import ('whatsapp-web.js').Message>} A Promise that resolves with the Message object of the sent sticker.
  */
-async function sendMediaAsSticker (msg, media, author, pack, overwrite = true) {
+async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) {
+  // parse sticker name and author
+  // author = author || (overwrite ? 'DeadByte.com.br' : undefined)
+  // pack = pack || (overwrite ? 'bot de figurinhas' : undefined)
+  const authorFromDb = msg.aux.db.contact.attributes?.preferences?.stickerAuthor
+  const packFromDb = msg.aux.db.contact.attributes?.preferences?.stickerName
+  if (!overwrite) {
+    author = authorFromDb || 'DeadByte.com.br'
+    pack = packFromDb || 'bot de figurinhas'
+  }
+
   const stickerMedia = await Util.formatToWebpSticker(media, {
-    author: author || (overwrite ? 'DeadByte.com.br' : undefined),
-    pack: pack || (overwrite ? 'bot de figurinhas' : undefined)
+    author,
+    pack
   }, false)
   const buffer = Buffer.from(stickerMedia.data, 'base64')
 
@@ -315,8 +324,8 @@ async function sendMediaAsSticker (msg, media, author, pack, overwrite = true) {
   if (buffer.byteLength > 1_000_000) {
     media = await compressMediaBuffer(buffer, media)
     media = await Util.formatToWebpSticker(media, {
-      author: author || (overwrite ? 'DeadByte.com.br' : undefined),
-      pack: pack || (overwrite ? 'bot de figurinhas' : undefined)
+      author,
+      pack
     }, false)
   }
   const firstKey = Object.keys(msg.raw.message)[0]
