@@ -48,7 +48,6 @@ doLogin()
 //
 /**
  * Check if the API is online
- *
  * @returns {boolean} true if the API is online
  */
 export function isOnline () {
@@ -57,7 +56,6 @@ export function isOnline () {
 
 /**
  * Get the token
- *
  * @returns {string} token
  */
 export function getToken () {
@@ -65,8 +63,15 @@ export function getToken () {
 }
 
 /**
+ * Get the Database URL
+ * @returns {string} dbUrl
+ */
+export function getDBUrl () {
+  return dbUrl
+}
+
+/**
  * Load the commands from the database
- *
  * @returns {object} commands
  */
 export async function loadCommands () {
