@@ -63,14 +63,6 @@ export function getToken () {
 }
 
 /**
- * Get the Database URL
- * @returns {string} dbUrl
- */
-export function getDBUrl () {
-  return dbUrl
-}
-
-/**
  * Load the commands from the database
  * @returns {object} commands
  */
