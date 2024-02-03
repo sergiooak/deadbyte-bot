@@ -289,6 +289,11 @@ export async function saveActionToDB (moduleName, functionName, msg) {
 }
 
 export async function findCurrentBot (socket) {
+  if (!socket.user) { // TODO: auto-restart
+    logger.warn('Bot never connected before')
+    logger.warn('Remember to restart after reading the QR code')
+    return
+  }
   const id = socket.user.id.split(':')[0] + '@c.us'
   // 1 - Check if bot already exists on db
   const findQuery = qs.stringify(
