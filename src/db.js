@@ -168,6 +168,17 @@ setInterval(() => {
 }, 60_000)
 
 /**
+ * Force a contact update on the database
+ * @param {import('whatsapp-web.js').Contact} contact
+ * @returns {Promise<object>} - The updated contact
+ */
+export async function forceContactUpdate (contact) {
+  const id = contact.id.replace('@s.whatsapp.net', '@c.us')
+  delete contactsCache[id]
+  return await findOrCreateContact(contact)
+}
+
+/**
  * Find or create a chat on the database
  */
 export async function findOrCreateChat (msg) {
