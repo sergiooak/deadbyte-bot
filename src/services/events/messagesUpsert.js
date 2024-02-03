@@ -48,6 +48,27 @@ export default async (upsert) => {
     msg
   )
 
+  // TODO: improve bot vip system
+  if (msg.bot.name === 'DeadByte - VIP') {
+    const sender = msg.aux.db.contact.attributes
+    const hasDonated = sender?.hasDonated === true
+    if (!hasDonated) {
+      await msg.react('💎')
+      let message = '❌ - Você não é um VIP! 😢\n\n'
+      message += 'Desculpe, não localizei nenhuma doação em seu nome.\n\n'
+      message += '*Se isso for um erro ou se você deseja se tornar um VIP, entre em contato no grupo de suporte:*\n'
+      message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
+      await msg.reply(message)
+
+      // wait 3 seconds and block the user
+      setTimeout(async () => {
+        await socket.updateBlockStatus(msg.from, 'block')
+      }, 5000)
+
+      return
+    }
+  }
+
   const checkDisabled = await importFresh('validators/checkDisabled.js')
   const isEnabled = await checkDisabled.default(msg)
   if (!isEnabled) return logger.info(`⛔ - ${msg.from} - ${handlerModule.command} - Disabled`)
