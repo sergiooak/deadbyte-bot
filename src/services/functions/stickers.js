@@ -313,6 +313,8 @@ async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) 
     author = authorFromDb || 'DeadByte.com.br'
     pack = packFromDb || 'bot de figurinhas'
   }
+  author = author === 'undefined' ? undefined : author
+  pack = pack === 'undefined' ? undefined : pack
 
   const stickerMedia = await Util.formatToWebpSticker(media, {
     author,

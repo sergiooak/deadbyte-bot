@@ -36,10 +36,9 @@ export async function set (msg) {
   const examplesPrefences = Object.keys(examples)
 
   const prefence = msg.body.split(' ')[0]
-  // value is the rest of the message
   const value = msg.body.split(' ').slice(1).join(' ')
 
-  if (!prefence || !value) {
+  if (!prefence) {
     let message = '❌ - Para usar este comando você deve informar *o que* '
     message += 'você está definindo e *o valor* que você quer definir\n\n'
     message += '*Exemplos:*'
@@ -62,7 +61,7 @@ export async function set (msg) {
 
   const id = msg.aux.db.contact.id
   const preferenceObject = msg.aux.db.contact.attributes.preferences ?? {}
-  preferenceObject[preferences[prefence]] = value
+  preferenceObject[preferences[prefence]] = value || 'undefined'
   // PUT /api/contacts/:id
   await fetch(`${getDBUrl()}/contacts/${id}`, {
     method: 'PUT',
