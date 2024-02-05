@@ -1,7 +1,7 @@
 import importFresh from '../../utils/importFresh.js'
 import { saveActionToDB } from '../../db.js'
 import { getSocket } from '../../index.js'
-import { camelCase } from 'change-case'
+import { addToQueue } from '../queue.js'
 import logger from '../../logger.js'
 //
 // ================================ Variables =================================
@@ -15,85 +15,74 @@ import logger from '../../logger.js'
  * @param {import('@whiskeysockets/baileys').BaileysEventMap['messages.upsert']} upsert
  */
 export default async (upsert) => {
-  logger.trace('messages.upsert', upsert)
-  if (!upsert.messages) return // ignore if there are no messages
-  let msg = upsert.messages[0]
-  if (msg.key.fromMe) return // ignore self messages
-  const meta = await importFresh('meta/message.js')
-  msg = meta.default(msg)
+  logger.trace('messages.upsert\n' + JSON.stringify(upsert, null, 2))
+  if (upsert.type === 'append') return // TODO: handle unread messages
 
-  if (msg.type === 'revoked') {
-    // TODO: send random "Deus viu o que você apagou" sticker
-    await msg.sendSeen()
-    return await msg.reply('👀 - Eu vi o que você apagou')
-  }
-  if (msg.type === 'edited') {
-    await msg.sendSeen()
-    await msg.react('👀')
-    return await msg.reply('👀 - {Haha eu|Kkkk eu|Eu} {vi|sei} {oq|o que} {tava antes|tu tinha escrito}{ ein| kk|!|!!!}')
-  }
+  for (let msg of upsert.messages) {
+    if (msg.key.fromMe) return // ignore self messages
 
-  const socket = getSocket()
-  await socket.sendPresenceUpdate('available')
-  const messageParser = await importFresh('validators/message.js')
-  const handlerModule = await messageParser.default(msg)
-  logger.trace('handlerModule: ', handlerModule)
+    const meta = await importFresh('meta/message.js')
+    msg = meta.default(msg)
 
-  if (!handlerModule) return logger.debug('handlerModule is undefined')
-
-  await msg.sendSeen()
-
-  try {
-    msg.aux.db = await saveActionToDB(handlerModule.type, handlerModule.command, msg)
-  } catch (error) {
-    logger.trace('Error saving action to DB', error)
-  }
-
-  // TODO: improve bot vip system
-  if (!msg.isGroup && msg.bot.name === 'DeadByte - VIP' && msg.aux.db) {
-    const sender = msg.aux.db.contact.attributes
-    const hasDonated = sender?.hasDonated === true
-    if (!hasDonated) {
-      await msg.react('💎')
-      let message = '❌ - Você não é um VIP! 😢\n\n'
-      message += 'Desculpe, não localizei nenhuma doação em seu nome.\n\n'
-      message += '*Se isso for um erro ou se você deseja se tornar um VIP, entre em contato no grupo de suporte:*\n'
-      message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
-      await msg.reply(message)
-
-      // wait 3 seconds and block the user
-      setTimeout(async () => {
-        await socket.updateBlockStatus(msg.from, 'block')
-      }, 5000)
-
+    if (msg.type === 'revoked') {
+      // TODO: send random "Deus viu o que você apagou" sticker
       return
     }
-  }
+    if (msg.type === 'edited') {
+      await msg.sendSeen()
+      return await msg.react('✏️')
+    }
 
-  const checkDisabled = await importFresh('validators/checkDisabled.js')
-  const isEnabled = await checkDisabled.default(msg)
-  if (!isEnabled) return logger.info(`⛔ - ${msg.from} - ${handlerModule.command} - Disabled`)
+    const socket = getSocket()
+    await socket.sendPresenceUpdate('available')
+    const messageParser = await importFresh('validators/message.js')
+    const handlerModule = await messageParser.default(msg)
+    logger.trace('handlerModule: ', handlerModule)
 
-  const checkOwnerOnly = await importFresh('validators/checkOwnerOnly.js')
-  const isOwnerOnly = await checkOwnerOnly.default(msg)
-  if (isOwnerOnly) return logger.info(`🛂 - ${msg.from} - ${handlerModule.command} - Restricted to admins`)
+    if (!handlerModule) return logger.debug('handlerModule is undefined')
 
-  // TODO: implement queue system
-  const moduleName = handlerModule.type
-  const functionName = handlerModule.command
-  const module = await importFresh(`services/functions/${moduleName}.js`)
-  const camelCaseFunctionName = camelCase(functionName)
-  try {
-    await module[camelCaseFunctionName](msg)
-  } catch (error) {
-    logger.error(`Error with command ${camelCaseFunctionName}`, error)
-    const readMore = '​'.repeat(783)
-    const prefix = msg.aux.prefix ?? '!'
-    msg.react('❌')
-    let message = `❌ - Ocorreu um erro inesperado com o comando *${prefix}${msg.aux.function}*\n\n`
-    message += 'Se for possível, tira um print e manda para meu administrador nesse grupo aqui: '
-    message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR\n\n'
-    message += `${readMore}\n${error}`
-    msg.reply(message)
+    try {
+      msg.aux.db = await saveActionToDB(handlerModule.type, handlerModule.command, msg)
+    } catch (error) {
+      logger.trace('Error saving action to DB', error)
+    }
+
+    // TODO: improve bot vip system
+    if (!msg.isGroup && msg.bot.name === 'DeadByte - VIP' && msg.aux.db) {
+      const sender = msg.aux.db.contact.attributes
+      const hasDonated = sender?.hasDonated === true
+      if (!hasDonated) {
+        await msg.react('💎')
+        let message = '❌ - Você não é um VIP! 😢\n\n'
+        message += 'Desculpe, não localizei nenhuma doação em seu nome.\n\n'
+        message += '*Se isso for um erro ou se você deseja se tornar um VIP, entre em contato no grupo de suporte:*\n'
+        message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
+        await msg.reply(message)
+
+        // wait 3 seconds and block the user
+        setTimeout(async () => {
+          await socket.updateBlockStatus(msg.from, 'block')
+        }, 5000)
+
+        return
+      }
+    }
+
+    const checkDisabled = await importFresh('validators/checkDisabled.js')
+    const isEnabled = await checkDisabled.default(msg)
+    if (!isEnabled) return logger.info(`⛔ - ${msg.from} - ${handlerModule.command} - Disabled`)
+
+    const checkOwnerOnly = await importFresh('validators/checkOwnerOnly.js')
+    const isOwnerOnly = await checkOwnerOnly.default(msg)
+    if (isOwnerOnly) return logger.info(`🛂 - ${msg.from} - ${handlerModule.command} - Restricted to admins`)
+
+    // TODO: implement queue system
+    const moduleName = handlerModule.type
+    const functionName = handlerModule.command
+    await addToQueue(moduleName, functionName, msg)
+    // const { isSpam, messagesOnQueue } = await addToQueue(moduleName, functionName, msg)
+    // if (isSpam) return logger.warn(`${msg.from} - ${handlerModule.command} - Spam detected`)
+    // if (messagesOnQueue > 1) return logger.info(`${msg.from} - ${handlerModule.command} - Queued`)
+    // logger.info(`${msg.from} - ${handlerModule.command} - Processing`)
   }
 }

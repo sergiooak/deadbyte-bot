@@ -1,128 +1,236 @@
 import importFresh from '../utils/importFresh.js'
 import logger from '../logger.js'
-import { getClient } from '../index.js'
+import { getSocket } from '../index.js'
 import { camelCase } from 'change-case'
 
 //
 // ===================================== Variables ======================================
 //
+/**
+ * @typedef {Object} Message
+ * @property {any} message - The message content.
+ */
 
-const client = getClient()
-const queue = []
-const waitTimeMax = 300
-const waitTimeMin = 0
-const waitTimeMultiplier = 100
-let waitTime = waitTimeMax // initial wait time
+/**
+ * @typedef {Object} QueueItem
+ * @property {number} waitUntil - The timestamp to wait until.
+ * @property {string} moduleName - The name of the module.
+ * @property {string} functionName - The name of the function.
+ * @property {Message} message - The message object.
+ */
 
+/**
+ * @typedef {Object} Chat
+ * @property {boolean} isBusy - Indicates if the chat is busy.
+ * @property {number} lastEvent - The timestamp of the last event.
+ * @property {Array<QueueItem>} queue - The queue of items.
+ * @property {number} spamWarning - The number of spam warnings.
+ * @property {number} lastSpamWarning - The timestamp of the last spam warning.
+ */
+
+/**
+ * @typedef {Object.<string, Chat>} Queue
+ */
+
+/**
+ * The queue of messages.
+ * @type {Queue}
+ */
+const queue = {}
+const socket = getSocket()
 //
 // ==================================== Main Function ====================================
 //
-/**
- * Add a message to queue and return an array with the queue length and user queue length
- * @param {import('whatsapp-web.js').ClientInfo} userId
- * @param {string} moduleName - Name of the module to be imported e.g. 'sticker'
- * @param {string} functionName - Name of the function to be called e.g. 'stickerText'
- * @param {import('whatsapp-web.js').Message} msg - Message object
- * @returns {Array<number>} [queueLength, userQueueLength]
- *
- */
-function addToQueue (userId, moduleName, functionName, msg) {
-  // if is a group, bypass the queue
-  if (msg.aux.chat.isGroup) {
-    bypassQueue(moduleName, functionName, msg)
-    return [0, 0]
-  }
-  const userIndex = queue.findIndex((user) => user.wid === userId)
-  if (userIndex !== -1) {
-    queue[userIndex].messagesQueue.push({ moduleName, functionName, message: msg })
-    return [getQueueLength(), queue[userIndex].messagesQueue.length]
-  }
-
-  queue.push({
-    wid: userId,
-    messagesQueue: [{ moduleName, functionName, message: msg }]
-  })
-  return [getQueueLength(), 1]
-}
-
-async function bypassQueue (moduleName, functionName, msg) {
-  const module = await importFresh(`services/functions/${moduleName}.js`)
-  const camelCaseFunctionName = camelCase(functionName)
-  module[camelCaseFunctionName](msg)
-}
-
 async function processQueue () {
-  // set the wait time for the next round based on the queue length
-  const newWaitTime = Math.max(waitTimeMax - (queue.length * waitTimeMultiplier), waitTimeMin)
-  // noise between -150ms and 150ms to make the wait time more human-like
-  const noise = Math.floor(Math.random() * 300) - 150
-  setWaitTime(newWaitTime + noise)
-
-  if (queue.length === 0) return setTimeout(processQueue, waitTime) // if the queue is empty, wait and try again
-
-  const user = queue.shift() // get the first user on the queue
-
-  const currentMessage = user.messagesQueue.shift() // get the first message of that user
-
-  /** @type {{moduleName: string, functionName: string, message: import('whatsapp-web.js').Message}} */
-  const { moduleName, functionName, message: msg } = currentMessage
-
-  const number = await client.getFormattedNumber(msg.from)
-  const camelCaseFunctionName = camelCase(functionName)
-  logger.info(`🛫 - ${number} - ${moduleName}.${camelCaseFunctionName}()`)
-
-  try {
-    const module = await importFresh(`services/functions/${moduleName}.js`) // import the module
-    logger.debug(module)
-
-    const fnPromisse = module[camelCaseFunctionName](msg)
-    fnPromisse.then((_result) => {
-      if (user.messagesQueue.length > 0) {
-        queue.push(user) // if there are more messages on the user queue, push it back to the queue
-      } else {
-        // mark the chat as read after 5 seconds
-        setTimeout(() => {
-          msg.aux.chat.sendSeen()
-        }, 5_000)
-      }
-    }).catch((err) => {
-      logger.error(err)
-      msg.react('❌')
+  if (Object.keys(queue).length > 0) {
+    // pick the first key from the queue, pick the first item from the queue
+    // reconstruct the message object with the current key at the end
+    const firstChatInQueueKey = Object.keys(queue)[0]
+    const firstChatInQueue = queue[firstChatInQueueKey]
+    delete queue[firstChatInQueueKey]
+    queue[firstChatInQueueKey] = firstChatInQueue // add it back to the queue
+    if (firstChatInQueue.queue.length === 0) {
+      return waitAndProcessQueue() // instantly process the next message
+    }
+    if (firstChatInQueue.isBusy) {
+      return waitAndProcessQueue(0, 0) // instantly process the next message
+    }
+    const firstMessageInQueue = firstChatInQueue.queue[0]
+    firstChatInQueue.queue = firstChatInQueue.queue.slice(1)
+    if (Date.now() < firstMessageInQueue.waitUntil) {
+      firstChatInQueue.queue.unshift(firstMessageInQueue)
+      return waitAndProcessQueue(0, 0) // instantly process the next message
+    }
+    firstChatInQueue.isBusy = true
+    // do not await this, so that we can process the next message in the queue
+    executeQueueItem(firstMessageInQueue.moduleName, firstMessageInQueue.functionName, firstMessageInQueue.message).then(() => {
+      queue[firstChatInQueueKey].isBusy = false
+      queue[firstChatInQueueKey].lastEvent = Date.now()
     })
-  } catch (err) {
-    logger.fatal('Error executing module', moduleName, camelCaseFunctionName)
-    logger.error(err)
   }
 
-  setTimeout(processQueue, waitTime) // wait and process the next item on the queue
+  // // await random time between 0,5 and 1,5 seconds
+  return await waitAndProcessQueue()
 }
-
-processQueue()
-
+processQueue() // start the queue processing
 //
 // ================================== Helper Functions ==================================
 //
-export function setWaitTime (time) {
-  // make sure the wait time is not lower than 1ms
-  const safeTime = Math.max(time, 1)
-  waitTime = safeTime
-}
+/**
+ * Add the message to the queue
+ * @param {string} moduleName
+ * @param {string} functionName
+ * @param {Message} msg
+ * @returns {Promise<{waitUntil: number, messagesOnQueue: number, isSpam: boolean}>}
+ */
+export async function addToQueue (moduleName, functionName, msg) {
+  const id = msg.from
+  if (!queue[id]) {
+    initializeQueueForUser(id)
+  }
 
-export function getWaitTime () {
-  return waitTime
+  const messagesOnQueue = queue[id].queue.length
+  const waitUntil = Date.now() + (messagesOnQueue * 2000)
+  const spamThreshold = 6
+
+  if (messagesOnQueue >= spamThreshold - 1) {
+    const spamWarningResult = await handleSpamWarning(id, spamThreshold, msg)
+    if (spamWarningResult.isSpam) {
+      return spamWarningResult
+    }
+  }
+
+  return addMessageToQueue(id, waitUntil, moduleName, functionName, msg)
 }
 
 /**
- * Get the number of messages on the queue, by user or total messages
- * @returns {number}
- * @param {string} by - 'user' or 'messages'
- * @throws {Error} Invalid parameter
+ * Initialize the queue for the user
+ * @param {string} id
+ * @returns {void}
  */
-export function getQueueLength (by = 'messages') {
-  if (by === 'user') return queue.length
-  if (by === 'messages') return queue.reduce((acc, user) => acc + user.messagesQueue.length, 0)
-
-  throw new Error('Invalid parameter')
+function initializeQueueForUser (id) {
+  queue[id] = {
+    isBusy: false,
+    lastEvent: Date.now(),
+    queue: [],
+    spamWarning: 0,
+    lastSpamWarning: 0
+  }
 }
 
-export { addToQueue, processQueue }
+/**
+ * Handle the spam warning
+ * @param {string} id
+ * @param {number} spamThreshold
+ * @param {Message} msg
+ * @returns {Promise<{isSpam: boolean, messagesOnQueue: number}>}
+ */
+async function handleSpamWarning (id, spamThreshold, msg) {
+  if (Date.now() - queue[id].lastSpamWarning > 30_000) {
+    queue[id].spamWarning++
+    queue[id].lastSpamWarning = Date.now()
+
+    const { emoji, message } = getSpamWarningMessage(queue[id].spamWarning, spamThreshold)
+
+    await wait(15_000)
+    await msg.react(emoji)
+    await msg.reply(message)
+
+    if (queue[id].spamWarning >= 4) {
+      await wait(5_000)
+      await socket.updateBlockStatus(id, 'block')
+    }
+    return { isSpam: true, messagesOnQueue: queue[id].queue.length }
+  }
+  return { isSpam: false }
+}
+
+/**
+ * Get the spam warning message
+ * @param {number} spamWarning
+ * @param {number} spamThreshold
+ * @returns {{emoji: string, message: string}}
+ */
+function getSpamWarningMessage (spamWarning, spamThreshold) {
+  let emoji = '⚠️'
+  let message = ''
+  switch (spamWarning) {
+    case 4:
+      emoji = '🚫'
+      message = '🚫 - Você foi bloqueado por _spamming_ o bot! 😡'
+      break
+    case 3:
+      emoji = '🚨'
+      message = '🚨 - *ÚLTIMO AVISO!!!*\n\nNa próxima vez que você _spammar_ o bot te darei block!'
+      break
+    case 2:
+      message = `⚠️ - *ATENÇÃO!!!*\n\nJá avisei uma vez 😡, não _spamme_ o bot, máximo de ${spamThreshold} mensagens por minuto.\n\nSe continuar, você será bloqueado!`
+      break
+    default:
+      message = `⚠️ - *ATENÇÃO!!!*\n\nNão _spamme_ o bot, máximo de ${spamThreshold} mensagens por minuto.\n\nSe continuar, você será bloqueado!`
+  }
+  return { emoji, message }
+}
+
+/**
+ * Add the message to the queue
+ * @param {string} id
+ * @param {number} waitUntil
+ * @param {string} moduleName
+ * @param {string} functionName
+ * @param {Message} msg
+ * @returns {{waitUntil: number, messagesOnQueue: number}}
+ */
+function addMessageToQueue (id, waitUntil, moduleName, functionName, msg) {
+  queue[id].queue.push({
+    waitUntil,
+    moduleName,
+    functionName,
+    message: msg
+  })
+
+  return { waitUntil, messagesOnQueue: queue[id].queue.length }
+}
+
+/**
+ * Wait for the given amount of time
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+async function wait (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function waitAndProcessQueue (min = 500, max = 2500) {
+  const waitTime = Math.floor(Math.random() * (max - min + 1)) + min
+  await wait(waitTime)
+  processQueue()
+}
+
+export async function executeQueueItem (moduleName, functionName, msg) {
+  // console.log('Executing queue item', moduleName, functionName, msg)
+  await msg.sendSeen()
+  const checkDisabled = await importFresh('validators/checkDisabled.js')
+  const isEnabled = await checkDisabled.default(msg)
+  if (!isEnabled) return logger.info(`⛔ - ${msg.from} - ${functionName} - Disabled`)
+
+  const checkOwnerOnly = await importFresh('validators/checkOwnerOnly.js')
+  const isOwnerOnly = await checkOwnerOnly.default(msg)
+  if (isOwnerOnly) return logger.info(`🛂 - ${msg.from} - ${functionName} - Restricted to admins`)
+
+  const module = await importFresh(`services/functions/${moduleName}.js`)
+  const camelCaseFunctionName = camelCase(functionName)
+  try {
+    await module[camelCaseFunctionName](msg)
+  } catch (error) {
+    logger.error(`Error with command ${camelCaseFunctionName}`, error)
+    const readMore = '​'.repeat(783)
+    const prefix = msg.aux.prefix ?? '!'
+    msg.react('❌')
+    let message = `❌ - Ocorreu um erro inesperado com o comando *${prefix}${msg.aux.function}*\n\n`
+    message += 'Se for possível, tira um print e manda para meu administrador nesse grupo aqui: '
+    message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR\n\n'
+    message += `${readMore}\n${error}`
+    msg.reply(message)
+  }
+}
