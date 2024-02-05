@@ -5,12 +5,12 @@ import * as baileys from '@whiskeysockets/baileys'
 import { defineCommand, runMain } from 'citty'
 import { apiKey } from './config/api.js'
 import { dotCase } from 'change-case'
+import NodeCache from 'node-cache'
 import bot from './config/bot.js'
 import logger from './logger.js'
 import * as db from './db.js'
 import fs from 'fs/promises'
 import pino from 'pino'
-
 let globalArgs = {}
 
 const main = defineCommand({
@@ -79,7 +79,7 @@ const main = defineCommand({
   }
 })
 
-const store = undefined
+export const store = undefined
 runMain(main)
 
 /**
@@ -91,18 +91,17 @@ export function getArgs () {
 }
 
 /**
- * Baileys socket or null if not connected
-*/
-// @type {import('@whiskeysockets/baileys').WSocket | null}
-let socket = null
-
-/**
  * Grabs the socket
  * @returns {import('./types').WSocket}
- */
+*/
 export function getSocket () {
   return socket
 }
+let socket = null
+
+// external map to store retry counts of messages when decryption/encryption fails
+// keep this out of the socket itself, so as to prevent a message decryption/encryption loop across socket restarts
+const msgRetryCounterCache = new NodeCache()
 
 export async function connectToWhatsApp () {
   // if no API KEY, kill the process
@@ -114,15 +113,23 @@ export async function connectToWhatsApp () {
   logger.info('Connecting to WhatsApp...')
 
   const { state, saveCreds } = await baileys.useMultiFileAuthState(`./src/temp/${bot.name}`)
+  const { version, isLatest } = await baileys.fetchLatestBaileysVersion()
+  logger.info(`Baileys version: v${version.join('.')} (latest: ${isLatest})`)
 
   socket = baileys.makeWASocket({
-    printQRInTerminal: true,
+    version,
     logger: pino({ level: 'fatal' }),
-    auth: state,
+    printQRInTerminal: true,
+    auth: {
+      creds: state.creds,
+      keys: baileys.makeCacheableSignalKeyStore(state.keys, logger)
+    },
+    msgRetryCounterCache,
+    markOnlineOnConnect: true,
     browser: ['DeadByte', 'Safari', '3.0'],
     generateHighQualityLinkPreview: true,
-    shouldIgnoreJid: jid => baileys.isJidBroadcast(jid), // TODO: make a stories downloader
-    getMessage: async key => { return { } }
+    shouldIgnoreJid: jid => baileys.isJidBroadcast(jid), // TODO: make a stories downloader,
+    getMessage
   })
 
   store?.bind(socket.ev)
@@ -144,10 +151,29 @@ export async function connectToWhatsApp () {
     })
   })
   socket.ev.on('creds.update', saveCreds)
+  socket.ev.on('messaging-history.set', async (history) => {
+    const { chats, contacts, messages, isLatest } = history
+    logger.info(`Loaded ${chats.length} chats, ${contacts.length} contacts and ${messages.length} messages (latest: ${isLatest})`)
+  })
 
   logger.info('Client initialized!')
   await db.findCurrentBot(socket) // find the current bot on the database
   return socket
+}
+
+/**
+ * Retrieves a message from the store based on the provided key.
+ * @param {import('@whiskeysockets/baileys').WAMessageKey} key - The key of the message to retrieve.
+ * @returns {Promise<import('@whiskeysockets/baileys').WAMessageContent | undefined>} The retrieved message content, or undefined if not found.
+ */
+export async function getMessage (key) {
+  if (store) {
+    const msg = await store.loadMessage(key.remoteJid, key.id)
+    return msg?.message || undefined
+  }
+
+  // only if store is present
+  return baileys.proto.Message.fromObject({})
 }
 
 // clear terminal
@@ -158,6 +184,7 @@ process.on('unhandledRejection', (err) => {
   // Connection Closed try connectToWhatsApp
   if (err.message.includes('Connection Closed')) {
     logger.fatal('Connection Closed AAAAAAAAAAA')
+    console.log(err)
     process.exit(0) // kill the process and pm2 will restart it
   } else {
     logger.fatal(err)
