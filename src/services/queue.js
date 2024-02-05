@@ -201,7 +201,7 @@ async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-async function waitAndProcessQueue (min = 500, max = 2500) {
+async function waitAndProcessQueue (min = 250, max = 1500) {
   const waitTime = Math.floor(Math.random() * (max - min + 1)) + min
   await wait(waitTime)
   processQueue()
