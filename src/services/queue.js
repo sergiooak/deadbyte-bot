@@ -90,10 +90,10 @@ export async function addToQueue (moduleName, functionName, msg) {
   }
 
   const messagesOnQueue = queue[id].queue.length
-  const waitUntil = Date.now() + (messagesOnQueue * 2000)
+  const waitUntil = Date.now() + (messagesOnQueue * 3000)
   const spamThreshold = 6
 
-  if (messagesOnQueue >= spamThreshold - 1) {
+  if (messagesOnQueue >= spamThreshold) {
     const spamWarningResult = await handleSpamWarning(id, spamThreshold, msg)
     if (spamWarningResult.isSpam) {
       return spamWarningResult
@@ -201,7 +201,7 @@ async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-async function waitAndProcessQueue (min = 250, max = 1500) {
+async function waitAndProcessQueue (min = 1000, max = 3000) {
   const waitTime = Math.floor(Math.random() * (max - min + 1)) + min
   await wait(waitTime)
   processQueue()
