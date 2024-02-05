@@ -7,7 +7,7 @@ import { connectToWhatsApp } from '../../index.js'
  * @param {import('@whiskeysockets/baileys').BaileysEventMap['connection.update']} update
  */
 export default async (update) => {
-  logger.trace('Connection updated', update)
+  logger.trace('Connection updated\n' + JSON.stringify(update))
   if (global.qr !== update.qr) {
     global.qr = update.qr
   }

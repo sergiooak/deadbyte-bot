@@ -14,7 +14,7 @@ export default async (event) => {
   const emoji = '📞'
   const call = event[0]
   if (call.status === 'offer') {
-    logger.info(`${emoji} - Incoming call`, call)
+    logger.info(`${emoji} - Incoming call\n` + JSON.stringify(call, null, 2))
     const sock = getSocket()
     await sock.rejectCall(call.id, call.from)
 
