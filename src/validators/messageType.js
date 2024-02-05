@@ -45,6 +45,10 @@ const types = {
  * @param {import('@whiskeysockets/baileys').proto.IWebMessageInfo} msg
  */
 export default (msg) => {
+  if (!msg.message) {
+    logger.warn('Message has no message', msg)
+    return types.UNKNOWN
+  }
   const keysToIgnore = ['messageContextInfo']
   const hasKeys = Object.keys(msg).length > 1
   let firstKey = Object.keys(msg)[0]
