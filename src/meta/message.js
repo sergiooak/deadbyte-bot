@@ -234,8 +234,9 @@ async function sendSeen () {
    * Message object itself
    * @type {import('@whiskeysockets/baileys').proto.WebMessageInfo}
    */
-  const msg = this
-  await socket.readMessages([msg.key])
+  // const msg = this
+  // await socket.readMessages([msg.key])
+  // temp disable
 }
 
 /**
