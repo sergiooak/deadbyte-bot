@@ -161,13 +161,13 @@ async function react (reaction) {
    * Message object itself
    * @type {import('@whiskeysockets/baileys').proto.WebMessageInfo}
    */
-  const msg = this
-  await socket.sendMessage(msg.key.remoteJid, {
-    react: {
-      text: spintax(reaction),
-      key: msg.key
-    }
-  })
+  // const msg = this
+  // await socket.sendMessage(msg.key.remoteJid, {
+  //   react: {
+  //     text: spintax(reaction),
+  //     key: msg.key
+  //   }
+  // })
 }
 
 /**
