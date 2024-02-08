@@ -49,21 +49,22 @@ export default async (upsert) => {
     }
 
     // TODO: improve bot vip system
-    if (!msg.isGroup && msg.bot.name === 'DeadByte - VIP' && msg.aux.db) {
+    const vipBots = ['DeadByte - 5852', 'DeadByte - 7041', 'DeadByte - VIP']
+    if (!msg.isGroup && vipBots.includes(msg.bot.name) && msg.aux.db) {
       const sender = msg.aux.db.contact.attributes
       const hasDonated = sender?.hasDonated === true
       if (!hasDonated) {
-        await msg.react('💎')
-        let message = '❌ - Você não é um VIP! 😢\n\n'
-        message += 'Desculpe, não localizei nenhuma doação em seu nome.\n\n'
-        message += '*Se isso for um erro ou se você deseja se tornar um VIP, entre em contato no grupo de suporte:*\n'
-        message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
-        await msg.reply(message)
+        // await msg.react('💎')
+        // let message = '❌ - Você não é um VIP! 😢\n\n'
+        // message += 'Desculpe, não localizei nenhuma doação em seu nome.\n\n'
+        // message += '*Se isso for um erro ou se você deseja se tornar um VIP, entre em contato no grupo de suporte:*\n'
+        // message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
+        // await msg.reply(message)
 
-        // wait 3 seconds and block the user
-        setTimeout(async () => {
-          await socket.updateBlockStatus(msg.from, 'block')
-        }, 5000)
+        // // wait 3 seconds and block the user
+        // setTimeout(async () => {
+        //   await socket.updateBlockStatus(msg.from, 'block')
+        // }, 5000)
 
         return
       }
