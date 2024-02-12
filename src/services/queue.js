@@ -223,7 +223,8 @@ export async function executeQueueItem (moduleName, functionName, msg) {
   try {
     await module[camelCaseFunctionName](msg)
   } catch (error) {
-    logger.error(`Error with command ${camelCaseFunctionName}`, error)
+    logger.error(`Error with command ${camelCaseFunctionName}`)
+    console.error(error)
     const readMore = '​'.repeat(783)
     const prefix = msg.aux.prefix ?? '!'
     msg.react('❌')
