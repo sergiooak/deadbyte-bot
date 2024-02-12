@@ -104,7 +104,8 @@ export async function activate (msg) {
     }
   })
   const queue = await response.json()
-  if (queue.data.contact) {
+  console.log('queue', queue)
+  if (queue.data?.contact) {
     await msg.react('⚠️')
     return msg.reply('⚠️ - Código de ativação já utilizado')
   }
