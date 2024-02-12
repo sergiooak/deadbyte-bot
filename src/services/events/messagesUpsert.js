@@ -53,22 +53,26 @@ export default async (upsert) => {
     // if (!msg.isGroup && vipBots.includes(msg.bot.name) && msg.aux.db) {
     if (!msg.isGroup && msg.aux.db) {
       const sender = msg.aux.db.contact.attributes
-      const hasDonated = sender?.hasDonated === true
-      if (!hasDonated) {
-        // await msg.react('💎')
-        // let message = '❌ - Você não é um VIP! 😢\n\n'
-        // message += 'Desculpe, não localizei nenhuma doação em seu nome.\n\n'
-        // message += '*Se isso for um erro ou se você deseja se tornar um VIP, entre em contato no grupo de suporte:*\n'
-        // message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
-        // await msg.reply(message)
-
-        // // wait 3 seconds and block the user
-        // setTimeout(async () => {
-        //   await socket.updateBlockStatus(msg.from, 'block')
-        // }, 5000)
-
-        return
+      if (!sender.queue?.data && msg.aux.db.command.slug !== 'activate') {
+        console.log(`⛔ - ${msg.from} - ${handlerModule.command} - Not queued`)
+        return // user not passed through the queue
       }
+      // const hasDonated = sender?.hasDonated === true
+      // if (!hasDonated) {
+      //   // await msg.react('💎')
+      //   // let message = '❌ - Você não é um VIP! 😢\n\n'
+      //   // message += 'Desculpe, não localizei nenhuma doação em seu nome.\n\n'
+      //   // message += '*Se isso for um erro ou se você deseja se tornar um VIP, entre em contato no grupo de suporte:*\n'
+      //   // message += 'https://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
+      //   // await msg.reply(message)
+
+      //   // // wait 3 seconds and block the user
+      //   // setTimeout(async () => {
+      //   //   await socket.updateBlockStatus(msg.from, 'block')
+      //   // }, 5000)
+
+      //   return
+      // }
     }
 
     const checkDisabled = await importFresh('validators/checkDisabled.js')
