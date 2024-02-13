@@ -161,13 +161,15 @@ async function react (reaction) {
    * Message object itself
    * @type {import('@whiskeysockets/baileys').proto.WebMessageInfo}
    */
-  // const msg = this
-  // await socket.sendMessage(msg.key.remoteJid, {
-  //   react: {
-  //     text: spintax(reaction),
-  //     key: msg.key
-  //   }
-  // })
+  const msg = this
+  await wait(Math.floor(Math.random() * 1000)) // 0-1000ms delay
+  await socket.sendMessage(msg.key.remoteJid, {
+    react: {
+      text: spintax(reaction),
+      key: msg.key
+    }
+  })
+  await wait(Math.floor(Math.random() * 1000)) // 0-1000ms delay
 }
 
 /**
@@ -328,4 +330,13 @@ function extractLinks (string) {
 
   if (!responseArray.length) return undefined
   return responseArray
+}
+
+/**
+ * Wait for the given amount of time
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+async function wait (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
