@@ -49,7 +49,7 @@ export default async (upsert) => {
     }
 
     // TODO: improve bot vip system
-    const vipBots = ['DeadByte - 5852', 'DeadByte - 7041', 'DeadByte - VIP']
+    // const vipBots = ['DeadByte - 5852', 'DeadByte - 7041', 'DeadByte - VIP']
     // if (!msg.isGroup && vipBots.includes(msg.bot.name) && msg.aux.db) {
     if (!msg.isGroup && msg.aux.db) {
       const sender = msg.aux.db.contact.attributes
