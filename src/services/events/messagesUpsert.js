@@ -15,7 +15,7 @@ import logger from '../../logger.js'
  * @param {import('@whiskeysockets/baileys').BaileysEventMap['messages.upsert']} upsert
  */
 export default async (upsert) => {
-  console.log('messages.upsert\n' + JSON.stringify(upsert, null, 2))
+  // console.log('messages.upsert\n' + JSON.stringify(upsert, null, 2))
   logger.trace('messages.upsert\n' + JSON.stringify(upsert, null, 2))
   if (upsert.type === 'append') return // TODO: handle unread messages
 
