@@ -179,25 +179,31 @@ export async function toUrl (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function ping (msg) {
-  let message = '🏓 - Pong!\n\n'
-
-  // const usersInQueue = getQueueLength('user')
-  // const messagesInQueue = getQueueLength('messages')
-  // if (usersInQueue || messagesInQueue) {
-  //   message += `{Atualmente|No momento|{Nesse|Neste}{ exato|} momento} tem *${usersInQueue} ${usersInQueue > 1 ? 'usuários' : 'usuário'}* na fila com *${messagesInQueue} ${messagesInQueue > 1 ? 'mensagens' : 'mensagem'}* ao todo!\n\n`
-  // }
-
   let lag = msg.lag / 1000
   lag = Math.max(lag, 0) // if lag is negative, set it to 0
   lag = isNaN(lag) ? 0 : lag
 
   const ping = Date.now() - msg.startedAt
   const delayString = convertToHumanReadable(ping, lag, 'ms')
-  message += `Essa mensagem demorou *${delayString}* para ser respondida`
+  let message = `Essa mensagem demorou *${delayString}* para ser respondida`
 
-  if (lag > 0) {
+  message += '\n\n```━━━━━━━━━━ 🏓 ━━━━━━━━━━```\n\n'
+
+  // TODO: get medium speed for each message from server
+  // message += '📶 - Velocidade atual: 0\n'
+  // message += '👥 - Usuários esta semana: 0\n'
+  // message += '💬 - Chats na última hora: 0\n'
+  message += '📩 - Mensagens na última hora: 0\n'
+
+  message += '🕒 - Online direto há: '
+  const uptime = process.uptime()
+  const uptimeString = secondsToDhms(uptime)
+  message += uptimeString
+
+  if (lag >= 1) {
+    message += '\n\n```━━━━━━━━━━ ⚠️ ━━━━━━━━━━```\n\n'
     const lagString = convertToHumanReadable(lag, 0, 's')
-    message += `\n\nO WhatsApp demorou *${lagString}* para entregar essa mensagem pra mim!`
+    message += `O WhatsApp demorou *${lagString}* para entregar essa mensagem pra mim!`
   }
 
   await msg.reply(spintax(message))
@@ -328,14 +334,14 @@ function secondsToDhms (seconds) {
   // add suffixe "dia" or "dias" if days > 0 and singular or plural
   // "hora" or "horas" if hours > 0 and singular or plural etc...
 
-  const days = d > 0 ? `${d === 1 ? 'dia' : 'dias'}` : ''
-  const hours = h > 0 ? `${h === 1 ? 'hora' : 'horas'}` : ''
-  const minutes = m > 0 ? `${m === 1 ? 'minuto' : 'minutos'}` : ''
-  const secondsString = `${s === 1 ? 'segundo' : 'segundos'}`
-  // from left to right, get the first non empty string
-  const array = [days, hours, minutes, secondsString].filter(s => s !== '')
-  const suffix = array[0]
-  string += ` ${suffix}`
+  // const days = d > 0 ? `${d === 1 ? 'dia' : 'dias'}` : ''
+  // const hours = h > 0 ? `${h === 1 ? 'hora' : 'horas'}` : ''
+  // const minutes = m > 0 ? `${m === 1 ? 'minuto' : 'minutos'}` : ''
+  // const secondsString = `${s === 1 ? 'segundo' : 'segundos'}`
+  // // from left to right, get the first non empty string
+  // const array = [days, hours, minutes, secondsString].filter(s => s !== '')
+  // const suffix = array[0]
+  // string += ` ${suffix}`
   return string
 }
 
