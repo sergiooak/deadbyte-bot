@@ -201,12 +201,25 @@ async function wait (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/**
+ * Wait for a random amount of time and process the queue
+ * @param {number} min
+ * @param {number} max
+ * @returns {Promise<void>}
+ */
 async function waitAndProcessQueue (min = 1000, max = 3000) {
   const waitTime = Math.floor(Math.random() * (max - min + 1)) + min
   await wait(waitTime)
   processQueue()
 }
 
+/**
+ * Execute the queue item
+ * @param {string} moduleName
+ * @param {string} functionName
+ * @param {Message} msg
+ * @returns {Promise<void>}
+ */
 export async function executeQueueItem (moduleName, functionName, msg) {
   // console.log('Executing queue item', moduleName, functionName, msg)
   await msg.sendSeen()
