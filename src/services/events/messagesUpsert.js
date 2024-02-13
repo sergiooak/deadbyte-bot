@@ -54,7 +54,7 @@ export default async (upsert) => {
     if (!msg.isGroup && msg.aux.db) {
       const sender = msg.aux.db.contact.attributes
       if (!sender.queue?.data && msg.aux.db.command.slug !== 'activate') {
-        console.log(`⛔ - ${msg.from} - ${handlerModule.command} - Not queued`)
+        console.warn(`⛔ - ${msg.from} - ${handlerModule.command} - Not queued`)
         return // user not passed through the queue
       }
       // const hasDonated = sender?.hasDonated === true

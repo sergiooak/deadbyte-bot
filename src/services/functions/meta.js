@@ -104,7 +104,6 @@ export async function activate (msg) {
     }
   })
   const queue = await response.json()
-  console.log('queue', queue)
   if (queue.data.contact) {
     // TODO: if the current contact give sucessful feedback
     // If is another contact, tell the user that the code is already used
@@ -113,7 +112,6 @@ export async function activate (msg) {
     return msg.reply('⚠️ - Código de ativação já utilizado')
   }
 
-  console.log(msg.aux.db.contact.id)
   // PUT /api/queues/:id
   await fetch(`${getDBUrl()}/queues/${queueId}`, {
     method: 'PUT',

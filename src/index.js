@@ -184,7 +184,7 @@ process.on('unhandledRejection', (err) => {
   // Connection Closed try connectToWhatsApp
   if (err.message.includes('Connection Closed')) {
     logger.fatal('Connection Closed AAAAAAAAAAA')
-    console.log(err)
+    console.error(err)
     process.exit(0) // kill the process and pm2 will restart it
   } else {
     logger.fatal(err)
