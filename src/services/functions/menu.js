@@ -69,8 +69,8 @@ export async function menu (msg) {
   // Tell About prefix
   message += 'Os seguintes prefixos são aceitos para os comandos: *! . # /*\n\n'
 
-  const readMore = '​'.repeat(783)
-  message += readMore
+  // const readMore = '​'.repeat(783)
+  // message += readMore
   // const menuEmojis = '{📋|🗒️|📜}'
   // message += '```•·········• ' + menuEmojis + ' •·········•```\n\n'
 
