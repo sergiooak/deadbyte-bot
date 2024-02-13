@@ -41,7 +41,7 @@ export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite
 
     await sendMediaAsSticker(msg, stickerMedia, stickerName, stickerAuthor, overwrite)
   }
-  await msg.react(reactions.success)
+  await msg.react()
 }
 
 /**
@@ -57,7 +57,7 @@ export async function textSticker (msg) {
   media = await Util.formatToWebpSticker(media, {}, false)
 
   await sendMediaAsSticker(msg, media)
-  await msg.react(reactions.success)
+  await msg.react()
 }
 
 /**
