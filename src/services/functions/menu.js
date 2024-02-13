@@ -1,5 +1,6 @@
 import { MessageMedia } from '../../meta/messageMedia.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import reactions from '../../config/reactions.js'
 import spintax from '../../utils/spintax.js'
 import { getCommands } from '../../db.js'
 import 'dayjs/locale/pt-br.js'
@@ -16,7 +17,7 @@ dayjs.extend(relativeTime)
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function menu (msg) {
-  await msg.react('📜')
+  await msg.react(reactions.wait)
 
   let commandGroups = await getCommands()
 
@@ -98,15 +99,16 @@ export async function menu (msg) {
   message = message.trim().replace(/\n$/, '').trim()
   // await msg.reply(JSON.stringify(msg.aux, null, 2))
   await msg.reply({ media, caption: spintax(message) }, undefined)
+  await msg.react(reactions.success)
 }
 
 export async function menuGroup (msg) {
+  await msg.react(reactions.wait)
   let commandGroups = await getCommands()
 
   // pick only the command group where slug == groups
   commandGroups = commandGroups.filter(c => c.slug === 'groups')
-
-  await msg.react(commandGroups[0].emoji)
+  const emoji = commandGroups[0].emoji
 
   // if there is image, send it
   let media
@@ -159,6 +161,7 @@ export async function menuGroup (msg) {
   // await msg.reply(JSON.stringify(msg.aux, null, 2))
   // await msg.reply(spintax(message))
   await msg.reply(spintax(message), undefined, { media })
+  await msg.react(emoji)
 }
 
 //

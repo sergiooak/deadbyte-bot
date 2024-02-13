@@ -72,7 +72,7 @@ export async function textSticker2 (msg) {
   media = await Util.formatToWebpSticker(media, {}, false)
 
   await sendMediaAsSticker(msg, media)
-  await msg.react(reactions.success)
+  await msg.react()
 }
 
 /**
@@ -87,7 +87,7 @@ export async function textSticker3 (msg) {
   media = await Util.formatToWebpSticker(media, {}, false)
 
   await sendMediaAsSticker(msg, media)
-  await msg.react(reactions.success)
+  await msg.react()
 }
 
 /**
@@ -131,7 +131,7 @@ export async function removeBg (msg) {
   if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
 
   await sendMediaAsSticker(msg, stickerMedia)
-  await msg.react(reactions.success)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -176,7 +176,7 @@ export async function stealSticker (msg) {
   if (!media) throw new Error('Error downloading media')
 
   await sendMediaAsSticker(msg, media, stickerName, stickerAuthor, true)
-  await msg.react(reactions.success)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -228,7 +228,7 @@ export async function stickerLySearch (msg) {
   }
 
   await sendStickers(stickersPaginated, msg)
-  await msg.react(reactions.success)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -285,7 +285,7 @@ export async function stickerLyPack (msg) {
   }
 
   await sendStickers(stickersPaginated, msg)
-  await msg.react(reactions.success)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 //

@@ -59,7 +59,7 @@ export async function stats (msg) {
   message = formatCommands(commands, msg, message)
 
   await waitForMinimumTime(startedAt)
-  await reactAndReply(msg, emojis, reply, message)
+  await reactAndReply(msg, msg.aux.db.command.emoji, reply, message)
 }
 
 /**
@@ -107,7 +107,7 @@ export async function botStats (msg) {
   message += 'Veja as estatísticas completas em tempo real no site:\ndeadbyte.com.br/stats\n\n'
 
   await waitForMinimumTime(startedAt)
-  await reactAndReply(msg, emojis, reply, message)
+  await reactAndReply(msg, msg.aux.db.command.emoji, reply, message)
 }
 
 /**
@@ -151,7 +151,7 @@ export async function weekStats (msg) {
   message = formatCommands(commands, msg, message)
 
   await waitForMinimumTime(startedAt)
-  await reactAndReply(msg, emojis, reply, message)
+  await reactAndReply(msg, msg.aux.db.command.emoji, reply, message)
 }
 
 /**
@@ -195,7 +195,7 @@ export async function dayStats (msg) {
   message = formatCommands(commands, msg, message)
 
   await waitForMinimumTime(startedAt)
-  await reactAndReply(msg, emojis, reply, message)
+  await reactAndReply(msg, msg.aux.db.command.emoji, reply, message)
 }
 
 /**
@@ -236,7 +236,7 @@ export async function hourStats (msg) {
   message = formatCommands(commands, msg, message)
 
   await waitForMinimumTime(startedAt)
-  await reactAndReply(msg, emojis, reply, message)
+  await reactAndReply(msg, msg.aux.db.command.emoji, reply, message)
 }
 //
 // ================================== Helper Functions ==================================

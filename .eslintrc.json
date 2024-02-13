@@ -6,6 +6,9 @@
         ],
         "no-unmodified-loop-condition": [
             "off"
+        ],
+        "no-irregular-whitespace": [
+            "off"
         ]
     }
 }

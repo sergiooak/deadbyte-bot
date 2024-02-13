@@ -14,7 +14,8 @@ dayjs.extend(relativeTime)
  * @param {import('../../types').WWebJSMessage} msg
  */
 export async function debug (msg) {
-  const debugEmoji = '🐛'
-  await msg.react(debugEmoji)
   // Debug code goes here
+
+  // Then react to the message
+  await msg.react(msg.aux.db.command.emoji)
 }

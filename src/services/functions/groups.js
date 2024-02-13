@@ -33,7 +33,7 @@ export async function ban (msg) {
   }
 
   await socket.groupParticipantsUpdate(msg.from, target, 'remove')
-  await msg.react('🔨')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 export async function unban (msg) {
@@ -58,7 +58,7 @@ export async function unban (msg) {
   if (hasQuotedMsg) { target.push(await msg.quotedMsg.sender) }
 
   await socket.groupParticipantsUpdate(msg.from, target, 'add')
-  await msg.react('🔄')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -78,7 +78,7 @@ export async function promote (msg) {
     return await msg.reply('para usar o !promove *você* precisa ser admin')
   }
   await socket.groupParticipantsUpdate(msg.from, msg.aux.mentions, 'promote')
-  await msg.react('↗️')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -99,7 +99,7 @@ export async function demote (msg) {
   }
 
   await socket.groupParticipantsUpdate(msg.from, msg.aux.mentions, 'demote')
-  await msg.react('↘️')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -120,7 +120,7 @@ export async function giveaway (msg) {
   message = hasText ? `${message} de *${msg.body.trim()}*!` : message + '!'
   await socket.sendMessage(msg.from, { text: spintax(message), mentions: [winner.id] }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
 
-  await msg.react(spintax('{🎉|🎊|🥳}'))
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -142,7 +142,7 @@ export async function giveawayAdminsOnly (msg) {
   message = hasText ? `${message} *${text.trim()}*!` : message + '!'
   await socket.sendMessage(msg.from, { text: spintax(message), mentions: [winner.id] }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
 
-  await msg.react('🎉')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -162,7 +162,7 @@ export async function markAllMembers (msg) {
     text: msg.body ? `📣 - ${msg.body}` : '📣',
     mentions: participants
   }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
-  await msg.react('📣')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -175,7 +175,7 @@ export async function callAdmins (msg) {
     text: '👑 - Atenção administradores!',
     mentions: admins
   }, { ephemeralExpiration: msg.raw.message[Object.keys(msg.raw.message)[0]].contextInfo?.expiration || undefined })
-  await msg.react('👑')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -183,7 +183,6 @@ export async function callAdmins (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function closeGroup (msg) {
-  await msg.react('🔒')
   if (!msg.aux.isBotAdmin) {
     return await msg.reply('para usar o !fechar *o bot* precisa ser admin')
   }
@@ -192,6 +191,7 @@ export async function closeGroup (msg) {
     return await msg.reply('para usar o !fechar *você* precisa ser admin')
   }
   await socket.groupSettingUpdate(msg.from, 'announcement')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -199,7 +199,6 @@ export async function closeGroup (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function openGroup (msg) {
-  await msg.react('🔓')
   if (!msg.aux.isBotAdmin) {
     return await msg.reply('para usar o !abrir *o bot* precisa ser admin')
   }
@@ -209,4 +208,5 @@ export async function openGroup (msg) {
   }
 
   await socket.groupSettingUpdate(msg.from, 'not_announcement')
+  await msg.react(msg.aux.db.command.emoji)
 }

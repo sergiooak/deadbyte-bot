@@ -39,11 +39,11 @@ export async function gpt (msg) {
 
     await msg.reply(data.result)
     await msg.aux.chat.clearState()
-    await msg.react('🧠')
+    await msg.react(msg.aux.db.command.emoji)
   } catch (error) {
     await msg.reply('❌ - Aconteceu um erro inesperado, tente novamente mais tarde.\nznSe possivel, reporte o erro para o desenvolvedor no grupo:\nhttps://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR')
     await msg.aux.chat.clearState()
-    await msg.react('❌')
+    await msg.react(reactions.error)
   }
 }
 
@@ -84,11 +84,11 @@ export async function bot (msg) {
 
     await msg.reply(data.result)
     await msg.aux.chat.clearState()
-    await msg.react('🧠')
+    await msg.react(msg.aux.db.command.emoji)
   } catch (error) {
     await msg.reply('❌ - Aconteceu um erro inesperado, tente novamente mais tarde.\nznSe possivel, reporte o erro para o desenvolvedor no grupo:\nhttps://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR')
     await msg.aux.chat.clearState()
-    await msg.react('❌')
+    await msg.react(reactions.error)
   }
 }
 
@@ -125,7 +125,7 @@ export async function emojify (msg) {
   const response = completion.choices[0]?.message?.content
 
   await msg.reply(response)
-  await msg.react('😀')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -166,7 +166,7 @@ export async function translate (msg) {
 
   const response = completion.choices[0]?.message?.content
   await msg.reply(response)
-  await msg.react('🌐')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -213,5 +213,5 @@ export async function calculate (msg) {
   const response = completion.choices[0]?.message?.content
 
   await msg.reply(response)
-  await msg.react('😀')
+  await msg.react(msg.aux.db.command.emoji)
 }

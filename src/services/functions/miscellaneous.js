@@ -33,13 +33,13 @@ export async function uptime (msg) {
   const uptimeString = secondsToDhms(uptime)
 
   const clock = '{⏳|⌚|⏰|⏱️|⏲️|🕰️|🕛|🕧|🕐|🕜|🕑|🕝}'
-  await msg.react(spintax(clock)) // react with random clock emoji
 
   const saudation = `{${spintax(clock)}} - {Olá|Oi|Oie|E aí} ${msg.pushname || 'usuário'} tudo {jóia|bem}?`
   const part1 = '{Eu estou|Estou|O bot {está|ta|tá}|O DeadByte {está|ta|tá}} {online|on|ligado}{ direto|} {a|á|tem}{:|} '
 
   const message = `${saudation}\n\n${part1}*${uptimeString}*`
   await msg.reply(message)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -58,8 +58,6 @@ export async function react (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function dice (msg) {
-  await msg.react('🎲')
-
   const fullCommand = msg.aux.function
 
   const regex = /(?<dice>\d*)d(?<faces>\d+)(?<modifier>[\+\-\*\/]\d+)?/i
@@ -85,6 +83,7 @@ export async function dice (msg) {
     })
   }
   await msg.reply(message)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -140,7 +139,7 @@ export async function toFile (msg) {
     await msg.reply({ media, caption: 'DeadByte.com.br - bot de figurinhas' })
   }
 
-  await msg.react('🗂️')
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -160,11 +159,11 @@ export async function toUrl (msg) {
     return await msg.reply(message)
   }
 
-  await msg.react('🔗')
   const media = msg.hasQuotedMsg ? await msg.downloadMedia(true) : await msg.downloadMedia()
   if (!media) throw new Error('Error downloading media')
   const tempUrl = (await getTempUrl(media))
 
+  await msg.react(reactions.wait)
   let message = '🔗 - '
   message += '{Aqui está|Toma ai|Confira aqui|Veja só|Prontinho ta aí} '
   message += '{a url temporária|o link temporário|o endereço temporário} '
@@ -172,6 +171,7 @@ export async function toUrl (msg) {
   message += `${tempUrl}\n\n`
   message += '{Válido por {apenas|}|Com {validade|vigência} de|Por um período de} {3|03|três} dias'
   await msg.reply(message)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -179,8 +179,6 @@ export async function toUrl (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function ping (msg) {
-  await msg.react('🏓')
-
   let message = '🏓 - Pong!\n\n'
 
   // const usersInQueue = getQueueLength('user')
@@ -203,6 +201,7 @@ export async function ping (msg) {
   }
 
   await msg.reply(spintax(message))
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -236,7 +235,7 @@ export async function speak (msg) {
     input = input.slice(0, inputLimit)
   }
 
-  await msg.react('🗣️')
+  await msg.react(reactions.wait)
   // await msg.aux.chat.sendStateRecording()
 
   const voices = ['onyx', 'echo', 'fable', 'nova', 'shimmer']
@@ -264,6 +263,7 @@ export async function speak (msg) {
   const media = new MessageMedia('audio/ogg; codecs=opus', buffer.toString('base64'), 'DeadByte' + Date.now() + '.opus'
     , buffer.length)
   await msg.reply({ media }, undefined, { ptt: true })
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -284,7 +284,7 @@ export async function transcribe (msg) {
     return
   }
 
-  await msg.react('🎙️')
+  await msg.react(reactions.wait)
   // await msg.aux.chat.sendStateTyping()
 
   // save file to temp folder
@@ -301,6 +301,7 @@ export async function transcribe (msg) {
   })
   fs.unlinkSync(nomalizedFilePath)
   await msg.reply(`🎙️ - ${transcription.trim()}`)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 //

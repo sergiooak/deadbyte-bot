@@ -1,5 +1,6 @@
 import { getDBUrl, getToken, forceContactUpdate } from '../../db.js'
 import relativeTime from 'dayjs/plugin/relativeTime.js'
+import reactions from '../../config/reactions.js'
 import spintax from '../../utils/spintax.js'
 import { textSticker } from './stickers.js'
 import 'dayjs/locale/pt-br.js'
@@ -21,8 +22,6 @@ const obfuscateMap = [
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function set (msg) {
-  await msg.react('⚙️')
-
   const preferences = {
     pack: 'stickerName',
     pacote: 'stickerName',
@@ -64,6 +63,7 @@ export async function set (msg) {
     return msg.reply(message)
   }
 
+  await msg.react(reactions.wait)
   const id = msg.aux.db.contact.id
   const preferenceObject = msg.aux.db.contact.attributes.preferences ?? {}
   preferenceObject[preferences[prefence]] = value || 'undefined'
@@ -81,9 +81,9 @@ export async function set (msg) {
     })
   })
   msg.aux.db.contact = await forceContactUpdate(msg.contact)
-  await msg.react('✅')
   msg.body = spintax('{Clique|Clica} {{nessa|nesta} figurinha|{nesse|neste} sticker} para {você |vc |}ver {{o que|oq} {mudou|alterou}|como ficou|o resultado}')
   await textSticker(msg)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 export async function activate (msg) {
@@ -106,6 +106,9 @@ export async function activate (msg) {
   const queue = await response.json()
   console.log('queue', queue)
   if (queue.data.contact) {
+    // TODO: if the current contact give sucessful feedback
+    // If is another contact, tell the user that the code is already used
+    // And send then to the queue again
     await msg.react('⚠️')
     return msg.reply('⚠️ - Código de ativação já utilizado')
   }
@@ -126,8 +129,8 @@ export async function activate (msg) {
   })
 
   msg.aux.db.contact = await forceContactUpdate(msg.contact)
-  await msg.react('⚡')
   await msg.reply(`⚡ - {Prontinho|Pronto|Tudo pronto} ${msg.pushname}{, o|!\n\nO|!!!\n\nO} {DeadByte|dead|bot} {{já esta|tá} ativo|{já foi|foi} ativado} {para você|pra vc|pra tu}{!|!!|!!!}`)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 //

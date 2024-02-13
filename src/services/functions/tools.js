@@ -37,7 +37,7 @@ export async function qrImageCreator (msg) {
         url
       }
     })
-    await msg.react(reactions.success)
+    await msg.react(msg.aux.db.command.emoji)
   } catch (error) {
     logger.error(error)
     await msg.reply('Erro ao criar QR Code')
@@ -64,7 +64,7 @@ export async function qrTextCreator (msg) {
     const response = await fetch(url)
     const data = await response.json()
     await msg.reply('```' + data.result.string + '```')
-    await msg.react(reactions.success)
+    await msg.react(msg.aux.db.command.emoji)
   } catch (error) {
     logger.error(error)
     await msg.reply('Erro ao criar QR Code')
@@ -92,7 +92,7 @@ export async function qrReader (msg) {
     await msg.react(reactions.error)
     return await msg.reply('❌ Só consigo ler QR Codes em imagens')
   }
-  await msg.react(reactions.wait)
+  // await msg.react(reactions.wait)
   // a clock doing a full circle
   // const spinner = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚']
   // let spinnerIndex = 0
@@ -138,5 +138,5 @@ export async function qrReader (msg) {
   await msg.reply(`✅ - ${qrData.result}`)
   // await wait(1000)
   // await reply.edit(`✅ - ${qrData.result}`)
-  await msg.react(reactions.success)
+  await msg.react(msg.aux.db.command.emoji)
 }
