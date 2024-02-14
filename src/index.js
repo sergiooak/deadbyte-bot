@@ -11,7 +11,6 @@ import logger from './logger.js'
 import * as db from './db.js'
 import fs from 'fs/promises'
 import pino from 'pino'
-let globalArgs = {}
 
 const main = defineCommand({
   meta: {
@@ -46,7 +45,7 @@ const main = defineCommand({
     }
   },
   run ({ args }) {
-    globalArgs = args
+    global.args = args
     bot.name = args.name
     logger.info(`Starting bot "${args.name}"`)
     bot.useStore = !args['no-store']
@@ -81,14 +80,6 @@ const main = defineCommand({
 
 export const store = undefined
 runMain(main)
-
-/**
- * Grabs CLI args
- * @returns {object}
- */
-export function getArgs () {
-  return globalArgs
-}
 
 /**
  * Grabs the socket
