@@ -193,7 +193,7 @@ export async function ping (msg) {
   // message += '📶 - Velocidade atual: 0\n'
   // message += '👥 - Usuários esta semana: 0\n'
   // message += '💬 - Chats na última hora: 0\n'
-  message += '📩 - Mensagens na última hora: 0\n'
+  // message += '📩 - Mensagens na última hora: 0\n'
 
   message += '🕒 - Online direto há: '
   const uptime = process.uptime()
