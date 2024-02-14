@@ -34,8 +34,8 @@ export default async (upsert) => {
       return await msg.react('✏️')
     }
 
-    const socket = getSocket()
-    await socket.sendPresenceUpdate('available')
+    // const socket = getSocket()
+    // await socket.sendPresenceUpdate('available')
     const messageParser = await importFresh('validators/message.js')
     const handlerModule = await messageParser.default(msg)
     logger.trace('handlerModule: ', handlerModule)
