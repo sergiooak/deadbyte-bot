@@ -515,7 +515,7 @@ function addPaginationToTheMessage (message, prefix, command, term, limit, total
  * @returns {boolean}
  */
 function checkStickerGroup (chatId) {
-  const stickerGroup = '120363187692992289@g.us'
+  const stickerGroup = '120363282791987363@g.us'
   return chatId._serialized === stickerGroup
 }
 

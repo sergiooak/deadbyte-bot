@@ -105,7 +105,7 @@ export default async (msg) => {
   aux.isSenderAdmin = aux.admins.includes(msg.author)
   aux.isBotAdmin = aux.admins.includes(aux.me)
 
-  const stickerGroup = '120363187692992289@g.us'
+  const stickerGroup = '120363282791987363@g.us'
   aux.isStickerGroup = aux.chat.isGroup ? aux.chat.id._serialized === stickerGroup : false
 
   try {
