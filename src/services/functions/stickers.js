@@ -277,6 +277,38 @@ export async function stickerLyPack (msg) {
   await msg.react(reactions.success)
 }
 
+/**
+ * Get trending stickers from sticker.ly
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
+export async function stickerLyTrending (msg) {
+  const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+  const limit = getStickerLimit(isStickerGroup)
+
+  await msg.react(reactions.wait)
+  // POST to http://api.sticker.ly/v4/trending/search
+  const response = await fetch('http://api.sticker.ly/v4/trending/search', {
+    method: 'POST',
+    headers: {
+      'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
+      'Content-Type': 'application/json',
+      Host: 'api.sticker.ly'
+    }
+  })
+
+  const json = await response.json()
+  if (!json.result) {
+    await msg.reply('🤖 - O sticker.ly não retornou nenhum sticker trending')
+    throw new Error('No trending stickers found')
+  }
+
+  const stickers = json.result.keywords.map((s) => { return { url: s.image } })
+  const randomStickers = stickers.sort(() => 0.5 - Math.random()).slice(0, limit)
+
+  await sendStickers(randomStickers, msg.aux.chat)
+  await msg.react(reactions.success)
+}
+
 //
 // ================================== Helper Functions ==================================
 //
@@ -462,16 +494,6 @@ async function searchTermOnStickerLy (term) {
 }
 
 /**
- * Add pagination examples to the message
- * @param {string} message - The message to add the pagination examples to
- * @param {string} prefix - The prefix. Ex: '!'
- * @param {string} command - The command. Ex: 'ly' for !ly
- * @param {string} term - The term used to search. Ex: 'pior que é'
- * @param {number} limit - The limit of items per page
- * @param {number} total - The total number of items
- * @returns {string} The message with the pagination examples
- */
-/**
  * Adds pagination examples to the message.
  * @param {string} message - The message to add the pagination examples to.
  * @param {string} prefix - The prefix. Ex: '!'.
@@ -559,6 +581,7 @@ function paginateStickers (stickers, cursor, limit) {
  */
 async function sendStickers (stickersPaginated, chat) {
   for (const s of stickersPaginated) {
+    console.log(s.url)
     const media = await wwebjs.MessageMedia.fromUrl(s.url)
     await sendMediaAsSticker(chat, media)
     await waitRandomTime()
