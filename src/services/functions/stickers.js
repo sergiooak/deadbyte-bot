@@ -280,12 +280,13 @@ export async function stickerLyPack (msg) {
 /**
  * Get trending stickers from sticker.ly
  * @param {import('../../types.d.ts').WWebJSMessage} msg
+ * @param {import('whatsapp-web.js').Chat} chat
  */
-export async function stickerLyTrending (msg) {
-  const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
+export async function stickerLyTrending (msg, chat) {
+  const isStickerGroup = checkStickerGroup(chat ? chat.id : msg.aux.chat.id)
   const limit = getStickerLimit(isStickerGroup)
 
-  await msg.react(reactions.wait)
+  if (!chat) await msg.react(reactions.wait)
   // POST to http://api.sticker.ly/v4/trending/search
   const response = await fetch('http://api.sticker.ly/v4/trending/search', {
     method: 'POST',
@@ -298,15 +299,15 @@ export async function stickerLyTrending (msg) {
 
   const json = await response.json()
   if (!json.result) {
-    await msg.reply('🤖 - O sticker.ly não retornou nenhum sticker trending')
+    if (!chat) await msg.reply('🤖 - O sticker.ly não retornou nenhum sticker trending')
     throw new Error('No trending stickers found')
   }
 
   const stickers = json.result.keywords.map((s) => { return { url: s.image } })
   const randomStickers = stickers.sort(() => 0.5 - Math.random()).slice(0, limit)
 
-  await sendStickers(randomStickers, msg.aux.chat)
-  await msg.react(reactions.success)
+  await sendStickers(randomStickers, chat || msg.aux.chat)
+  if (!chat) await msg.react(reactions.success)
 }
 
 //
@@ -581,7 +582,6 @@ function paginateStickers (stickers, cursor, limit) {
  */
 async function sendStickers (stickersPaginated, chat) {
   for (const s of stickersPaginated) {
-    console.log(s.url)
     const media = await wwebjs.MessageMedia.fromUrl(s.url)
     await sendMediaAsSticker(chat, media)
     await waitRandomTime()
