@@ -196,7 +196,7 @@ async function sendDailyStats (client) {
     const chat = await client.getChatById(logsGroup)
     await chat.sendMessage(spintax(message))
 
-    sendDailyStatsToAnnounceGroup(client)
+    // sendDailyStatsToAnnounceGroup(client)
   } catch (err) {
     logger.error(err)
   }
