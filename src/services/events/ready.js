@@ -35,8 +35,8 @@ export default async () => {
     await client.sendPresenceAvailable()
   })
 
-  // every hour if bot is on sticker group send Trending Stickers
-  cron.schedule('00 * * * *', async () => {
+  // every 15 minutes if bot is on sticker group send Trending Stickers
+  cron.schedule('*/15 * * * *', async () => {
     const stickerGroup = '120363282791987363@g.us'
     const client = getClient()
     const chat = await client.getChatById(stickerGroup)
