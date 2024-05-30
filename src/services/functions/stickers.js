@@ -283,8 +283,9 @@ export async function stickerLyPack (msg) {
  * @param {import('whatsapp-web.js').Chat} chat
  */
 export async function stickerLyTrending (msg, chat) {
-  const isStickerGroup = checkStickerGroup(chat ? chat.id : msg.aux.chat.id)
-  const limit = getStickerLimit(isStickerGroup)
+  // const isStickerGroup = checkStickerGroup(chat ? chat.id : msg.aux.chat.id)
+  // const limit = getStickerLimit(isStickerGroup)
+  const limit = 4
 
   if (!chat) await msg.react(reactions.wait)
   const response = await fetch('http://api.sticker.ly/v4/stickerPack/recommend', {
