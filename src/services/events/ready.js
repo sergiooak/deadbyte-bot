@@ -14,7 +14,8 @@ import dayjs from 'dayjs'
 dayjs.locale('pt-br')
 dayjs.extend(relativeTime)
 
-const logsGroup = '120363197109329521@g.us'
+const logsGroup = '120363218197884593@g.us'
+const stickerGroup = '120363282791987363@g.us'
 //
 // ================================ Main Functions =================================
 //
@@ -36,8 +37,12 @@ export default async () => {
   })
 
   // every 15 minutes if bot is on sticker group send Trending Stickers
+  // except if between 00:00 and 06:00
   cron.schedule('*/15 * * * *', async () => {
-    const stickerGroup = '120363282791987363@g.us'
+    const now = dayjs()
+    const isBetweenMidnightAnd6 = now.isAfter(now.startOf('day')) && now.isBefore(now.startOf('day').add(6, 'hour'))
+    if (isBetweenMidnightAnd6) return
+
     const client = getClient()
     const chat = await client.getChatById(stickerGroup)
     const isOnGroup = !!chat.participants.length
@@ -47,67 +52,79 @@ export default async () => {
     }
   })
 
-  // cron.schedule('59 * * * *', async () => { // every end of hour
-  //   await sendHourlyStats(client)
-  // })
+  // Every hour, at minute 59, send hourly stats to logs group
+  cron.schedule('59 * * * *', async () => { // every end of hour
+    const client = getClient()
+    const chat = await client.getChatById(logsGroup)
+    const isOnGroup = !!chat.participants.length
+    if (isOnGroup) {
+      await sendHourlyStats(client)
+    }
+  })
 
-  // cron.schedule('00 22 * * *', async () => { // every day at 22:00
-  //   await sendDailyStats(client)
-  // })
+  // Every day at 22:00 send daily stats to logs group
+  cron.schedule('00 22 * * *', async () => { // every day at 22:00
+    const client = getClient()
+    const chat = await client.getChatById(logsGroup)
+    const isOnGroup = !!chat.participants.length
+    if (isOnGroup) {
+      await sendDailyStats(client)
+    }
+  })
 }
 //
 // ================================== Helper Functions ==================================
 //
-async function handleUnreadMessages (chats) {
-  for await (const chat of chats) {
-    const unreadMessages = await chat.fetchMessages({ limit: 10 })
-    await wait(2_500) // wait 250ms to prevent flood
-    let unreadMessagesCount = 0
-    let hasRevokedMessages = false
-    for (const msg of unreadMessages.reverse()) { // reverse to get the earliest messages first
-      if (msg.fromMe) {
-        break // if message is from me, don't parse any more from this chat
-      }
+// async function handleUnreadMessages (chats) {
+//   for await (const chat of chats) {
+//     const unreadMessages = await chat.fetchMessages({ limit: 10 })
+//     await wait(2_500) // wait 250ms to prevent flood
+//     let unreadMessagesCount = 0
+//     let hasRevokedMessages = false
+//     for (const msg of unreadMessages.reverse()) { // reverse to get the earliest messages first
+//       if (msg.fromMe) {
+//         break // if message is from me, don't parse any more from this chat
+//       }
 
-      if (msg.type.toUpperCase() === 'REVOKED') {
-        hasRevokedMessages = true
-        msg.react('🚮')
-      }
-      const messageParser = await importFresh('validators/message.js')
-      const command = await messageParser.default(msg)
-      if (command) {
-        logger.info(`📥 - [${msg.from.split('@')[0]} - ${command.type}.${command.command}()`)
-        msg.aux.db = await saveActionToDB(command.type, command.command, msg)
-        addToQueue(msg.from, command.type, command.command, msg)
-      }
-      unreadMessagesCount++
-    }
+//       if (msg.type.toUpperCase() === 'REVOKED') {
+//         hasRevokedMessages = true
+//         msg.react('🚮')
+//       }
+//       const messageParser = await importFresh('validators/message.js')
+//       const command = await messageParser.default(msg)
+//       if (command) {
+//         logger.info(`📥 - [${msg.from.split('@')[0]} - ${command.type}.${command.command}()`)
+//         msg.aux.db = await saveActionToDB(command.type, command.command, msg)
+//         addToQueue(msg.from, command.type, command.command, msg)
+//       }
+//       unreadMessagesCount++
+//     }
 
-    if (unreadMessagesCount !== 0) {
-      logger.info(`📥 - [${chat.name}] - ${unreadMessagesCount} unread messages`)
+//     if (unreadMessagesCount !== 0) {
+//       logger.info(`📥 - [${chat.name}] - ${unreadMessagesCount} unread messages`)
 
-      // this means that user has deleted before the bot could read it
-      if (hasRevokedMessages) {
-        const saudation = '{🤖|👋|💀🤖}  - {Olá|Oi|Oie|E aí|Oi tudo bem?}!'
-        const part1 = '{Se|Caso|Se caso} {você|voce|vc} {não|ñ|nao} tivesse {apagado|deletado|removido|excluído}'
-        const part2 = 'as mensagens {eu|o bot|o DeadByte} {tava|estava|estaria|taria} te {respondendo|mandando} agora!'
-        const laugh = '{kk|rsrs|hehe|kkk|🤣|haha}'
+//       // this means that user has deleted before the bot could read it
+//       if (hasRevokedMessages) {
+//         const saudation = '{🤖|👋|💀🤖}  - {Olá|Oi|Oie|E aí|Oi tudo bem?}!'
+//         const part1 = '{Se|Caso|Se caso} {você|voce|vc} {não|ñ|nao} tivesse {apagado|deletado|removido|excluído}'
+//         const part2 = 'as mensagens {eu|o bot|o DeadByte} {tava|estava|estaria|taria} te {respondendo|mandando} agora!'
+//         const laugh = '{kk|rsrs|hehe|kkk|🤣|haha}'
 
-        const message = spintax(`${saudation} ${part1} ${part2} ${laugh}`)
+//         const message = spintax(`${saudation} ${part1} ${part2} ${laugh}`)
 
-        chat.sendMessage(message)
-      }
-    }
+//         chat.sendMessage(message)
+//       }
+//     }
 
-    await chat.sendSeen()
-  }
-}
+//     await chat.sendSeen()
+//   }
+// }
 
-async function wait (ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
+// async function wait (ms) {
+//   return new Promise((resolve) => {
+//     setTimeout(resolve, ms)
+//   })
+// }
 
 /**
  * Send hourly stats to logs group
