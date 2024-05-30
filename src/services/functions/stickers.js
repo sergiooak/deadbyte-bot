@@ -287,9 +287,8 @@ export async function stickerLyTrending (msg, chat) {
   const limit = getStickerLimit(isStickerGroup)
 
   if (!chat) await msg.react(reactions.wait)
-  // POST to http://api.sticker.ly/v4/trending/search
-  const response = await fetch('http://api.sticker.ly/v4/trending/search', {
-    method: 'POST',
+  const response = await fetch('http://api.sticker.ly/v4/stickerPack/recommend', {
+    method: 'GET',
     headers: {
       'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
       'Content-Type': 'application/json',
@@ -298,12 +297,16 @@ export async function stickerLyTrending (msg, chat) {
   })
 
   const json = await response.json()
-  if (!json.result) {
-    if (!chat) await msg.reply('🤖 - O sticker.ly não retornou nenhum sticker trending')
+  if (!json.result?.stickerPacks) {
+    if (!chat) await msg.reply('🤖 - O sticker.ly não retornou nenhum sticker em destaque')
     throw new Error('No trending stickers found')
   }
 
-  const stickers = json.result.keywords.map((s) => { return { url: s.image } })
+  const stickers = json.result.stickerPacks.reduce((acc, pack) => {
+    const prefix = pack.resourceUrlPrefix
+    acc.push(...pack.resourceFiles.map((s) => { return { url: prefix + s } }))
+    return acc
+  }, [])
   const randomStickers = stickers.sort(() => 0.5 - Math.random()).slice(0, limit)
 
   await sendStickers(randomStickers, chat || msg.aux.chat)
