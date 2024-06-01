@@ -132,25 +132,9 @@ export async function removeBg (msg) {
  *
  */
 export async function stealSticker (msg) {
-  await msg.react(reactions.wait)
-
-  const quotedMsg = await msg.getQuotedMessage()
-
-  const delimiters = ['|', '/', '\\']
-  let messageParts = [msg.body] // default to the whole message
-  for (const delimiter of delimiters) {
-    if (messageParts.length > 1) break
-    messageParts = msg.body.split(delimiter)
-  }
-  const stickerName = messageParts[0]?.trim() || msg.aux.sender.pushname
-  const stickerAuthor = messageParts[1]?.trim() || 'DeadByte.com.br'
-
-  if (!msg.hasQuotedMsg || !quotedMsg.hasMedia) {
-    if (msg.hasMedia && (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker')) {
-      msg.body = ''
-      return await stickerCreator(msg, undefined, stickerName, stickerAuthor)
-    }
-
+  const targetMessage = getTargetMessage(msg)
+  const validTypes = ['image', 'video', 'sticker']
+  if (!targetMessage.hasMedia || !validTypes.includes(targetMessage.type)) {
     await msg.react(reactions.error)
 
     const header = '☠️'
@@ -162,11 +146,22 @@ export async function stealSticker (msg) {
     return await msg.reply(message)
   }
 
-  const media = await quotedMsg.downloadMedia()
+  await msg.react(reactions.wait)
+
+  const delimiters = ['|', '/', '\\']
+  let messageParts = [msg.body] // default to the whole message
+  for (const delimiter of delimiters) {
+    if (messageParts.length > 1) break
+    messageParts = msg.body.split(delimiter)
+  }
+  const stickerName = messageParts[0]?.trim() || undefined
+  const stickerAuthor = messageParts[1]?.trim() || undefined
+
+  const media = await targetMessage.downloadMedia()
   if (!media) throw new Error('Error downloading media')
 
-  await sendMediaAsSticker(msg.aux.chat, media, stickerName, stickerAuthor)
-  await msg.react(reactions.success)
+  await sendMediaAsSticker(msg, media, stickerName, stickerAuthor, true)
+  await msg.react(msg.aux.db.command.emoji)
 }
 
 /**
@@ -322,28 +317,39 @@ export async function stickerLyTrending (msg, chat) {
  * Sends a media file as a sticker to a given chat.
  * @async
  * @function sendMediaAsSticker
- * @param {import ('whatsapp-web.js').Chat} chat - The chat to send the sticker to (can be group or private chat
+ * @param {import('../../types.d.ts').WWebJSMessage} msg - The message object that triggered the command.
  * @param {import ('whatsapp-web.js').MessageMedia} media - The media to send as a sticker.
  * @param {string} [stickerName='DeadByte.com.br'] - The name of the sticker.
  * @param {string} [stickerAuthor='bot de figurinhas'] - The author of the sticker.
+ * @param {boolean} [overwrite=false] - Whether to overwrite the sticker pack or not.
  * @returns {Promise<import ('whatsapp-web.js').Message>} A Promise that resolves with the Message object of the sent sticker.
  */
-async function sendMediaAsSticker (chat, media, stickerName, stickerAuthor) {
-  const buffer = Buffer.from(media.data, 'base64')
+async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) {
+  const authorFromDb = msg.aux.db.contact.attributes?.preferences?.stickerAuthor
+  const packFromDb = msg.aux.db.contact.attributes?.preferences?.stickerName
+  if (!overwrite) {
+    author = authorFromDb || 'DeadByte.com.br'
+    pack = packFromDb || 'bot de figurinhas'
+  }
+  author = author === 'undefined' ? undefined : author
+  pack = pack === 'undefined' ? undefined : pack
+
+  const stickerMedia = await Util.formatToWebpSticker(media, {
+    author,
+    pack
+  }, false)
+  const buffer = Buffer.from(stickerMedia.data, 'base64')
 
   // if heavier than 1MB, compress it
   if (buffer.byteLength > 1_000_000) {
-    media = await compressMediaBuffer(buffer)
+    console.log('compressing sticker...', buffer.byteLength)
+    const compressedMedia = await compressMediaBuffer(buffer)
+    return await sendMediaAsSticker(msg, compressedMedia, author, pack, overwrite)
   }
 
-  media = new wwebjs.MessageMedia(media.mimetype || 'image/webp', media.data, media.filename || 'sticker.webp')
-
   try {
-    return await chat.sendMessage(media, {
-      sendMediaAsSticker: true,
-      stickerName: stickerName || 'DeadByte.com.br',
-      stickerAuthor: stickerAuthor || 'bot de figurinhas',
-      stickerCategories: ['💀', '🤖']
+    return await msg.aux.chat.sendMessage(media, {
+      sendMediaAsSticker: true
     })
   } catch (error) {
     logger.error(error)
@@ -602,4 +608,13 @@ function waitRandomTime (min = 50, max = 500) {
   return new Promise((resolve) => {
     setTimeout(resolve, Math.random() * (max - min) + min)
   })
+}
+
+/**
+ * Detect the target message, if it is the quoted message or the message itself
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ * @returns {import('../../types.d.ts').WWebJSMessage}
+ */
+function getTargetMessage (msg) {
+  return msg.hasQuotedMsg ? msg.aux.quotedMsg : msg
 }
