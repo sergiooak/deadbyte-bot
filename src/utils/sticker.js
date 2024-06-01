@@ -182,22 +182,20 @@ class Util {
 
     if (media.mimetype.includes('image')) { webpMedia = await this.formatImageToWebpSticker(media, crop) } else if (media.mimetype.includes('video')) { webpMedia = await this.formatVideoToWebpSticker(media, crop) } else { throw new Error('Invalid media format') }
 
-    if (metadata.name || metadata.author) {
-      const img = new webp.Image()
-      const hash = this.generateHash(32)
-      const stickerPackId = hash
-      const packname = metadata.name
-      const author = metadata.author
-      const categories = metadata.categories || ['']
-      const json = { 'sticker-pack-id': stickerPackId, 'sticker-pack-name': packname, 'sticker-pack-publisher': author, emojis: categories }
-      const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
-      const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8')
-      const exif = Buffer.concat([exifAttr, jsonBuffer])
-      exif.writeUIntLE(jsonBuffer.length, 14, 4)
-      await img.load(Buffer.from(webpMedia.data, 'base64'))
-      img.exif = exif
-      webpMedia.data = (await img.save(null)).toString('base64')
-    }
+    const img = new webp.Image()
+    const hash = this.generateHash(32)
+    const stickerPackId = hash
+    const packname = metadata.name
+    const author = metadata.author
+    const categories = metadata.categories || ['💀', '🤖'] // Defaults to "Dead Byte"
+    const json = { 'sticker-pack-id': stickerPackId, 'sticker-pack-name': packname, 'sticker-pack-publisher': author, emojis: categories }
+    const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
+    const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8')
+    const exif = Buffer.concat([exifAttr, jsonBuffer])
+    exif.writeUIntLE(jsonBuffer.length, 14, 4)
+    await img.load(Buffer.from(webpMedia.data, 'base64'))
+    img.exif = exif
+    webpMedia.data = (await img.save(null)).toString('base64')
 
     return webpMedia
   }
