@@ -335,6 +335,7 @@ export async function stickerLyTrending (msg, chat) {
   const randomStickers = stickers.sort(() => 0.5 - Math.random()).slice(0, limit)
 
   await sendStickers(randomStickers, chat || msg.aux.chat)
+
   if (!chat) await msg.react(msg.aux.db.command.emoji || reactions.success)
 }
 
@@ -627,7 +628,7 @@ function paginateStickers (stickers, cursor, limit) {
 async function sendStickers (stickersPaginated, chat) {
   for (const s of stickersPaginated) {
     const media = await wwebjs.MessageMedia.fromUrl(s.url)
-    await sendMediaAsSticker(chat, media)
+    await sendMediaAsSticker(chat, media, 'DeadByte.com.br', 'bot de figurinhas')
     await waitRandomTime()
   }
 }
