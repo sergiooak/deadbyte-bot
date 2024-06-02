@@ -64,16 +64,16 @@ export async function textSticker (msg) {
 
   const url = await createUrl('image-creator', 'ttp', { message: msg.body })
 
-  let media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
-  media = await Util.formatToWebpSticker(media, {}, false)
-
+  const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
+  if (!media) throw new Error('Error downloading media')
   await sendMediaAsSticker(msg, media)
+
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
   await msg.react(reactionEmoji)
 }
 
 /**
- * Make sticker from text
+ * Make sticker from text with a different style
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function textSticker2 (msg) {
@@ -83,9 +83,10 @@ export async function textSticker2 (msg) {
 
   const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
   if (!media) throw new Error('Error downloading media')
+  await sendMediaAsSticker(msg, media)
 
-  await sendMediaAsSticker(msg.aux.chat, media)
-  await msg.react(reactions.success)
+  const reactionEmoji = msg.aux.db.command.emoji || reactions.success
+  await msg.react(reactionEmoji)
 }
 
 /**
