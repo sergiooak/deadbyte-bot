@@ -18,8 +18,8 @@ const validTypes = ['image', 'video', 'sticker']
  */
 export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite = false) {
   const targetMessage = getTargetMessage(msg)
-  const validTypesPlushDocument = [...validTypes, 'document']
-  if (!targetMessage.hasMedia || !validTypesPlushDocument.includes(targetMessage.type)) {
+  const validTypesPlusDocument = [...validTypes, 'document']
+  if (!targetMessage.hasMedia || !validTypesPlusDocument.includes(targetMessage.type)) {
     await msg.react(reactions.error)
 
     const header = '🤖'
@@ -112,9 +112,9 @@ export async function textSticker3 (msg) {
  *
  */
 export async function removeBg (msg) {
-  await msg.react(reactions.wait)
-
-  if (!msg.hasMedia && (msg.hasQuotedMsg && !msg.aux.quotedMsg.hasMedia)) {
+  const targetMessage = getTargetMessage(msg)
+  const validTypesPlusDocument = [...validTypes, 'document']
+  if (!targetMessage.hasMedia || !validTypesPlusDocument.includes(targetMessage.type)) {
     await msg.react(reactions.error)
 
     const header = '☠️🤖'
@@ -126,14 +126,14 @@ export async function removeBg (msg) {
     return await msg.reply(message)
   }
 
-  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
+  await msg.react(reactions.wait)
+  const media = await targetMessage.downloadMedia()
   if (!media) throw new Error('Error downloading media')
   if (!media.mimetype.includes('image')) {
     await msg.react(reactions.error)
-    return await msg.reply('❌ Só consigo remover o fundo de imagens')
+    return await msg.reply('❌ - Só consigo remover o fundo de imagens')
   }
 
-  // use shapr to convert to a max 512 (bigger side) jpg image, crank up the contrast
   const buffer = Buffer.from(media.data, 'base64')
   const resizedBuffer = await sharp(buffer)
     .resize(1024, 1024, { fit: 'inside' })
@@ -147,8 +147,10 @@ export async function removeBg (msg) {
   let stickerMedia = await Util.formatToWebpSticker(bgMedia, {})
   if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
 
-  await sendMediaAsSticker(msg.aux.chat, stickerMedia)
-  await msg.react(reactions.success)
+  await sendMediaAsSticker(msg, stickerMedia)
+
+  const reactionEmoji = msg.aux.db.command.emoji || reactions.success
+  await msg.react(reactionEmoji)
 }
 
 /**
