@@ -64,11 +64,12 @@ export async function textSticker (msg) {
 
   const url = await createUrl('image-creator', 'ttp', { message: msg.body })
 
-  const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
-  if (!media) throw new Error('Error downloading media')
+  let media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
+  media = await Util.formatToWebpSticker(media, {}, false)
 
-  await sendMediaAsSticker(msg.aux.chat, media)
-  await msg.react(reactions.success)
+  await sendMediaAsSticker(msg, media)
+  const reactionEmoji = msg.aux.db.command.emoji || reactions.success
+  await msg.react(reactionEmoji)
 }
 
 /**
