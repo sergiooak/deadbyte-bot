@@ -1,36 +1,58 @@
-import wwebjs from 'whatsapp-web.js'
-import Util from '../../utils/sticker.js'
-import sharp from 'sharp'
-import { createUrl } from '../../config/api.js'
 import reactions from '../../config/reactions.js'
-import logger from '../../logger.js'
+import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
-import fetch from 'node-fetch'
+import Util from '../../utils/sticker.js'
+import logger from '../../logger.js'
+import wwebjs from 'whatsapp-web.js'
 import FormData from 'form-data'
+import fetch from 'node-fetch'
+import sharp from 'sharp'
+
+const validTypes = ['image', 'video', 'sticker']
 
 /**
  * Make sticker from media (image, video, gif)
  * @param {import('../../types.d.ts').WWebJSMessage} msg
- * @param {boolean} [crop=false] - crop the image to a square
- * @param {string} StickerAuthor - sticker author name
- * @param {string} StickerPack - sticker pack name
+ * @param {string|undefined} stickerName
+ * @param {string|undefined} stickerAuthor
  */
-export async function stickerCreator (msg, crop = false, stickerAuthor, stickerPack) {
+export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite = false) {
+  const targetMessage = getTargetMessage(msg)
+  const validTypesPlushDocument = [...validTypes, 'document']
+  if (!targetMessage.hasMedia || !validTypesPlushDocument.includes(targetMessage.type)) {
+    await msg.react(reactions.error)
+
+    const header = '🤖'
+    const part1 = 'Para usar o criador de figurinhas você {precisa|tem que}'
+    const part2 = '{enviar|mandar} {esse|o} comando {respondendo|mencionando} uma imagem,vídeo,gif ou documento'
+    const end = '{!|!!|!!!}'
+
+    const message = spintax(`${header} - ${part1} ${part2}${end}`)
+    return await msg.reply(message)
+  }
+
   await msg.react(reactions.wait)
 
-  const media = msg.hasQuotedMsg ? await msg.aux.quotedMsg.downloadMedia() : await msg.downloadMedia()
-  if (!media) throw new Error('Error downloading media')
+  const needToCrop = await detectNeedToCrop(targetMessage)
 
-  let stickerMedia = await Util.formatToWebpSticker(media, {}, crop)
-  if (msg.type === 'document') msg.body = '' // remove file name from caption
-  if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
+  const media = await targetMessage.downloadMedia()
 
-  await sendMediaAsSticker(msg.aux.chat, stickerMedia, stickerAuthor, stickerPack)
+  const promises = []
+  promises.push(Util.formatToWebpSticker(media, {}, false))
 
-  if (!crop) {
-    await stickerCreator(msg, true) // make cropped version
-    await msg.react(reactions.success)
+  if (needToCrop) {
+    // TODO: use smartcrop.js to detect the crop area
+    promises.push(Util.formatToWebpSticker(media, {}, true))
   }
+
+  for (const promise of promises) {
+    let stickerMedia = await promise
+
+    if (msg.type === 'document') msg.body = '' // remove file name from caption
+    if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
+    await sendMediaAsSticker(msg, stickerMedia, stickerName, stickerAuthor, overwrite)
+  }
+  await msg.react(reactions.success)
 }
 
 /**
@@ -133,7 +155,6 @@ export async function removeBg (msg) {
  */
 export async function stealSticker (msg) {
   const targetMessage = getTargetMessage(msg)
-  const validTypes = ['image', 'video', 'sticker']
   if (!targetMessage.hasMedia || !validTypes.includes(targetMessage.type)) {
     await msg.react(reactions.error)
 
@@ -347,8 +368,10 @@ async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) 
     return await sendMediaAsSticker(msg, compressedMedia, author, pack, overwrite)
   }
 
+  const finalMedia = new wwebjs.MessageMedia('image/webp', buffer.toString('base64'), 'deadbyte.webp', buffer.byteLength)
+
   try {
-    return await msg.aux.chat.sendMessage(media, {
+    return await msg.aux.chat.sendMessage(finalMedia, {
       sendMediaAsSticker: true
     })
   } catch (error) {
@@ -617,4 +640,48 @@ function waitRandomTime (min = 50, max = 500) {
  */
 function getTargetMessage (msg) {
   return msg.hasQuotedMsg ? msg.aux.quotedMsg : msg
+}
+
+/**
+ * Calculate aspect ratio
+ * @param {number} width
+ * @param {number} height
+ * @returns {number}
+ */
+function calculateAspectRatio (width, height) {
+  return Math.max(width, height) / Math.min(width, height)
+}
+
+/**
+ * Detect if the sticker needs to be cropped based on its aspect ratio of the thumbnail
+ * @param {import('../../types.d.ts').WWebJSMessage} message
+ * @returns {Promise<boolean>}
+ */
+async function detectNeedToCrop (message) {
+  // Ensure targetMessage has the necessary properties
+  if (!message || !message._data || !message._data.body) {
+    throw new Error('Invalid targetMessage format')
+  }
+
+  const thumbnail = message._data.body
+  const thumbnailBuffer = Buffer.from(thumbnail, 'base64')
+
+  // Get image metadata using sharp
+  let metadata
+  try {
+    metadata = await sharp(thumbnailBuffer).metadata()
+  } catch (error) {
+    throw new Error('Failed to get image metadata')
+  }
+
+  // Calculate aspect ratio
+  const ratio = calculateAspectRatio(metadata.width, metadata.height)
+
+  // Determine how far the aspect ratio is from 1 (a perfect square)
+  const ratioDistanceFromSquare = Math.abs(ratio - 1)
+
+  // If the aspect ratio is significantly different from 1, the image needs to be cropped
+  const isAspectRatioSignificantlyDifferent = ratioDistanceFromSquare > 0.1
+
+  return isAspectRatioSignificantlyDifferent
 }
