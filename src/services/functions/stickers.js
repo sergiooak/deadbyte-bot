@@ -235,11 +235,12 @@ export async function stickerLySearch (msg) {
     } else {
       message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${stickersPaginated.length} stickers encontrados|as ${stickersPaginated.length} figurinhas encontradas}...`
     }
-    await msg.reply(spintax(message))
+    await msg.reply(spintax(message), undefined, { linkPreview: false })
   }
 
   await sendStickers(stickersPaginated, msg.aux.chat)
-  await msg.react(reactions.success)
+  const reactionEmoji = msg.aux.db.command.emoji || reactions.success
+  await msg.react(reactionEmoji)
 }
 
 /**
@@ -292,11 +293,12 @@ export async function stickerLyPack (msg) {
     message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${limit} primeiros stickers encontrados|as ${limit} primeiras figurinhas encontradas}...\n\n`
     message += spintax('Se quiser {mais{ figurinhas| stickers|}} {desse|do mesmo} {pacote|pack}, {envie|mande}:\n')
     message = addPaginationToTheMessage(message, prefix, 'pack', packId, limit, total)
-    await msg.reply(spintax(message))
+    await msg.reply(spintax(message), undefined, { linkPreview: false })
   }
 
   await sendStickers(stickersPaginated, msg.aux.chat)
-  await msg.react(reactions.success)
+  const reactionEmoji = msg.aux.db.command.emoji || reactions.success
+  await msg.react(reactionEmoji)
 }
 
 /**
@@ -333,7 +335,7 @@ export async function stickerLyTrending (msg, chat) {
   const randomStickers = stickers.sort(() => 0.5 - Math.random()).slice(0, limit)
 
   await sendStickers(randomStickers, chat || msg.aux.chat)
-  if (!chat) await msg.react(reactions.success)
+  if (!chat) await msg.react(msg.aux.db.command.emoji || reactions.success)
 }
 
 //
@@ -352,11 +354,13 @@ export async function stickerLyTrending (msg, chat) {
  * @returns {Promise<import ('whatsapp-web.js').Message>} A Promise that resolves with the Message object of the sent sticker.
  */
 async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) {
-  const authorFromDb = msg.aux.db.contact.attributes?.preferences?.stickerAuthor
-  const packFromDb = msg.aux.db.contact.attributes?.preferences?.stickerName
-  if (!overwrite) {
-    author = authorFromDb || 'DeadByte.com.br'
-    pack = packFromDb || 'bot de figurinhas'
+  if (msg.aux) {
+    const authorFromDb = msg.aux.db.contact.attributes?.preferences?.stickerAuthor
+    const packFromDb = msg.aux.db.contact.attributes?.preferences?.stickerName
+    if (!overwrite) {
+      author = authorFromDb || 'DeadByte.com.br'
+      pack = packFromDb || 'bot de figurinhas'
+    }
   }
   author = author === 'undefined' ? undefined : author
   pack = pack === 'undefined' ? undefined : pack
@@ -377,7 +381,8 @@ async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) 
   const finalMedia = new wwebjs.MessageMedia('image/webp', buffer.toString('base64'), 'deadbyte.webp', buffer.byteLength)
 
   try {
-    return await msg.aux.chat.sendMessage(finalMedia, {
+    const chat = msg.aux ? msg.aux.chat : msg
+    return await chat.sendMessage(finalMedia, {
       sendMediaAsSticker: true
     })
   } catch (error) {
@@ -616,7 +621,7 @@ function paginateStickers (stickers, cursor, limit) {
 /**
  * Send stickers waiting a random time between each one
  * @param {Array} stickersPaginated
- * @param {Object} chat
+ * @param {import('whatsapp-web.js').Chat} chat
  * @returns {Promise}
  */
 async function sendStickers (stickersPaginated, chat) {
