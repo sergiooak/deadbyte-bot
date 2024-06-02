@@ -9,7 +9,7 @@ import { camelCase } from 'change-case'
 
 const client = getClient()
 const queue = []
-const waitTimeMax = 0
+const waitTimeMax = 2500
 const waitTimeMin = 100
 const waitTimeMultiplier = 50
 let waitTime = waitTimeMax // initial wait time
