@@ -7,5 +7,5 @@ node_modules
 package-lock.json
 errors.log
 
-temp/*
-!temp/.gitkeep
+/src/temp/*
+!/src/temp/.gitkeep
