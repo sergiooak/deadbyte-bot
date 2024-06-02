@@ -90,7 +90,7 @@ export async function textSticker2 (msg) {
 }
 
 /**
- * Make sticker from text
+ * Make sticker from text with a barbie style
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function textSticker3 (msg) {
@@ -100,9 +100,10 @@ export async function textSticker3 (msg) {
 
   const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
   if (!media) throw new Error('Error downloading media')
+  await sendMediaAsSticker(msg, media)
 
-  await sendMediaAsSticker(msg.aux.chat, media)
-  await msg.react(reactions.success)
+  const reactionEmoji = msg.aux.db.command.emoji || reactions.success
+  await msg.react(reactionEmoji)
 }
 
 /**
