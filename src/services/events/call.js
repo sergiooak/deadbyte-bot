@@ -30,7 +30,7 @@ export default async (call) => {
     return await client.sendMessage(call.from, JSON.stringify(lagsLastHour, null, 2))
   }
 
-  const currentLag = lastMinuteLag.averageLag
+  const currentLag = lastMinuteLag?.averageLag || 0
   if (currentLag >= 10) {
     const message = `🚨 - O {bot|DeadByte|Dead} {está|tá|ta} {com um lag|uma lentidão} de ${currentLag} segundos para receber as mensagens do WhatsApp\n\n{Estou|To|Tô} {ciente|ligado} e tentando resolver {o|esse|este} problema, por favor, pare de ligar para o bot!!!`
     await client.sendMessage(call.from, spintax(message))
@@ -41,9 +41,10 @@ export default async (call) => {
       time: Date.now(),
       count: 1
     }
+    console.log(warnings)
     let message = '⚠️ - '
     message += '{Por favor, não ligue|Por favor, evite ligar|Peço que não ligue} para o bot!\n'
-    message += ' {Desculpe|Peço desculpas} se {você ligou por|se foi} engano, {irei|vou} {relevar|deixar passar} {desta|dessa} vez, '
+    message += 'Se {você ligou por|se foi} engano, {irei|vou} {relevar|deixar passar} {desta|dessa} vez, '
     message += '{mas|porém} {da|na} próxima vez, você {será bloqueado(a)|levará block}!'
     return await client.sendMessage(call.from, spintax(message))
   }
@@ -59,9 +60,9 @@ export default async (call) => {
   if (warnings[call.from].count === 2) {
     warnings[call.from].count++
     let message = '🚫 - '
-    message += '{Atenção!|Você} {foi *bloqueado*|levou um *block*}!\n'
+    message += '{Atenção! |}Você {foi *bloqueado*|levou um *block*}!\n'
     message += '{Se|Caso} você {acha|acredita|acredite} que {foi {um|algum}|tenha ocorrido algum} {erro|engano|equívoco} '
-    message += 'entre em contato com o desenvolvedor do bot'
+    message += 'entre em contato com o desenvolvedor do bot no grupo:\n\nhttps://chat.whatsapp.com/CBlkOiMj4fM3tJoFeu2WpR'
     await client.sendMessage(call.from, spintax(message))
     await wait(5000) // wait 5 seconds to garantee the message is sent before blocking
 
