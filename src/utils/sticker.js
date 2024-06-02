@@ -78,12 +78,14 @@ class Util {
       return media
     }
 
-    const data = (await sharp(buffer).resize(resizeObj).webp().toBuffer()).toString('base64')
+    const finalBuffer = await sharp(buffer).resize(resizeObj).webp().toBuffer()
+    const finalBase64 = finalBuffer.toString('base64')
 
     return {
       mimetype: 'image/webp',
-      data,
-      filename: `${new Date().getTime()}.webp`
+      data: finalBase64,
+      filename: `${new Date().getTime()}.webp`,
+      filesize: finalBuffer.byteLength
     }
   }
 
@@ -178,16 +180,23 @@ class Util {
      * @returns {Promise<MessageMedia>} media in webp format
      */
   static async formatToWebpSticker (media, metadata, crop = false) {
+    console.log('metadata', metadata)
     let webpMedia
 
-    if (media.mimetype.includes('image')) { webpMedia = await this.formatImageToWebpSticker(media, crop) } else if (media.mimetype.includes('video')) { webpMedia = await this.formatVideoToWebpSticker(media, crop) } else { throw new Error('Invalid media format') }
+    if (media.mimetype.includes('image')) {
+      webpMedia = await this.formatImageToWebpSticker(media, crop)
+    } else if (media.mimetype.includes('video')) {
+      webpMedia = await this.formatVideoToWebpSticker(media, crop)
+    } else {
+      throw new Error('Invalid media format')
+    }
 
     const img = new webp.Image()
     const hash = this.generateHash(32)
     const stickerPackId = hash
-    const packname = metadata.name
-    const author = metadata.author
-    const categories = metadata.categories || ['💀', '🤖'] // Defaults to "Dead Byte"
+    const packname = metadata.author // Yes, I know it is twisted
+    const author = metadata.pack // ¯\_(ツ)_/¯
+    const categories = metadata.categories || ['']
     const json = { 'sticker-pack-id': stickerPackId, 'sticker-pack-name': packname, 'sticker-pack-publisher': author, emojis: categories }
     const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
     const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8')
