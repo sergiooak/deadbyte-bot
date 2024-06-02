@@ -187,7 +187,8 @@ export async function stealSticker (msg) {
   if (!media) throw new Error('Error downloading media')
 
   await sendMediaAsSticker(msg, media, stickerName, stickerAuthor, true)
-  await msg.react(msg.aux.db.command.emoji)
+  const reactionEmoji = msg.aux.db.command.emoji || reactions.success
+  await msg.react(reactionEmoji)
 }
 
 /**
