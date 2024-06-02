@@ -180,7 +180,6 @@ class Util {
      * @returns {Promise<MessageMedia>} media in webp format
      */
   static async formatToWebpSticker (media, metadata, crop = false) {
-    console.log('metadata', metadata)
     let webpMedia
 
     if (media.mimetype.includes('image')) {
