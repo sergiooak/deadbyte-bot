@@ -40,11 +40,11 @@ const main = defineCommand({
     bot.name = args.name
     logger.info(`Starting bot "${args.name}"`)
     bot.headless = !args.showBrowser ? 'new' : false
-    logger.info(`Headless mode: ${bot.headless ? 'on' : 'off'}`)
+    logger.trace(`Headless mode: ${bot.headless ? 'on' : 'off'}`)
     bot.stickerOnly = args.stickerOnly
-    logger.info(`Sticker only mode: ${bot.stickerOnly ? 'on' : 'off'}`)
+    logger.trace(`Sticker only mode: ${bot.stickerOnly ? 'on' : 'off'}`)
     bot.dummy = args.dummy
-    logger.info(`Dummy mode: ${bot.dummy ? 'on' : 'off'}`)
+    logger.trace(`Dummy mode: ${bot.dummy ? 'on' : 'off'}`)
 
     loadEvents()
   }
@@ -75,7 +75,7 @@ export function getClient () {
 }
 
 async function loadEvents () {
-  logger.info('Loading events...', bot)
+  logger.trace('Loading events...', bot)
   const wwebVersion = '2.2412.54'
   client = new wwebjs.Client({
     authStrategy: new wwebjs.LocalAuth({
@@ -102,12 +102,12 @@ async function loadEvents () {
     events.forEach(async event => {
       const eventModule = await import(`./services/events/${event}`)
       const eventName = snakeCase(event.split('.')[0])
-      logger.info(`Loading event ${eventName} from file ${event}`)
+      logger.trace(`Loading event ${eventName} from file ${event}`)
       client.on(eventName, eventModule.default)
     })
   }
   client.initialize()
-  logger.info('Client initialized!')
+  logger.trace('Client initialized!')
 
   // if no API KEY, kill the process
   if (!apiKey) {
@@ -116,8 +116,7 @@ async function loadEvents () {
   }
 }
 
-// clear terminal
-process.stdout.write('\x1B[2J\x1B[0f')
+process.stdout.write('\x1B[2J\x1B[0f') // clear terminal
 
 // catch unhandled rejections and errors to avoid crashing
 process.on('unhandledRejection', (err) => {

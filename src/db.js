@@ -31,7 +31,7 @@ async function doLogin () {
     })
     const data = await response.json()
     token = data.jwt
-    logger.info('Logged in to database')
+    logger.trace('Logged in to database')
     isApiOnline = true
 
     loadCommands()
