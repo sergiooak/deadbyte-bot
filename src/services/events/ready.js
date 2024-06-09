@@ -237,10 +237,10 @@ async function sendDailyStatsToAnnounceGroup (client) {
 
   message = formatCommands(commands, null, message)
 
-  const siteEmojis = '{🌐|🌍|🌎|🌏}'
-  message += '\n\n```━━━━━━━━━━ ' + siteEmojis + ' ━━━━━━━━━━```\n\n' // divider
+  // const siteEmojis = '{🌐|🌍|🌎|🌏}'
+  // message += '\n\n```━━━━━━━━━━ ' + siteEmojis + ' ━━━━━━━━━━```\n\n' // divider
 
-  message += 'Veja as estatísticas completas em tempo real no site:\ndeadbyte.com.br/stats\n\n'
+  // message += 'Veja as estatísticas completas em tempo real no site:\ndeadbyte.com.br/stats\n\n'
 
   await chat.sendMessage(spintax(message))
 }

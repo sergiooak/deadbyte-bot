@@ -101,10 +101,10 @@ export async function botStats (msg) {
 
   message = formatCommands(commands, msg, message)
 
-  const siteEmojis = '{🌐|🌍|🌎|🌏}'
-  message += '\n\n```━━━━━━━━━━ ' + siteEmojis + ' ━━━━━━━━━━```\n\n' // divider
+  // const siteEmojis = '{🌐|🌍|🌎|🌏}'
+  // message += '\n\n```━━━━━━━━━━ ' + siteEmojis + ' ━━━━━━━━━━```\n\n' // divider
 
-  message += 'Veja as estatísticas completas em tempo real no site:\ndeadbyte.com.br/stats\n\n'
+  // message += 'Veja as estatísticas completas em tempo real no site:\ndeadbyte.com.br/stats\n\n'
 
   await waitForMinimumTime(startedAt)
   await reactAndReply(msg, emojis, reply, message)
