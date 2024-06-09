@@ -24,13 +24,13 @@
     "mime-types": "^2.1.35",
     "node-cron": "^3.0.3",
     "node-webpmux": "^3.2.0",
-    "openai": "^4.47.1",
+    "openai": "^4.49.1",
     "pino": "^8.21.0",
     "pino-pretty": "^10.3.1",
     "qrcode-terminal": "^0.12.0",
     "qs": "^6.12.1",
-    "sharp": "^0.32.6",
-    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#webpack-exodus",
+    "sharp": "^0.33.4",
+    "whatsapp-web.js": "^1.24.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
