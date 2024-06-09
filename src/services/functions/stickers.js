@@ -693,7 +693,7 @@ async function detectNeedToCrop (message) {
   const ratioDistanceFromSquare = Math.abs(ratio - 1)
 
   // If the aspect ratio is significantly different from 1, the image needs to be cropped
-  const isAspectRatioSignificantlyDifferent = ratioDistanceFromSquare > 0.1
+  const isAspectRatioSignificantlyDifferent = ratioDistanceFromSquare > 0.2
 
   return isAspectRatioSignificantlyDifferent
 }
