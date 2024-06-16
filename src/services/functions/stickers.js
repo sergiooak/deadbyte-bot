@@ -33,7 +33,10 @@ export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite
 
   await msg.react(reactions.wait)
 
-  const needToCrop = await detectNeedToCrop(targetMessage)
+  const cropBypassTypes = ['document', 'sticker']
+  const needToCrop = cropBypassTypes.includes(targetMessage.type)
+    ? false
+    : await detectNeedToCrop(targetMessage)
 
   const media = await targetMessage.downloadMedia()
 
@@ -53,6 +56,7 @@ export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite
       msg.body = ''
     }
 
+    // TODO: overlay subtitle on video using ffmpeg to avoid dog shit quality on whatsapp web
     if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
     await sendMediaAsSticker(msg, stickerMedia, stickerName, stickerAuthor, overwrite)
   }
@@ -674,8 +678,6 @@ function calculateAspectRatio (width, height) {
  * @returns {Promise<boolean>}
  */
 async function detectNeedToCrop (message) {
-  if (message.type === 'document') return false
-
   // Ensure targetMessage has the necessary properties
   if (!message || !message._data || !message._data.body) {
     throw new Error('Invalid targetMessage format')
