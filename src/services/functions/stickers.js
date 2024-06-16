@@ -48,7 +48,11 @@ export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite
   for (const promise of promises) {
     let stickerMedia = await promise
 
-    if (msg.type === 'document') msg.body = '' // remove file name from caption
+    // Remove filename from caption if sent as document
+    if (msg.type === 'document' && (msg._data.caption === msg._data.filename)) {
+      msg.body = ''
+    }
+
     if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
     await sendMediaAsSticker(msg, stickerMedia, stickerName, stickerAuthor, overwrite)
   }
