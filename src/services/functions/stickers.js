@@ -670,6 +670,8 @@ function calculateAspectRatio (width, height) {
  * @returns {Promise<boolean>}
  */
 async function detectNeedToCrop (message) {
+  if (message.type === 'document') return false
+
   // Ensure targetMessage has the necessary properties
   if (!message || !message._data || !message._data.body) {
     throw new Error('Invalid targetMessage format')
