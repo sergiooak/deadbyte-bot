@@ -21,16 +21,20 @@ export default async (notification) => {
   if (type === 'remove') {
     let message = '🔨 - '
     if (authorIsMe) {
-      message += 'Eu dei ban no(a) '
+      message += 'Eu dei ban em '
     } else {
       message += `O(a) admin @${author.split('@')[0]} `
-      message += '{removeu|deu ban no(a)|baniu} '
+      message += '{removeu|deu ban em|baniu} '
     }
 
     if (isPlural) {
       message += newMembers.map((member, index) => {
         const isLast = index === newMembers.length - 1
-        return `+${member.split('@')[0]}${isLast ? 'e ' : ', '}`
+        const isPenultimate = index === newMembers.length - 2
+        let separator = ','
+        if (isLast) separator = ''
+        if (isPenultimate) separator = ' e'
+        return `@${member.split('@')[0]}${separator}`
       }).join(' ')
     } else {
       message += `+${newMembers[0].split('@')[0]}`
@@ -44,7 +48,11 @@ export default async (notification) => {
     if (isPlural) {
       message += newMembers.map((member, index) => {
         const isLast = index === newMembers.length - 1
-        return `+${member.split('@')[0]}${isLast ? 'e ' : ', '}`
+        const isPenultimate = index === newMembers.length - 2
+        let separator = ','
+        if (isLast) separator = ''
+        if (isPenultimate) separator = ' e'
+        return `@${member.split('@')[0]}${separator}`
       }).join(' ')
       message += '{sairam|deixaram|vazaram} do grupo{!|!!|!!!}'
     } else {

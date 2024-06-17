@@ -6,6 +6,7 @@
 export default (msg) => {
   return {
     ban: msg.aux.chat.isGroup && /^(ban)$/.test(msg.aux.function),
+    unban: msg.aux.chat.isGroup && /^(unban|add|desban)$/.test(msg.aux.function),
     promote: msg.aux.chat.isGroup && /^(promote|promove|promover)$/.test(msg.aux.function),
     demote: msg.aux.chat.isGroup && /^(demote|rebaixa|rebaixar)$/.test(msg.aux.function),
     giveaway: msg.aux.chat.isGroup && /^(sorteio|sortear)$/.test(msg.aux.function),
