@@ -18,49 +18,49 @@ export default async (notification) => {
   const client = getClient()
   const authorIsMe = author === client.info.wid._serialized
 
-  if (type === 'remove') {
-    let message = '🔨 - '
-    if (authorIsMe) {
-      message += 'Eu dei ban em '
-    } else {
-      message += `O(a) admin @${author.split('@')[0]} `
-      message += '{removeu|deu ban em|baniu} '
-    }
+  // if (type === 'remove') {
+  //   let message = '🔨 - '
+  //   if (authorIsMe) {
+  //     message += 'Eu dei ban em '
+  //   } else {
+  //     message += `O(a) admin @${author.split('@')[0]} `
+  //     message += '{removeu|deu ban em|baniu} '
+  //   }
 
-    if (isPlural) {
-      message += newMembers.map((member, index) => {
-        const isLast = index === newMembers.length - 1
-        const isPenultimate = index === newMembers.length - 2
-        let separator = ','
-        if (isLast) separator = ''
-        if (isPenultimate) separator = ' e'
-        return `@${member.split('@')[0]}${separator}`
-      }).join(' ')
-    } else {
-      message += `+${newMembers[0].split('@')[0]}`
-    }
-    message += '{!|!!|!!!}'
-    return await client.sendMessage(chat, spintax(message), { mentions: newMembers.concat([author]) })
-  }
+  //   if (isPlural) {
+  //     message += newMembers.map((member, index) => {
+  //       const isLast = index === newMembers.length - 1
+  //       const isPenultimate = index === newMembers.length - 2
+  //       let separator = ','
+  //       if (isLast) separator = ''
+  //       if (isPenultimate) separator = ' e'
+  //       return `@${member.split('@')[0]}${separator}`
+  //     }).join(' ')
+  //   } else {
+  //     message += `+${newMembers[0].split('@')[0]}`
+  //   }
+  //   message += '{!|!!|!!!}'
+  //   return await client.sendMessage(chat, spintax(message), { mentions: newMembers.concat([author]) })
+  // }
 
-  if (type === 'leave') {
-    let message = '{😢|😭|😞|😔} - '
-    if (isPlural) {
-      message += newMembers.map((member, index) => {
-        const isLast = index === newMembers.length - 1
-        const isPenultimate = index === newMembers.length - 2
-        let separator = ','
-        if (isLast) separator = ''
-        if (isPenultimate) separator = ' e'
-        return `@${member.split('@')[0]}${separator}`
-      }).join(' ')
-      message += '{sairam|deixaram|vazaram} do grupo{!|!!|!!!}'
-    } else {
-      message += `+${newMembers[0].split('@')[0]} `
-      message += '{saiu|deixou|vazou} do grupo{!|!!|!!!}'
-    }
-    return await client.sendMessage(chat, spintax(message), { mentions: newMembers.concat([author]) })
-  }
+  // if (type === 'leave') {
+  //   let message = '{😢|😭|😞|😔} - '
+  //   if (isPlural) {
+  //     message += newMembers.map((member, index) => {
+  //       const isLast = index === newMembers.length - 1
+  //       const isPenultimate = index === newMembers.length - 2
+  //       let separator = ','
+  //       if (isLast) separator = ''
+  //       if (isPenultimate) separator = ' e'
+  //       return `@${member.split('@')[0]}${separator}`
+  //     }).join(' ')
+  //     message += '{sairam|deixaram|vazaram} do grupo{!|!!|!!!}'
+  //   } else {
+  //     message += `+${newMembers[0].split('@')[0]} `
+  //     message += '{saiu|deixou|vazou} do grupo{!|!!|!!!}'
+  //   }
+  //   return await client.sendMessage(chat, spintax(message), { mentions: newMembers.concat([author]) })
+  // }
 
   logger.warn(`Unknown type: ${type}`)
 }
