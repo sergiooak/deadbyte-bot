@@ -1,6 +1,6 @@
 {
   "name": "deadbyte-v3",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "deadbyte 3rd generation",
   "author": "sergiooak",
   "main": "src/index.js",

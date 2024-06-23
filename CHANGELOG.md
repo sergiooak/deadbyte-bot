@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v3.5.0
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/a51a32a...v3.5.0)
+
+### 🚀 Enhancements
+
+- **groups:** Add accept and reject membershipt requests funtions ([f42b563](https://github.com/sergiooak/deadbyte-bot/commit/f42b563))
+
+### 💅 Refactors
+
+- Add helper function to improve code reutilization ([e35c4a9](https://github.com/sergiooak/deadbyte-bot/commit/e35c4a9))
+
+### 🏡 Chore
+
+- **release:** V3.4.0 ([3483f2e](https://github.com/sergiooak/deadbyte-bot/commit/3483f2e))
+- Bump openai version ([938447e](https://github.com/sergiooak/deadbyte-bot/commit/938447e))
+
+### ❤️ Contributors
+
+- Sergio Carvalho ([@sergiooak](http://github.com/sergiooak))
+
 ## v3.4.0
 
 [compare changes](https://github.com/sergiooak/deadbyte-bot/compare/52edf1a...v3.4.0)
