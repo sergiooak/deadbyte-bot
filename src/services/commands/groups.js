@@ -14,6 +14,8 @@ export default (msg) => {
     'mark-all-members': msg.aux.chat.isGroup && /^(todos|all|hiddenmention)$/.test(msg.aux.function),
     'call-admins': msg.aux.chat.isGroup && /^(adm|adms|admins)$/.test(msg.aux.function),
     'close-group': msg.aux.chat.isGroup && /^(close|fechar)$/.test(msg.aux.function),
-    'open-group': msg.aux.chat.isGroup && /^(open|abrir)$/.test(msg.aux.function)
+    'open-group': msg.aux.chat.isGroup && /^(open|abrir)$/.test(msg.aux.function),
+    'accept-all': msg.aux.chat.isGroup && /^(accept|acceptall|aceitar|aceitartodas)$/.test(msg.aux.function),
+    'reject-all': msg.aux.chat.isGroup && /^(reject|rejectall|rejeitar|rejeitartodas)$/.test(msg.aux.function)
   }
 }

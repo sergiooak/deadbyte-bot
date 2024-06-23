@@ -167,6 +167,46 @@ export async function openGroup (msg) {
   await msg.react('🔓')
 }
 
+/**
+ * Accept all group membership requests
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
+export async function acceptAll (msg) {
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, true)
+  if (!hasRequiredAdminPrivileges) return
+
+  const membershipRequests = await checkGroupMembershipRequests(msg)
+  if (membershipRequests === false) return
+
+  let message = '🤖 - '
+  message += `{Há|Tem|Achei} ${membershipRequests} {solicitações|requisições} de entrada {no|para o} grupo{!|!!|!!!}`
+  message += '\n\nVou *{aprovar|aceitar}* todas{ elas|}.'
+  await msg.reply(spintax(message))
+
+  await msg.aux.chat.approveGroupMembershipRequests()
+  await msg.react('🟢')
+}
+
+/**
+ * Reject all group membership requests
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ */
+export async function rejectAll (msg) {
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, true)
+  if (!hasRequiredAdminPrivileges) return
+
+  const membershipRequests = await checkGroupMembershipRequests(msg)
+  if (membershipRequests === false) return
+
+  let message = '🤖 - '
+  message += `{Há|Tem|Achei} ${membershipRequests} {solicitações|requisições} de entrada {no|para o} grupo{!|!!|!!!}`
+  message += '\n\nVou *{rejeitar|recusar}* todas{ elas|}.'
+  await msg.reply(spintax(message))
+
+  await msg.aux.chat.rejectGroupMembershipRequests()
+  await msg.react('🛑')
+}
+
 //
 // ================================== Helper Functions ==================================
 //
@@ -174,7 +214,7 @@ export async function openGroup (msg) {
 /**
  * Checks if user and bot have admin privileges for a command.
  *
- * @param {Object} msg - Message details.
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @param {boolean} [botNeedsToBeAdmin=true] - If bot needs admin privileges.
  * @returns {Promise<boolean>} - True if admin privileges are met.
  */
@@ -200,7 +240,7 @@ async function checkAdminPrivileges (msg, botNeedsToBeAdmin = true) {
 /**
  * Extracts target user IDs from a message based on mentions, quoted messages, or phone numbers.
  *
- * @param {Object} msg - The message object with details about mentions, quoted messages, and text.
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @param {string} [action] - Optional action description for the error message.
  * @param {boolean} [extractNumbers=false] - If true, extracts phone numbers from the message text.
  * @returns {Promise<Array<string>>} - An array of target user IDs or an empty array if none found.
@@ -232,4 +272,22 @@ async function extractTargetUserIds (msg, action = '', extractNumbers = false) {
   }
 
   return targets
+}
+
+/**
+ * Checks if there are group membership requests and sends a message if there are none.
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ * @returns {Promise<number|boolean>} - The number of membership requests or false if there are none.
+ */
+async function checkGroupMembershipRequests (msg) {
+  const membershipApprovalRequests = await msg.aux.chat.getGroupMembershipRequests()
+
+  let message = '🤖 - '
+  if (membershipApprovalRequests.length === 0) {
+    message += 'Não {há solicitações|{tem|achei} nenhuma solicitação} de entrada {no|nesse} grupo{ no momento|}{!|!!|!!!}'
+    await msg.reply(spintax(message))
+    return false
+  }
+
+  return membershipApprovalRequests.length
 }
