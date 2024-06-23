@@ -4,28 +4,10 @@ import spintax from '../../utils/spintax.js'
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function ban (msg) {
-  const hasMentions = msg.aux.mentions.length > 0
-  const hasQuotedMsg = msg.hasQuotedMsg
-  const targets = hasMentions ? msg.aux.mentions : []
-  if (hasQuotedMsg) {
-    const quotedMsg = await msg.getQuotedMessage()
-    const author = await quotedMsg.getContact()
-    targets.push(author.id._serialized)
-  }
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, false)
+  if (!hasRequiredAdminPrivileges) return
 
-  console.log('🎯 - Targets:', targets)
-
-  if (targets.length === 0) {
-    return await msg.reply('❌ - Para usar o !ban você precisa `responder a mensagem da pessoa` que deseja banir *ou* `mencionar o @ dela`')
-  }
-
-  if (!msg.aux.isSenderAdmin) {
-    return await msg.reply('❌ - Para usar o !ban *você* precisa ser admin')
-  }
-
-  if (!msg.aux.isBotAdmin) {
-    return await msg.reply('❌ - Para usar o !ban *o bot* precisa ser admin')
-  }
+  const targets = await extractTargetUserIds(msg, '{{banir|expulsar|remover} do grupo|dar ban}')
 
   await msg.aux.chat.removeParticipants(targets)
   await msg.react('🔨')
@@ -36,34 +18,11 @@ export async function ban (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function unban (msg) {
-  const hasQuotedMsg = msg.hasQuotedMsg
-  const targets = []
-  if (hasQuotedMsg) {
-    const quotedMsg = await msg.getQuotedMessage()
-    const author = await quotedMsg.getContact()
-    targets.push(author.id._serialized)
-  }
-  // get the number from the message
-  const regexToGetNumber = /(\d{2,})/g
-  const numbers = msg.body.match(regexToGetNumber)
-  if (numbers) {
-    for (let i = 0; i < numbers.length; i++) {
-      targets.push(`${numbers[i]}@c.us`)
-    }
-  }
-  console.log('🎯 - Targets:', targets)
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, false)
+  if (!hasRequiredAdminPrivileges) return
 
-  if (targets.length === 0) {
-    return await msg.reply('❌ - Para usar o !desban você precisa `responder a mensagem da pessoa` que deseja desbanir *ou* `mencionar mandar o número completo dela`\n\nExemplo: `!add 5511999999999`')
-  }
-
-  if (!msg.aux.isSenderAdmin) {
-    return await msg.reply('❌ - Para usar o !desban *você* precisa ser admin')
-  }
-
-  if (!msg.aux.isBotAdmin) {
-    return await msg.reply('❌ - Para usar o !desban *o bot* precisa ser admin')
-  }
+  const targets = await extractTargetUserIds(msg, '{adicionar|add} ao grupo', true)
+  if (targets.length === 0) return
 
   await msg.aux.chat.addParticipants(targets)
   await msg.react('🔄')
@@ -74,26 +33,11 @@ export async function unban (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function promote (msg) {
-  const hasMentions = msg.aux.mentions.length > 0
-  const hasQuotedMsg = msg.hasQuotedMsg
-  const targets = hasMentions ? msg.aux.mentions : []
-  if (hasQuotedMsg) {
-    const quotedMsg = await msg.getQuotedMessage()
-    const author = await quotedMsg.getContact()
-    targets.push(author.id._serialized)
-  }
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, false)
+  if (!hasRequiredAdminPrivileges) return
 
-  if (targets.length === 0) {
-    return await msg.reply('❌ - Para usar o !promove você precisa `responder a mensagem da pessoa` que deseja promover *ou* `mencionar o @ da pessoa`')
-  }
-
-  if (!msg.aux.isSenderAdmin) {
-    return await msg.reply('❌ - Para usar o !promove *você* precisa ser admin')
-  }
-
-  if (!msg.aux.isBotAdmin) {
-    return await msg.reply('❌ - Para usar o !promove *o bot* precisa ser admin')
-  }
+  const targets = await extractTargetUserIds(msg, '{{promover|dar|conceder} o cargo de admin|dar admin|promover a admin}')
+  if (targets.length === 0) return
 
   await msg.aux.chat.promoteParticipants(targets)
   await msg.react('↗️')
@@ -104,26 +48,11 @@ export async function promote (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function demote (msg) {
-  const hasMentions = msg.aux.mentions.length > 0
-  const hasQuotedMsg = msg.hasQuotedMsg
-  const targets = hasMentions ? msg.aux.mentions : []
-  if (hasQuotedMsg) {
-    const quotedMsg = await msg.getQuotedMessage()
-    const author = await quotedMsg.getContact()
-    targets.push(author.id._serialized)
-  }
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, false)
+  if (!hasRequiredAdminPrivileges) return
 
-  if (targets.length === 0) {
-    return await msg.reply('❌ - Para usar o !rebaixa você precisa `responder a mensagem da pessoa` que deseja rebaixar *ou* `mencionar o @ dela`')
-  }
-
-  if (!msg.aux.isSenderAdmin) {
-    return await msg.reply('❌ - Para usar o !rebaixa *você* precisa ser admin')
-  }
-
-  if (!msg.aux.isBotAdmin) {
-    return await msg.reply('❌ - Para usar o !rebaixa *o bot* precisa ser admin')
-  }
+  const targets = await extractTargetUserIds(msg, '{rebaixar|{tirar|remover} o cargo de admin|tirar o admin}')
+  if (targets.length === 0) return
 
   await msg.aux.chat.demoteParticipants(targets)
   await msg.react('↘️')
@@ -185,9 +114,8 @@ export async function giveawayAdminsOnly (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function markAllMembers (msg) {
-  if (!msg.aux.isSenderAdmin) {
-    return await msg.reply('para usar o !todos *você* precisa ser admin')
-  }
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, false)
+  if (!hasRequiredAdminPrivileges) return
 
   msg.body = msg.body.charAt(0).toUpperCase() + msg.body.slice(1)
 
@@ -220,13 +148,8 @@ export async function callAdmins (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function closeGroup (msg) {
-  if (!msg.aux.isBotAdmin) {
-    return await msg.reply('para usar o !fechar *o bot* precisa ser admin')
-  }
-
-  if (!msg.aux.isSenderAdmin) {
-    return await msg.reply('para usar o !fechar *você* precisa ser admin')
-  }
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, true)
+  if (!hasRequiredAdminPrivileges) return
 
   await msg.aux.chat.setMessagesAdminsOnly(true)
   await msg.react('🔒')
@@ -237,14 +160,76 @@ export async function closeGroup (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function openGroup (msg) {
-  if (!msg.aux.isBotAdmin) {
-    return await msg.reply('para usar o !abrir *o bot* precisa ser admin')
-  }
-
-  if (!msg.aux.isSenderAdmin) {
-    return await msg.reply('para usar o !abrir *você* precisa ser admin')
-  }
+  const hasRequiredAdminPrivileges = await checkAdminPrivileges(msg, true)
+  if (!hasRequiredAdminPrivileges) return
 
   await msg.aux.chat.setMessagesAdminsOnly(false)
   await msg.react('🔓')
+}
+
+//
+// ================================== Helper Functions ==================================
+//
+
+/**
+ * Checks if user and bot have admin privileges for a command.
+ *
+ * @param {Object} msg - Message details.
+ * @param {boolean} [botNeedsToBeAdmin=true] - If bot needs admin privileges.
+ * @returns {Promise<boolean>} - True if admin privileges are met.
+ */
+async function checkAdminPrivileges (msg, botNeedsToBeAdmin = true) {
+  const command = `${msg.aux.prefix}${msg.aux.function}` // Command example: !ban, .fecha
+
+  // Check if user needs to be admin
+  const userNeedsAdmin = msg.aux?.db?.command?.isGroupAdminOnly ?? false
+  if (userNeedsAdmin && !msg.aux.isSenderAdmin) {
+    await msg.reply(`❌ - Para usar o comando *${command}*, você precisa ser admin do grupo.`)
+    return false
+  }
+
+  // Check if bot needs to be admin
+  if (botNeedsToBeAdmin && !msg.aux.isBotAdmin) {
+    await msg.reply(`❌ - Para usar o comando *${command}*, o bot precisa ser admin do grupo.`)
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Extracts target user IDs from a message based on mentions, quoted messages, or phone numbers.
+ *
+ * @param {Object} msg - The message object with details about mentions, quoted messages, and text.
+ * @param {string} [action] - Optional action description for the error message.
+ * @param {boolean} [extractNumbers=false] - If true, extracts phone numbers from the message text.
+ * @returns {Promise<Array<string>>} - An array of target user IDs or an empty array if none found.
+ */
+async function extractTargetUserIds (msg, action = '', extractNumbers = false) {
+  let targets = msg.aux.mentions.length > 0 ? msg.aux.mentions : []
+
+  if (msg.hasQuotedMsg && targets.length === 0) {
+    const quotedMsg = await msg.getQuotedMessage()
+    const author = await quotedMsg.getContact()
+    targets.push(author.id._serialized)
+  }
+
+  if (extractNumbers) {
+    const numbers = msg.body.match(/(\d{2,})/g)
+    targets = numbers ? numbers.map(number => `${number}@c.us`) : []
+  }
+
+  if (targets.length === 0) {
+    const functionUsed = `${msg.aux.prefix}${msg.aux.function}`
+    const actionMessage = action ? `que deseja ${action} ` : ''
+    const methodMessage = extractNumbers
+      ? '`responder a mensagem da pessoa` ' + actionMessage + '*OU* `mandar o número completo dela`'
+      : '`responder a mensagem da(s) pessoa(s)` ' + actionMessage + '*OU* `mencionar o @ dela(s)`'
+    const exampleMessage = extractNumbers ? `\n\n_Exemplo: ${functionUsed} 5511999999999_` : ''
+
+    const finalMessage = `❌ - Para usar {o|o comando|a função} *${functionUsed}*, você precisa ${methodMessage}{!|!!|!!!}${exampleMessage}`
+    await msg.reply(spintax(finalMessage))
+  }
+
+  return targets
 }
