@@ -1,4 +1,5 @@
 import spintax from '../../utils/spintax.js'
+import { isPlural } from '../../utils/language.js'
 /**
  * Ban user from group, reply to the user you want to ban or mark the @
  * @param {import('../../types.d.ts').WWebJSMessage} msg
@@ -179,8 +180,11 @@ export async function acceptAll (msg) {
   if (membershipRequests === false) return
 
   let message = '🤖 - '
-  message += `{Há|Tem|Achei} ${membershipRequests} {solicitações|requisições} de entrada {no|para o} grupo{!|!!|!!!}`
-  message += '\n\nVou *{aprovar|aceitar}* todas{ elas|}.'
+  message += `{Há|Tem|Achei} ${membershipRequests} `
+  message += isPlural(membershipRequests) ? '{solicitações|requisições} ' : '{solicitação|requisição} '
+  message += '{de entrada {no|para o} grupo{!|!!|!!!}}'
+
+  message += `\n\nVou *{aprovar|aceitar}* ${isPlural(membershipRequests) ? 'todas {elas|}' : 'ela'}.`
   await msg.reply(spintax(message))
 
   await msg.aux.chat.approveGroupMembershipRequests()
@@ -199,8 +203,11 @@ export async function rejectAll (msg) {
   if (membershipRequests === false) return
 
   let message = '🤖 - '
-  message += `{Há|Tem|Achei} ${membershipRequests} {solicitações|requisições} de entrada {no|para o} grupo{!|!!|!!!}`
-  message += '\n\nVou *{rejeitar|recusar}* todas{ elas|}.'
+  message += `{Há|Tem|Achei} ${membershipRequests} `
+  message += isPlural(membershipRequests) ? '{solicitações|requisições} ' : '{solicitação|requisição} '
+  message += '{de entrada {no|para o} grupo{!|!!|!!!}}'
+
+  message += `\n\nVou *{rejeitar|recusar}* ${isPlural(membershipRequests) ? 'todas {elas|}' : 'ela'}.`
   await msg.reply(spintax(message))
 
   await msg.aux.chat.rejectGroupMembershipRequests()
