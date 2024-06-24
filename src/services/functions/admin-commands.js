@@ -1,5 +1,5 @@
 import relativeTime from 'dayjs/plugin/relativeTime.js'
-import { getClient } from '../../index.js'
+// import { getClient } from '../../index.js'
 import 'dayjs/locale/pt-br.js'
 import dayjs from 'dayjs'
 
