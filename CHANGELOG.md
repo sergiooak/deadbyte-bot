@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v3.5.1
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v3.5.0...v3.5.1)
+
+### 🚀 Enhancements
+
+- **language:** Add util to detect plural ([d7eac8a](https://github.com/sergiooak/deadbyte-bot/commit/d7eac8a))
+
+### 🩹 Fixes
+
+- **groups:** Use the correct plural form on messages ([ae97071](https://github.com/sergiooak/deadbyte-bot/commit/ae97071))
+- **admin-commands:** Remove unused code ([76e6759](https://github.com/sergiooak/deadbyte-bot/commit/76e6759))
+
+### ❤️ Contributors
+
+- Sergio Carvalho ([@sergiooak](http://github.com/sergiooak))
+
 ## v3.5.0
 
 [compare changes](https://github.com/sergiooak/deadbyte-bot/compare/a51a32a...v3.5.0)
