@@ -290,7 +290,6 @@ export async function transcribe (msg) {
 
   // save file to temp folder
   const timestampish = Date.now().toString().slice(-10)
-  console.log(timestampish)
   const filePath = `./src/temp/${timestampish}.mp3`
   const nomalizedFilePath = path.resolve(filePath)
   fs.writeFileSync(nomalizedFilePath, media.data, { encoding: 'base64' })
