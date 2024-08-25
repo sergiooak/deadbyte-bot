@@ -127,12 +127,14 @@ async function loadEvents () {
   }
 }
 
-process.stdout.write('\x1B[2J\x1B[0f') // clear terminal
+// process.stdout.write('\x1B[2J\x1B[0f') // clear terminal
 
 // catch unhandled rejections and errors to avoid crashing
 process.on('unhandledRejection', (err) => {
+  console.log('unhandledRejection')
   logger.fatal(err)
 })
 process.on('uncaughtException', (err) => {
+  console.log('uncaughtException')
   logger.fatal(err)
 })
