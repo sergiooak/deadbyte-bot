@@ -9,5 +9,7 @@ import qrcode from 'qrcode-terminal'
 
 export default async (qr) => {
   logger.info('QR code received!')
-  qrcode.generate(qr, { small: true })
+  qrcode.generate(qr, { small: true }, (qrcode) => {
+    console.log(`QR code generated:\n\n${qrcode}`)
+  })
 }
