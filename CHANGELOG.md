@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v3.6.0
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v3.5.1...v3.6.0)
+
+### 🩹 Fixes
+
+- Use webpack exodus branch ([1af3a70](https://github.com/sergiooak/deadbyte-bot/commit/1af3a70))
+- Bump cache version ([64db30d](https://github.com/sergiooak/deadbyte-bot/commit/64db30d))
+- **TS:** Use the rith temp folder ([659db5f](https://github.com/sergiooak/deadbyte-bot/commit/659db5f))
+
+### 🏡 Chore
+
+- Bump versions ([241b60f](https://github.com/sergiooak/deadbyte-bot/commit/241b60f))
+
+### ❤️ Contributors
+
+- Sergio Carvalho ([@sergiooak](http://github.com/sergiooak))
+
 ## v3.5.1
 
 [compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v3.5.0...v3.5.1)
