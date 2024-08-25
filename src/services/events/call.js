@@ -1,6 +1,6 @@
 import { getLags } from '../../utils/lagMemory.js'
 import spintax from '../../utils/spintax.js'
-import { getClient } from '../../index.js'
+import { getClient } from '../../spawn.js'
 import logger from '../../logger.js'
 
 // user is key, value is an object with the time of the warning and the number of warnings

@@ -2,7 +2,7 @@ import importFresh from '../../utils/importFresh.js'
 import { addLag } from '../../utils/lagMemory.js'
 import { saveActionToDB } from '../../db.js'
 import spintax from '../../utils/spintax.js'
-import { getClient } from '../../index.js'
+import { getClient } from '../../spawn.js'
 import { addToQueue } from '../queue.js'
 import logger from '../../logger.js'
 

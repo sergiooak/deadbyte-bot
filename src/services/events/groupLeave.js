@@ -1,6 +1,6 @@
 import logger from '../../logger.js'
 import spintax from '../../utils/spintax.js'
-import { getClient } from '../../index.js'
+import { getClient } from '../../spawn.js'
 /**
  * Emitted when a user leaves the chat or is removed by an admin.
  * @param {import('whatsapp-web.js').GroupNotification } notification GroupNotification with more information about the action

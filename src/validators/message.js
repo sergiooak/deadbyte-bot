@@ -30,7 +30,7 @@ const commandless = (msg, aux) => {
  */
 export default async (msg) => {
   const aux = {} // auxiliar variables
-  aux.client = (await import('../index.js')).getClient()
+  aux.client = (await import('../spawn.js')).getClient()
   aux.chat = await msg.getChat()
   aux.sender = await msg.getContact()
   aux.senderIsMe = msg.fromMe

@@ -1,6 +1,6 @@
 import importFresh from '../utils/importFresh.js'
 import logger from '../logger.js'
-import { getClient } from '../index.js'
+import { getClient } from '../spawn.js'
 import { camelCase } from 'change-case'
 
 //

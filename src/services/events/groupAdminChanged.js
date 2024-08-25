@@ -1,6 +1,6 @@
 import logger from '../../logger.js'
 import spintax from '../../utils/spintax.js'
-import { getClient } from '../../index.js'
+import { getClient } from '../../spawn.js'
 /**
  * Emitted when a current user is promoted to an admin or demoted to a regular user
  * @param {import('whatsapp-web.js').GroupNotification } notification GroupNotification with more information about the action
