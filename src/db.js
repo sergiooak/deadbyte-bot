@@ -30,6 +30,10 @@ async function doLogin () {
       body: JSON.stringify({ identifier: dbUsername, password: dbPassword })
     })
     const data = await response.json()
+    console.log('dbUrl', dbUrl)
+    console.log('dbUsername', dbUsername)
+    console.log('dbPassword', dbPassword)
+    console.log('Response from the API: ', data)
     token = data.jwt
     logger.trace('Logged in to database')
     isApiOnline = true
