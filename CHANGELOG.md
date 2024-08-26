@@ -1,6 +1,36 @@
 # Changelog
 
 
+## v3.6.1
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v3.6.0...v3.6.1)
+
+### 🚀 Enhancements
+
+- Create an t api to spawn bots ([8c082c2](https://github.com/sergiooak/deadbyte-bot/commit/8c082c2))
+- Add dockerfile ([3d37289](https://github.com/sergiooak/deadbyte-bot/commit/3d37289))
+- Prepare to deploy ([07c5a63](https://github.com/sergiooak/deadbyte-bot/commit/07c5a63))
+
+### 🩹 Fixes
+
+- Add a line break before the qr code ([c9c8d7b](https://github.com/sergiooak/deadbyte-bot/commit/c9c8d7b))
+
+### 💅 Refactors
+
+- Move bot logic to spawn.js ([75afda4](https://github.com/sergiooak/deadbyte-bot/commit/75afda4))
+
+### 🏡 Chore
+
+- **release:** V3.6.0 ([8c8de50](https://github.com/sergiooak/deadbyte-bot/commit/8c8de50))
+- Bump versions ([4d12c29](https://github.com/sergiooak/deadbyte-bot/commit/4d12c29))
+- Use official wwebjs release ([b69fa60](https://github.com/sergiooak/deadbyte-bot/commit/b69fa60))
+- Remove unused node scripts ([f9833a8](https://github.com/sergiooak/deadbyte-bot/commit/f9833a8))
+
+### ❤️ Contributors
+
+- Sergiooak <sergio@gaio.io>
+- Sergio Carvalho ([@sergiooak](http://github.com/sergiooak))
+
 ## v3.6.0
 
 [compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v3.5.1...v3.6.0)
