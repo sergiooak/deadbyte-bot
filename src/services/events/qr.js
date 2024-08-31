@@ -6,10 +6,16 @@ import qrcode from 'qrcode-terminal'
  * @param String qr -> QR code
  * https://docs.wwebjs.dev/Client.html#event:qr
  */
-
 export default async (qr) => {
-  logger.info('QR code received!')
+  logger.info(`QR code received! ${generateQRCodeUrl(qr)}`)
   qrcode.generate(qr, { small: true }, (qrcode) => {
     console.log(`QR code generated:\n\n${qrcode}`)
   })
+}
+
+//
+// ================================== Helper functions ==================================
+//
+function generateQRCodeUrl (text) {
+  return `https://api.qrserver.com/v1/create-qr-code/?data=${text}&size=200x200`
 }
