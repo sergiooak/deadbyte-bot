@@ -17,5 +17,5 @@ export default async (qr) => {
 // ================================== Helper functions ==================================
 //
 function generateQRCodeUrl (text) {
-  return `https://api.qrserver.com/v1/create-qr-code/?data=${text}&size=200x200`
+  return `https://api.qrserver.com/v1/create-qr-code/?data=${text}&size=512x512`
 }
