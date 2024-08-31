@@ -153,7 +153,9 @@ async function spawnBot (name, params) {
       console.log(parsedLine)
 
       // Store the log in the in-memory store
-      spawnedBots[name].logs.push(data.toString())
+      if (spawnedBots[name]) {
+        spawnedBots[name].logs.push(data.toString())
+      }
     })
 
     // Wait until the "Client is ready!" or "QR code generated" message is received
@@ -203,9 +205,9 @@ async function automaticallySpawnBots () {
       if (!spawnedBots[name]) {
         console.log(`Spawning bot ${name}...`)
         // Wait for 1 second to avoid overwhelming the system
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        // Spawn the bot
-        spawnBot(name, {})
+        // await new Promise((resolve) => setTimeout(resolve, 1000))
+        // // Spawn the bot
+        // spawnBot(name, {})
       }
     }
   } catch (error) {
@@ -216,26 +218,3 @@ async function automaticallySpawnBots () {
     }
   }
 }
-
-/**
- * Kill all spawned bots.
- * @param {string} signal - The signal to send to the bot processes.
- * @param {boolean} [isToDie=true] - Whether the process should exit after killing the bots.
- */
-function killAllBots (signal, isToDie = true) {
-  console.log(`Caught ${signal} signal`)
-
-  // Iterate over all spawned bots and kill them
-  for (const name in spawnedBots) {
-    spawnedBots[name].process.kill(signal)
-  }
-
-  // If isToDie is true, exit the process
-  if (isToDie) {
-    process.exit()
-  }
-}
-
-process.on('SIGINT', () => killAllBots('SIGINT'))
-process.on('SIGTERM', () => killAllBots('SIGTERM'))
-process.on('SIGHUP', () => killAllBots('SIGHUP'))
