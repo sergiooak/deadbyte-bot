@@ -202,6 +202,7 @@ async function automaticallySpawnBots () {
       const name = file.replace('session-', '')
       // If the bot is not already spawned...
       if (!spawnedBots[name]) {
+        console.log(`Spawning bot ${name}...`)
         // Wait for 1 second to avoid overwhelming the system
         await new Promise((resolve) => setTimeout(resolve, 1000))
         // Spawn the bot
