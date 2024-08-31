@@ -205,9 +205,9 @@ async function automaticallySpawnBots () {
       if (!spawnedBots[name]) {
         console.log(`Spawning bot ${name}...`)
         // Wait for 1 second to avoid overwhelming the system
-        // await new Promise((resolve) => setTimeout(resolve, 1000))
-        // // Spawn the bot
-        // spawnBot(name, {})
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        // Spawn the bot
+        spawnBot(name, {})
       }
     }
   } catch (error) {
