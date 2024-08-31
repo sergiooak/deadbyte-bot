@@ -87,7 +87,8 @@ async function loadEvents () {
       executablePath: bot.chromePath,
       args: [
         '--no-sandbox',
-        '--disable-dev-shm-usage'
+        '--disable-dev-shm-usage',
+        '--disable-setuid-sandbox'
       ]
     },
 
