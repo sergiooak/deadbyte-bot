@@ -71,7 +71,6 @@ export async function textSticker (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp', { message: msg.body })
-  console.log(url)
 
   const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
   if (!media) throw new Error('Error downloading media')
@@ -383,7 +382,6 @@ async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) 
 
   // if heavier than 1MB, compress it
   if (buffer.byteLength > 1_000_000) {
-    console.log('compressing sticker...', buffer.byteLength)
     const compressedMedia = await compressMediaBuffer(buffer)
     return await sendMediaAsSticker(msg, compressedMedia, author, pack, overwrite)
   }

@@ -68,7 +68,6 @@ app.get('/bots/:name/logs', async (req, res) => {
   const { name } = req.params
   const { stream } = req.query
   const isToStream = stream === 'true'
-  console.log(isToStream)
   if (spawnedBots[name]) {
     if (!isToStream) {
       return res.json(spawnedBots[name].logs)

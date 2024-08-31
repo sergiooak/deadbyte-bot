@@ -9,6 +9,5 @@ export function isPlural (number, locale = 'en-US') {
   // English as default because 0 not being plural is weird
   const pluralRules = new Intl.PluralRules(locale)
   const pluralType = pluralRules.select(number)
-  console.log(pluralType)
   return pluralType === 'other'
 }

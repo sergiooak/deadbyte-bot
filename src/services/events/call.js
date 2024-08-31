@@ -41,7 +41,6 @@ export default async (call) => {
       time: Date.now(),
       count: 1
     }
-    console.log(warnings)
     let message = '⚠️ - '
     message += '{Por favor, não ligue|Por favor, evite ligar|Peço que não ligue} para o bot!\n'
     message += 'Se {você ligou por|se foi} engano, {irei|vou} {relevar|deixar passar} {desta|dessa} vez, '
