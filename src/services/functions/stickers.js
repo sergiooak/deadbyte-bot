@@ -71,6 +71,7 @@ export async function textSticker (msg) {
   await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp', { message: msg.body })
+  console.log(url)
 
   const media = await wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true })
   if (!media) throw new Error('Error downloading media')
