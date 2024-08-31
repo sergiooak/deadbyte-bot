@@ -1,5 +1,5 @@
 import relativeTime from 'dayjs/plugin/relativeTime.js'
-import { getLags } from '../../utils/lagMemory.js'
+// import { getLags } from '../../utils/lagMemory.js'
 import reactions from '../../config/reactions.js'
 import { createUrl } from '../../config/api.js'
 import spintax from '../../utils/spintax.js'
