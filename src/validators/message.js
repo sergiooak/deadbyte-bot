@@ -11,8 +11,8 @@ const commandless = (msg, aux) => {
     stickersFNstickerCreator: (
       (msg.hasMedia && ['image', 'video', 'document'].includes(msg.type)) ||
       (msg.hasQuotedMsg && (aux.quotedMsg.hasMedia && ['image', 'video', 'document'].includes(aux.quotedMsg.type)))),
-    stickersFNtextSticker: msg.body && msg.type === 'chat',
-    miscellaneousFNtranscribe: msg.hasMedia && ['audio', 'ptt'].includes(msg.type)
+    stickersFNtextSticker: msg.body && msg.type === 'chat'
+    // miscellaneousFNtranscribe: msg.hasMedia && ['audio', 'ptt'].includes(msg.type)
   }
 }
 //
