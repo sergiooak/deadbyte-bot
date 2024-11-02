@@ -5,6 +5,7 @@
  */
 export default (msg) => {
   return {
-    debug: /^(debug)$/.test(msg.aux.function)
+    debug: /^(debug)$/.test(msg.aux.function),
+    sync: /^(sync)$/.test(msg.aux.function)
   }
 }

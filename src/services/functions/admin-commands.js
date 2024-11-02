@@ -20,3 +20,14 @@ export async function debug (msg) {
 
   // debug code here
 }
+
+/**
+ * Sync functions
+ * @param {import('../../types').WWebJSMessage} msg
+ */
+export async function sync (msg) {
+  const syncEmoji = '🔄'
+  await msg.react(syncEmoji)
+
+  console.log(msg.db)
+}
