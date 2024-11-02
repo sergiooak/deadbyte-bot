@@ -1,6 +1,42 @@
 # Changelog
 
 
+## v3.7.0
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v3.6.1...v3.7.0)
+
+### 🚀 Enhancements
+
+- Add a new docker file to development ([c14649b](https://github.com/sergiooak/deadbyte-bot/commit/c14649b))
+- Log an public url to the qr code image ([48d5dda](https://github.com/sergiooak/deadbyte-bot/commit/48d5dda))
+- Improve spawn api ([4e52f65](https://github.com/sergiooak/deadbyte-bot/commit/4e52f65))
+- Log bot name ([2eeea23](https://github.com/sergiooak/deadbyte-bot/commit/2eeea23))
+- Use new spawn text font ([82fe14a](https://github.com/sergiooak/deadbyte-bot/commit/82fe14a))
+- **bots:** Add cleanup of bot session folder on deletion ([9c8c71e](https://github.com/sergiooak/deadbyte-bot/commit/9c8c71e))
+- **admin-commands:** Add sync command to admin commands ([60699ec](https://github.com/sergiooak/deadbyte-bot/commit/60699ec))
+
+### 🩹 Fixes
+
+- Remove leftover comments ([25ab17b](https://github.com/sergiooak/deadbyte-bot/commit/25ab17b))
+- Try to fix the spawn error ([723d3d3](https://github.com/sergiooak/deadbyte-bot/commit/723d3d3))
+- Increment the qr code size ([90294ab](https://github.com/sergiooak/deadbyte-bot/commit/90294ab))
+- Remove leftover console.log ([2dd36f3](https://github.com/sergiooak/deadbyte-bot/commit/2dd36f3))
+- Remove leftovers console.logs ([bbe4f97](https://github.com/sergiooak/deadbyte-bot/commit/bbe4f97))
+- Comment ou unused import ([6575dcd](https://github.com/sergiooak/deadbyte-bot/commit/6575dcd))
+- Realign spawn text ([5563b6f](https://github.com/sergiooak/deadbyte-bot/commit/5563b6f))
+- Try to fix deploy bug ([3caf1b1](https://github.com/sergiooak/deadbyte-bot/commit/3caf1b1))
+- Lets really spawn the bot ([cebba11](https://github.com/sergiooak/deadbyte-bot/commit/cebba11))
+- Disable auto audio transcribe ([734cd59](https://github.com/sergiooak/deadbyte-bot/commit/734cd59))
+- **react:** Update emoji API endpoint and random selection logic ([975162f](https://github.com/sergiooak/deadbyte-bot/commit/975162f))
+
+### 💅 Refactors
+
+- **admin-commands:** Improve sync functionality with bot display name and picture updates ([f3fd92c](https://github.com/sergiooak/deadbyte-bot/commit/f3fd92c))
+
+### ❤️ Contributors
+
+- Sergiooak <sergio@gaio.io>
+
 ## v3.6.1
 
 [compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v3.6.0...v3.6.1)
