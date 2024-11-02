@@ -46,9 +46,10 @@ export async function uptime (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function react (msg) {
-  const response = await fetch('https://emojihub.yurace.pro/api/random')
+  const response = await fetch('https://api.emojisworld.fr/v1/random')
   const json = await response.json()
-  const emoji = String.fromCodePoint(...json.unicode.map(u => parseInt(u.replace('U+', '0x'), 16)))
+  const results = json.results
+  const emoji = results[Math.floor(Math.random() * results.length)].emoji
   await msg.react(emoji)
   await msg.aux.chat.sendSeen()
 }
