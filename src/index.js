@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process'
 
 const app = express()
 const port = 3000
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 app.use(express.json()) // for parsing application/json
 
 // In-memory store for spawned bots
@@ -52,17 +53,24 @@ app.post('/bots', async (req, res) => {
 })
 
 // Route to delete a spawned bot
-app.delete('/bots/:name', (req, res) => {
+app.delete('/bots/:name', async (req, res) => {
   const { name } = req.params
   const folder = `./.wwebjs_auth/session-${name}`
-  const folderExists = fs.existsSync(folder)
+  const folderExists = await fs.stat(folder).then(() => true).catch(() => false)
   if (spawnedBots[name] || folderExists) {
     if (spawnedBots[name]) {
       spawnedBots[name].process.kill()
       delete spawnedBots[name]
     }
     if (folderExists) {
-      fs.rm(folder, { recursive: true, force: true })
+      await wait(2500)
+      fs.rm(folder, { recursive: true, force: true }).catch(err => {
+        if (err.code === 'ENOTEMPTY') {
+          console.log(`Error while deleting folder ${folder}: ${err.message}`)
+        } else {
+          throw err
+        }
+      })
     }
     res.json({ message: `Bot ${name} deleted successfully` })
   } else {
