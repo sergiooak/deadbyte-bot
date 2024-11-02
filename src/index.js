@@ -54,9 +54,16 @@ app.post('/bots', async (req, res) => {
 // Route to delete a spawned bot
 app.delete('/bots/:name', (req, res) => {
   const { name } = req.params
-  if (spawnedBots[name]) {
-    spawnedBots[name].process.kill()
-    delete spawnedBots[name]
+  const folder = `./.wwebjs_auth/session-${name}`
+  const folderExists = fs.existsSync(folder)
+  if (spawnedBots[name] || folderExists) {
+    if (spawnedBots[name]) {
+      spawnedBots[name].process.kill()
+      delete spawnedBots[name]
+    }
+    if (folderExists) {
+      fs.rm(folder, { recursive: true, force: true })
+    }
     res.json({ message: `Bot ${name} deleted successfully` })
   } else {
     res.status(404).json({ message: `Bot ${name} not found` })
