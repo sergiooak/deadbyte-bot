@@ -29,7 +29,7 @@
     "pino-pretty": "^10.3.1",
     "qrcode-terminal": "^0.12.0",
     "qs": "^6.13.0",
-    "sharp": "^0.32.6",
+    "sharp": "^0.34.2",
     "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#pull/3614",
     "yargs": "^17.7.2"
   },
