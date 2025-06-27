@@ -76,7 +76,6 @@ export function getClient () {
 
 async function loadEvents () {
   logger.trace('Loading events...', bot)
-  const wwebVersion = '2.3000.1014550396-alpha'
   client = new wwebjs.Client({
     authStrategy: new wwebjs.LocalAuth({
       clientId: bot.name
@@ -90,11 +89,6 @@ async function loadEvents () {
         '--disable-dev-shm-usage',
         '--disable-setuid-sandbox'
       ]
-    },
-
-    webVersionCache: {
-      type: 'remote',
-      remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${wwebVersion}.html`
     }
   })
   const events = await fs.readdir('./src/services/events')
