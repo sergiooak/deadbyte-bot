@@ -53,24 +53,24 @@ export default async () => {
   })
 
   // Every hour, at minute 59, send hourly stats to logs group
-  cron.schedule('59 * * * *', async () => { // every end of hour
-    const client = getClient()
-    const chat = await client.getChatById(logsGroup)
-    const isOnGroup = !!chat.participants.length
-    if (isOnGroup) {
-      await sendHourlyStats(client)
-    }
-  })
+  // cron.schedule('59 * * * *', async () => { // every end of hour
+  //   const client = getClient()
+  //   const chat = await client.getChatById(logsGroup)
+  //   const isOnGroup = !!chat.participants.length
+  //   if (isOnGroup) {
+  //     await sendHourlyStats(client)
+  //   }
+  // })
 
   // Every day at 22:00 send daily stats to logs group
-  cron.schedule('00 22 * * *', async () => { // every day at 22:00
-    const client = getClient()
-    const chat = await client.getChatById(logsGroup)
-    const isOnGroup = !!chat.participants.length
-    if (isOnGroup) {
-      await sendDailyStats(client)
-    }
-  })
+  // cron.schedule('00 22 * * *', async () => { // every day at 22:00
+  //   const client = getClient()
+  //   const chat = await client.getChatById(logsGroup)
+  //   const isOnGroup = !!chat.participants.length
+  //   if (isOnGroup) {
+  //     await sendDailyStats(client)
+  //   }
+  // })
 }
 //
 // ================================== Helper Functions ==================================
