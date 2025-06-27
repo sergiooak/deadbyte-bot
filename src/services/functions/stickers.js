@@ -204,6 +204,7 @@ export async function stealSticker (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
 export async function stickerLySearch (msg) {
+  return
   const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
   const limit = getStickerLimit(isStickerGroup)
 
@@ -246,7 +247,7 @@ export async function stickerLySearch (msg) {
     await msg.reply(spintax(message), undefined, { linkPreview: false })
   }
 
-  await sendStickers(stickersPaginated, msg.aux.chat)
+  await sendStickersAsPack(stickersPaginated, msg.aux.chat)
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
   await msg.react(reactionEmoji)
 }
@@ -258,9 +259,6 @@ export async function stickerLySearch (msg) {
 export async function stickerLyPack (msg) {
   // remove https://sticker.ly/s/ from the beginning of the message if it exists
   msg.body = msg.body.replace('https://sticker.ly/s/', '')
-
-  const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
-  const limit = getStickerLimit(isStickerGroup)
 
   if (!msg.body) {
     await msg.reply('🤖 - Para usar o *!pack* você precisa enviar um código de pacote do sticker.ly.\nEx: *!pack 2RY2AQ*')
@@ -276,35 +274,16 @@ export async function stickerLyPack (msg) {
   }
   const packId = msg.body.toUpperCase()
 
-  const stickers = await getPackFromStickerLy(packId)
+  const pack = await getPackFromStickerLy(packId)
+  const stickers = pack.stickerUrls
 
-  const cursor = getCursor(msg.aux.function)
-  const total = stickers.length // total number of stickers
-  const stickersPaginated = paginateStickers(stickers, cursor, limit) // paginate
-
-  if (stickersPaginated.length === 0) {
-    let message = `🤖 - O sticker.ly não retornou {nenhum sticker|nenhum figurinha} para o {pacotre|pack} *"${packId}"*`
-    if (cursor !== 0) {
-      message += ` na página ${cursor + 1}, {pois|porque|já que|pq} só existem ${Math.ceil(total / limit) + 1} páginas`
-    }
+  if (stickers.length === 0) {
+    const message = `🤖 - O sticker.ly não retornou {nenhum sticker|nenhum figurinha} para o {pacotre|pack} *"${packId}"*`
     await msg.reply(spintax(message))
     throw new Error('No stickers found')
   }
 
-  const prefix = msg.aux.prefix || '!'
-
-  if (cursor === 0) {
-    let message = '🤖 - '
-    message += `Encontrei ${total} figurinha${stickersPaginated.length > 1 ? 's' : ''} no {pacote|pack} *"${packId}"* no sticker.ly\n\n`
-    // o pacote se chama ${stickers[0].pack} e foi criado por ${stickers[0].author}
-    message += `O pacote se chama *"${stickers[0].pack}"* e foi criado por *"${stickers[0].author}"*\n\n`
-    message += `{To|Estou|Tô}{ te | }{enviando|mandando} {os ${limit} primeiros stickers encontrados|as ${limit} primeiras figurinhas encontradas}...\n\n`
-    message += spintax('Se quiser {mais{ figurinhas| stickers|}} {desse|do mesmo} {pacote|pack}, {envie|mande}:\n')
-    message = addPaginationToTheMessage(message, prefix, 'pack', packId, limit, total)
-    await msg.reply(spintax(message), undefined, { linkPreview: false })
-  }
-
-  await sendStickers(stickersPaginated, msg.aux.chat)
+  await sendStickersAsPack(stickers, msg.aux.chat, msg, pack.name + ' - ' + pack.id)
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
   await msg.react(reactionEmoji)
 }
@@ -315,34 +294,28 @@ export async function stickerLyPack (msg) {
  * @param {import('whatsapp-web.js').Chat} chat
  */
 export async function stickerLyTrending (msg, chat) {
-  // const isStickerGroup = checkStickerGroup(chat ? chat.id : msg.aux.chat.id)
-  // const limit = getStickerLimit(isStickerGroup)
-  const limit = 4
+  const limit = 32
 
   if (!chat) await msg.react(reactions.wait)
-  const response = await fetch('http://api.sticker.ly/v4/stickerPack/recommend', {
-    method: 'GET',
-    headers: {
-      'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
-      'Content-Type': 'application/json',
-      Host: 'api.sticker.ly'
-    }
-  })
-
+  const response = await fetch('https://sticker-ly-api.sergiooak.com.br/api/v1/stickers/recommended')
   const json = await response.json()
-  if (!json.result?.stickerPacks) {
+
+  if (!json.data) {
     if (!chat) await msg.reply('🤖 - O sticker.ly não retornou nenhum sticker em destaque')
     throw new Error('No trending stickers found')
   }
 
-  const stickers = json.result.stickerPacks.reduce((acc, pack) => {
-    const prefix = pack.resourceUrlPrefix
-    acc.push(...pack.resourceFiles.map((s) => { return { url: prefix + s } }))
-    return acc
-  }, [])
+  const stickers = json.data.map((sticker) => sticker.url)
   const randomStickers = stickers.sort(() => 0.5 - Math.random()).slice(0, limit)
 
-  await sendStickers(randomStickers, chat || msg.aux.chat)
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let random = ''
+  for (let i = 0; i < 6; i++) {
+    random += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  const stickerPackName = `Figurinhas Aleatórias do DeadByte #${random}`
+
+  await sendStickersAsPack(randomStickers, chat || msg.aux.chat, msg, stickerPackName)
 
   if (!chat) await msg.react(msg.aux.db.command.emoji || reactions.success)
 }
@@ -485,28 +458,12 @@ async function getTempUrl (buffer) {
  * @param {string} packId
  */
 async function getPackFromStickerLy (packId) {
-  const packResponse = await fetch(`http://api.sticker.ly/v1/stickerPack/${packId}`, {
-    method: 'GET',
-    headers: {
-      'User-Agent': 'androidapp.stickerly/2.16.0 (G011A; U; Android 22; pt-BR; br;)',
-      'Content-Type': 'application/json',
-      Host: 'api.sticker.ly'
-    }
-  })
+  const packResponse = await fetch(`https://sticker-ly-api.sergiooak.com.br/api/v1/packs/${packId}`)
 
   const packJson = await packResponse.json()
-  if (!packJson.result) return []
+  if (!packJson.data) return { id: packId, stickerUrls: [] }
 
-  return packJson.result.resourceFiles.map((s, i) => ({
-    id: null,
-    pack: packJson.result.name,
-    packId,
-    author: packJson.result.authorName,
-    url: packJson.result.resourceUrlPrefix + s,
-    isAnimated: packJson.result.isAnimated,
-    views: null,
-    nsfw: 0
-  }))
+  return packJson.data
 }
 
 /**
@@ -627,28 +584,34 @@ function paginateStickers (stickers, cursor, limit) {
 }
 
 /**
- * Send stickers waiting a random time between each one
+ * Send stickers as a sticker pack
  * @param {Array} stickersPaginated
  * @param {import('whatsapp-web.js').Chat} chat
+ * @param {import('../../types.d.ts').WWebJSMessage} msg
+ * @param {string} [stickerPackName] - Optional sticker pack name
  * @returns {Promise}
  */
-async function sendStickers (stickersPaginated, chat) {
-  for (const s of stickersPaginated) {
-    const media = await wwebjs.MessageMedia.fromUrl(s.url)
-    await sendMediaAsSticker(chat, media, 'DeadByte.com.br', 'bot de figurinhas')
-    await waitRandomTime()
+async function sendStickersAsPack (stickersPaginated, chat, msg, stickerPackName) {
+  // Generate a random pack name if not provided
+  if (!stickerPackName) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let random = ''
+    for (let i = 0; i < 6; i++) {
+      random += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    stickerPackName = `#${random}`
   }
-}
 
-/**
- * Wait random time
- * @param {number} min @default 50
- * @param {number} max @default 500
- * @returns {Promise}
- */
-function waitRandomTime (min = 50, max = 500) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, Math.random() * (max - min) + min)
+  const medias = await Promise.all(
+    stickersPaginated.map(url => wwebjs.MessageMedia.fromUrl(url, { unsafeMime: true }))
+  )
+
+  await chat.sendMessage(medias, {
+    sendMediaAsStickerPack: true,
+    stickerPackName,
+    stickerPackPublisher: 'DeadByte.com.br',
+    stickerName: 'DeadByte.com.br',
+    stickerAuthor: 'bot de figurinhas'
   })
 }
 
