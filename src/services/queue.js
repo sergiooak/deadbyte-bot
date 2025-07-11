@@ -79,7 +79,7 @@ async function processQueue () {
       if (user.messagesQueue.length > 0) {
         queue.push(user) // if there are more messages on the user queue, push it back to the queue
       } else {
-        msg.aux.chat.delete()
+        // msg.aux.chat.delete()
       }
     }).catch((err) => {
       logger.error(err)
