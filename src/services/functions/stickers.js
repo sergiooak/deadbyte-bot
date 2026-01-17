@@ -16,11 +16,11 @@ const validTypes = ['image', 'video', 'sticker']
  * @param {string|undefined} stickerName
  * @param {string|undefined} stickerAuthor
  */
-export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite = false) {
+export async function stickerCreator(msg, stickerName, stickerAuthor, overwrite = false) {
   const targetMessage = getTargetMessage(msg)
   const validTypesPlusDocument = [...validTypes, 'document']
   if (!targetMessage.hasMedia || !validTypesPlusDocument.includes(targetMessage.type)) {
-    await msg.react(reactions.error)
+    //  await msg.react(reactions.error)
 
     const header = '🤖'
     const part1 = 'Para usar o criador de figurinhas você {precisa|tem que}'
@@ -31,7 +31,7 @@ export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite
     return await msg.reply(message)
   }
 
-  await msg.react(reactions.wait)
+  //  await msg.react(reactions.wait)
 
   const cropBypassTypes = ['document', 'sticker']
   const needToCrop = cropBypassTypes.includes(targetMessage.type)
@@ -60,15 +60,15 @@ export async function stickerCreator (msg, stickerName, stickerAuthor, overwrite
     if (msg.body) stickerMedia = await overlaySubtitle(msg.body, stickerMedia).catch((e) => logger.error(e)) || stickerMedia
     await sendMediaAsSticker(msg, stickerMedia, stickerName, stickerAuthor, overwrite)
   }
-  await msg.react(reactions.success)
+  //  await msg.react(reactions.success)
 }
 
 /**
  * Make sticker from text
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
-export async function textSticker (msg) {
-  await msg.react(reactions.wait)
+export async function textSticker(msg) {
+  //  await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp', { message: msg.body })
 
@@ -77,15 +77,15 @@ export async function textSticker (msg) {
   await sendMediaAsSticker(msg, media)
 
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
-  await msg.react(reactionEmoji)
+  //  await msg.react(reactionEmoji)
 }
 
 /**
  * Make sticker from text with a different style
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
-export async function textSticker2 (msg) {
-  await msg.react(reactions.wait)
+export async function textSticker2(msg) {
+  //  await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp2', { message: msg.body })
 
@@ -94,15 +94,15 @@ export async function textSticker2 (msg) {
   await sendMediaAsSticker(msg, media)
 
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
-  await msg.react(reactionEmoji)
+  //  await msg.react(reactionEmoji)
 }
 
 /**
  * Make sticker from text with a barbie style
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
-export async function textSticker3 (msg) {
-  await msg.react(reactions.wait)
+export async function textSticker3(msg) {
+  //  await msg.react(reactions.wait)
 
   const url = await createUrl('image-creator', 'ttp3', { message: msg.body })
 
@@ -111,7 +111,7 @@ export async function textSticker3 (msg) {
   await sendMediaAsSticker(msg, media)
 
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
-  await msg.react(reactionEmoji)
+  //  await msg.react(reactionEmoji)
 }
 
 /**
@@ -119,11 +119,11 @@ export async function textSticker3 (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  *
  */
-export async function removeBg (msg) {
+export async function removeBg(msg) {
   const targetMessage = getTargetMessage(msg)
   const validTypesPlusDocument = [...validTypes, 'document']
   if (!targetMessage.hasMedia || !validTypesPlusDocument.includes(targetMessage.type)) {
-    await msg.react(reactions.error)
+    //  await msg.react(reactions.error)
 
     const header = '☠️🤖'
     const part1 = 'Para usar o {remove.bg|removedor de fundo|*!bg*} você {precisa|tem que}'
@@ -134,11 +134,11 @@ export async function removeBg (msg) {
     return await msg.reply(message)
   }
 
-  await msg.react(reactions.wait)
+  //  await msg.react(reactions.wait)
   const media = await targetMessage.downloadMedia()
   if (!media) throw new Error('Error downloading media')
   if (!media.mimetype.includes('image')) {
-    await msg.react(reactions.error)
+    //  await msg.react(reactions.error)
     return await msg.reply('❌ - Só consigo remover o fundo de imagens')
   }
 
@@ -158,7 +158,7 @@ export async function removeBg (msg) {
   await sendMediaAsSticker(msg, stickerMedia)
 
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
-  await msg.react(reactionEmoji)
+  //  await msg.react(reactionEmoji)
 }
 
 /**
@@ -166,10 +166,10 @@ export async function removeBg (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  *
  */
-export async function stealSticker (msg) {
+export async function stealSticker(msg) {
   const targetMessage = getTargetMessage(msg)
   if (!targetMessage.hasMedia || !validTypes.includes(targetMessage.type)) {
-    await msg.react(reactions.error)
+    //  await msg.react(reactions.error)
 
     const header = '☠️'
     const part1 = 'Para usar o *{!|/|#|.}{roubar|steal}* você {precisa|tem que}'
@@ -180,7 +180,7 @@ export async function stealSticker (msg) {
     return await msg.reply(message)
   }
 
-  await msg.react(reactions.wait)
+  //  await msg.react(reactions.wait)
 
   const delimiters = ['|', '/', '\\']
   let messageParts = [msg.body] // default to the whole message
@@ -196,14 +196,14 @@ export async function stealSticker (msg) {
 
   await sendMediaAsSticker(msg, media, stickerName, stickerAuthor, true)
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
-  await msg.react(reactionEmoji)
+  //  await msg.react(reactionEmoji)
 }
 
 /**
  * Search for a sticker on sticker.ly
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
-export async function stickerLySearch (msg) {
+export async function stickerLySearch(msg) {
   return
   const isStickerGroup = checkStickerGroup(msg.aux.chat.id)
   const limit = getStickerLimit(isStickerGroup)
@@ -213,7 +213,7 @@ export async function stickerLySearch (msg) {
     throw new Error('No search term')
   }
 
-  await msg.react(reactions.wait)
+  //  await msg.react(reactions.wait)
 
   const stickers = await searchTermOnStickerLy(msg.body)
 
@@ -249,14 +249,14 @@ export async function stickerLySearch (msg) {
 
   await sendStickersAsPack(stickersPaginated, msg.aux.chat)
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
-  await msg.react(reactionEmoji)
+  //  await msg.react(reactionEmoji)
 }
 
 /**
  * Get a sticker pack from sticker.ly
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  */
-export async function stickerLyPack (msg) {
+export async function stickerLyPack(msg) {
   // remove https://sticker.ly/s/ from the beginning of the message if it exists
   msg.body = msg.body.replace('https://sticker.ly/s/', '')
 
@@ -265,7 +265,7 @@ export async function stickerLyPack (msg) {
     throw new Error('No search term')
   }
 
-  await msg.react(reactions.wait)
+  //  await msg.react(reactions.wait)
 
   // if the term is a pack id, send the pack
   const packRegex = /^[a-zA-Z0-9]{6}$/
@@ -285,7 +285,7 @@ export async function stickerLyPack (msg) {
 
   await sendStickersAsPack(stickers, msg.aux.chat, msg, pack.name + ' - ' + pack.id)
   const reactionEmoji = msg.aux.db.command.emoji || reactions.success
-  await msg.react(reactionEmoji)
+  //  await msg.react(reactionEmoji)
 }
 
 /**
@@ -293,7 +293,7 @@ export async function stickerLyPack (msg) {
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @param {import('whatsapp-web.js').Chat} chat
  */
-export async function stickerLyTrending (msg, chat) {
+export async function stickerLyTrending(msg, chat) {
   const limit = 32
 
   if (!chat) await msg.react(reactions.wait)
@@ -335,7 +335,7 @@ export async function stickerLyTrending (msg, chat) {
  * @param {boolean} [overwrite=false] - Whether to overwrite the sticker pack or not.
  * @returns {Promise<import ('whatsapp-web.js').Message>} A Promise that resolves with the Message object of the sent sticker.
  */
-async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) {
+async function sendMediaAsSticker(msg, media, author, pack, overwrite = false) {
   if (msg.aux) {
     const authorFromDb = msg.aux.db.contact.attributes?.preferences?.stickerAuthor
     const packFromDb = msg.aux.db.contact.attributes?.preferences?.stickerName
@@ -380,7 +380,7 @@ async function sendMediaAsSticker (msg, media, author, pack, overwrite = false) 
  * @returns {Promise<import ('whatsapp-web.js').MessageMedia>} A Promise that resolves with a new MessageMedia object containing the media with the subtitle overlayed.
  * @throws {Error} If there was an error downloading the subtitle media.
  */
-async function overlaySubtitle (text, stickerMedia) {
+async function overlaySubtitle(text, stickerMedia) {
   const mediaBuffer = Buffer.from(stickerMedia.data, 'base64')
 
   const url = await createUrl('image-creator', 'ttp', {
@@ -415,7 +415,7 @@ async function overlaySubtitle (text, stickerMedia) {
  * @returns {Promise<wwebjs.MessageMedia>} A Promise that resolves with a compressed MessageMedia object.
  * @throws {Error} If the compressed buffer is still too heavy.
  */
-async function compressMediaBuffer (mediaBuffer) {
+async function compressMediaBuffer(mediaBuffer) {
   logger.debug('compressing sticker...', mediaBuffer.byteLength)
   const compressedBuffer = await sharp(mediaBuffer, { animated: true })
     .webp({ quality: 33 })
@@ -432,7 +432,7 @@ async function compressMediaBuffer (mediaBuffer) {
  * @param {import ('whatsapp-web.js').MessageMedia} media - The media to upload
  * @returns {promise<string>} A Promise that resolves with the temporary URL of the uploaded image.
  */
-async function getTempUrl (buffer) {
+async function getTempUrl(buffer) {
   const formData = new FormData()
   formData.append('file', buffer, 'sticker.png')
 
@@ -457,7 +457,7 @@ async function getTempUrl (buffer) {
  * Get a sticker pack from sticker.ly
  * @param {string} packId
  */
-async function getPackFromStickerLy (packId) {
+async function getPackFromStickerLy(packId) {
   const packResponse = await fetch(`https://sticker-ly-api.sergiooak.com.br/api/v1/packs/${packId}`)
 
   const packJson = await packResponse.json()
@@ -470,7 +470,7 @@ async function getPackFromStickerLy (packId) {
  * Search for a sticker on sticker.ly
  * @param {string} term
  */
-async function searchTermOnStickerLy (term) {
+async function searchTermOnStickerLy(term) {
   const response = await fetch('http://api.sticker.ly/v4/sticker/search', {
     method: 'POST',
     headers: {
@@ -513,7 +513,7 @@ async function searchTermOnStickerLy (term) {
  * @param {number} total - The total number of items.
  * @returns {string} The message with the pagination examples.
  */
-function addPaginationToTheMessage (message, prefix, command, term, limit, total) {
+function addPaginationToTheMessage(message, prefix, command, term, limit, total) {
   if (total <= limit) return message
 
   const lastPage = Math.ceil(total / limit)
@@ -546,7 +546,7 @@ function addPaginationToTheMessage (message, prefix, command, term, limit, total
  * @param {string} chatId
  * @returns {boolean}
  */
-function checkStickerGroup (chatId) {
+function checkStickerGroup(chatId) {
   const stickerGroup = '120363282791987363@g.us'
   return chatId._serialized === stickerGroup
 }
@@ -556,7 +556,7 @@ function checkStickerGroup (chatId) {
  * @param {boolean} isStickerGroup
  * @returns {number}
  */
-function getStickerLimit (isStickerGroup) {
+function getStickerLimit(isStickerGroup) {
   const maxStickersOnGroup = 8
   const maxStickersOnPrivate = 4
   return isStickerGroup ? maxStickersOnGroup : maxStickersOnPrivate
@@ -567,7 +567,7 @@ function getStickerLimit (isStickerGroup) {
  * @param {string} functionAux
  * @returns {number}
  */
-function getCursor (functionAux) {
+function getCursor(functionAux) {
   if (!functionAux) return 0
   return functionAux.match(/\d+/g) ? parseInt(functionAux.match(/\d+/g) - 1) : 0
 }
@@ -579,7 +579,7 @@ function getCursor (functionAux) {
  * @param {number} limit
  * @returns {Array}
  */
-function paginateStickers (stickers, cursor, limit) {
+function paginateStickers(stickers, cursor, limit) {
   return stickers.slice(cursor * limit, (cursor + 1) * limit)
 }
 
@@ -591,7 +591,7 @@ function paginateStickers (stickers, cursor, limit) {
  * @param {string} [stickerPackName] - Optional sticker pack name
  * @returns {Promise}
  */
-async function sendStickersAsPack (stickersPaginated, chat, msg, stickerPackName) {
+async function sendStickersAsPack(stickersPaginated, chat, msg, stickerPackName) {
   // Generate a random pack name if not provided
   if (!stickerPackName) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -620,7 +620,7 @@ async function sendStickersAsPack (stickersPaginated, chat, msg, stickerPackName
  * @param {import('../../types.d.ts').WWebJSMessage} msg
  * @returns {import('../../types.d.ts').WWebJSMessage}
  */
-function getTargetMessage (msg) {
+function getTargetMessage(msg) {
   return msg.hasQuotedMsg ? msg.aux.quotedMsg : msg
 }
 
@@ -630,7 +630,7 @@ function getTargetMessage (msg) {
  * @param {number} height
  * @returns {number}
  */
-function calculateAspectRatio (width, height) {
+function calculateAspectRatio(width, height) {
   return Math.max(width, height) / Math.min(width, height)
 }
 
@@ -639,7 +639,7 @@ function calculateAspectRatio (width, height) {
  * @param {import('../../types.d.ts').WWebJSMessage} message
  * @returns {Promise<boolean>}
  */
-async function detectNeedToCrop (message) {
+async function detectNeedToCrop(message) {
   // Ensure targetMessage has the necessary properties
   if (!message || !message._data || !message._data.body) {
     throw new Error('Invalid targetMessage format')
