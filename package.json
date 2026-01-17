@@ -30,7 +30,7 @@
     "qrcode-terminal": "^0.12.0",
     "qs": "^6.13.0",
     "sharp": "^0.34.2",
-    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#pull/3614",
+    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#pull/5729",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
