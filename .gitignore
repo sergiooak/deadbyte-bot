@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.output/
+
+# Test and coverage output
+coverage/
+.vitest/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# WhatsApp local session data
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Runtime generated files
+runtime.config.json
+*.runtime.config.json
+
+# Media/temp output
+tmp/
+temp/
+.tmp/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# TypeScript
+*.tsbuildinfo
