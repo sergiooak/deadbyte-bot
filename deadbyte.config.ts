@@ -76,6 +76,22 @@ export default defineDeadByteConfig({
     'fun.react': {
       enabled: true,
       aliases: ['react', 'reacao', 'reagir']
+    },
+    'utility.ddd': {
+      enabled: true,
+      aliases: ['ddd']
+    },
+    'utility.ddi': {
+      enabled: true,
+      aliases: ['ddi']
+    },
+    'fun.dice': {
+      enabled: true,
+      aliases: ['dado', 'dice', 'rolar', 'rola', 'd']
+    },
+    'fun.math': {
+      enabled: true,
+      aliases: ['calc', 'calcular', 'math', 'conta']
     }
   }
 })
