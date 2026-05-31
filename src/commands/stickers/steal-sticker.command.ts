@@ -13,21 +13,22 @@ function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string
   return ctx.config.commands[commandId]?.aliases ?? defaults
 }
 
-function parseExplicitMetadata(argsText: string): StickerMetadata | undefined {
-  const parts = argsText
-    .split(/\s(?:\||\/|\\)\s/)
-    .map((part) => part.trim())
-    .filter(Boolean)
+// Parseia os metadados do sticker roubado com base nos argumentos do comando.
+// Cenários:
+//   .roubar          → packName='', packPublisher='' (sem pacote e sem autor)
+//   .roubar Pack     → packName='Pack', packPublisher=''
+//   .roubar /Autor   → packName='', packPublisher='Autor'
+//   .roubar Pack|Autor → packName='Pack', packPublisher='Autor'
+function parseStolenMetadata(argsText: string): StickerMetadata {
+  const delimiterIndex = argsText.search(/[|/\\]/)
 
-  if (parts.length < 2) {
-    return undefined
+  if (delimiterIndex !== -1) {
+    const packName = argsText.slice(0, delimiterIndex).trim()
+    const packPublisher = argsText.slice(delimiterIndex + 1).trim()
+    return { packName, packPublisher, emojis: ['🤖'] }
   }
 
-  return {
-    packName: parts[0] ?? '',
-    packPublisher: parts[1] ?? '',
-    emojis: ['🤖']
-  }
+  return { packName: argsText.trim(), packPublisher: '', emojis: ['🤖'] }
 }
 
 export const stealStickerCommand = defineCommand({
@@ -59,8 +60,8 @@ export const stealStickerCommand = defineCommand({
     }
 
     const defaults = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
-    const explicit = parseExplicitMetadata(ctx.parsedCommand?.argsText ?? '')
-    const sticker = await services.stickers?.createSticker(media, explicit ?? defaults.metadata, defaults.options)
+    const metadata = parseStolenMetadata(ctx.parsedCommand?.argsText ?? '')
+    const sticker = await services.stickers?.createSticker(media, metadata, defaults.options)
     if (!sticker) {
       throw new Error('Sticker service is not available.')
     }
