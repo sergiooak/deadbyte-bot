@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import ffmpeg from 'fluent-ffmpeg'
 import ffmpegStatic from 'ffmpeg-static'
 import ffprobeStatic from 'ffprobe-static'
+import sharp from 'sharp'
 
 export type RenderVideoOptions = {
   size: number
@@ -31,6 +32,34 @@ export class FfmpegService {
           resolve({ width: stream?.width ?? 1, height: stream?.height ?? 1 })
         })
       })
+    } finally {
+      await rm(dir, { force: true, recursive: true })
+    }
+  }
+
+  async webpToMp4(input: Buffer): Promise<Buffer> {
+    const dir = await mkdtemp(join(tmpdir(), 'deadbyte-to-mp4-'))
+    // O ffmpeg não consegue decodar WebP animado diretamente; converte para GIF
+    // via sharp primeiro (suporte nativo a múltiplos frames) e então GIF → MP4.
+    const gifPath = join(dir, 'input.gif')
+    const outputPath = join(dir, 'output.mp4')
+
+    try {
+      const gifBuffer = await sharp(input, { animated: true }).gif().toBuffer()
+      await writeFile(gifPath, gifBuffer)
+
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(gifPath)
+          .outputOptions([
+            '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
+            '-c:v', 'libx264',
+            '-movflags', '+faststart'
+          ])
+          .save(outputPath)
+          .on('end', () => resolve())
+          .on('error', (error: Error) => reject(error))
+      })
+      return await readFile(outputPath)
     } finally {
       await rm(dir, { force: true, recursive: true })
     }

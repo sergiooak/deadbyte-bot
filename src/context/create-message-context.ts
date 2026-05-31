@@ -38,7 +38,11 @@ export async function createMessageContext(
     config: options.config,
     services: {
       ...options.services,
-      resolveTargetMedia: () => downloadMessageMedia(target.rawTargetMessage)
+      resolveTargetMedia: () => downloadMessageMedia(target.rawTargetMessage),
+      replyWithMedia: async (bufMedia: { buffer: Buffer; mimeType: string; filename?: string }) => {
+        const media = bufferMediaToWhatsappMedia(bufMedia)
+        await options.client.sendMessage(chat.id, media)
+      }
     },
     reply: async (text) => {
       if (rawMessage.reply) {
