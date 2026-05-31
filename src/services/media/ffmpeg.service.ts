@@ -7,7 +7,7 @@ import ffprobeStatic from 'ffprobe-static'
 
 export type RenderVideoOptions = {
   size: number
-  fit: 'contain' | 'cover'
+  fit: 'contain' | 'cover' | 'stretch'
   fps: number
   maxSeconds: number
   quality: number
@@ -19,6 +19,23 @@ export class FfmpegService {
     ffmpeg.setFfprobePath(paths.ffprobePath || ffprobeStatic.path)
   }
 
+  async probeAspectRatio(input: Buffer): Promise<{ width: number; height: number }> {
+    const dir = await mkdtemp(join(tmpdir(), 'deadbyte-probe-'))
+    const inputPath = join(dir, 'input')
+    await writeFile(inputPath, input)
+    try {
+      return await new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(inputPath, (err, data) => {
+          if (err) return reject(err)
+          const stream = data.streams.find((s) => s.codec_type === 'video')
+          resolve({ width: stream?.width ?? 1, height: stream?.height ?? 1 })
+        })
+      })
+    } finally {
+      await rm(dir, { force: true, recursive: true })
+    }
+  }
+
   async renderVideoToWebp(input: Buffer, options: RenderVideoOptions): Promise<Buffer> {
     const dir = await mkdtemp(join(tmpdir(), 'deadbyte-sticker-'))
     const inputPath = join(dir, 'input')
@@ -28,7 +45,9 @@ export class FfmpegService {
     const filter =
       options.fit === 'contain'
         ? `fps=${options.fps},scale=${options.size}:${options.size}:force_original_aspect_ratio=decrease,pad=${options.size}:${options.size}:(ow-iw)/2:(oh-ih)/2:color=0x00000000,format=rgba,setsar=1`
-        : `fps=${options.fps},scale=${options.size}:${options.size}:force_original_aspect_ratio=increase,crop=${options.size}:${options.size},format=rgba,setsar=1`
+        : options.fit === 'cover'
+          ? `fps=${options.fps},scale=${options.size}:${options.size}:force_original_aspect_ratio=increase,crop=${options.size}:${options.size},format=rgba,setsar=1`
+          : `fps=${options.fps},scale=${options.size}:${options.size},format=rgba,setsar=1`
 
     try {
       await new Promise<void>((resolve, reject) => {

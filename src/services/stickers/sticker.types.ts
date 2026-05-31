@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { BufferMedia } from '../media/media.types.js'
 
-export type StickerFit = 'contain' | 'cover'
+export type StickerFit = 'contain' | 'cover' | 'stretch'
 
 export type StickerMetadata = {
   packName: string
@@ -27,7 +27,8 @@ export const StickerCommandConfigSchema = z.object({
   defaultPackPublisher: z.string().default('bot de figurinhas'),
   videoFps: z.coerce.number().int().positive().default(10),
   maxVideoSeconds: z.coerce.number().int().positive().default(7),
-  defaultFit: z.enum(['contain', 'cover']).default('contain'),
+  defaultFit: z.enum(['contain', 'cover', 'stretch']).default('contain'),
+  squareThreshold: z.coerce.number().min(0).max(1).default(0.85),
   fallbackRenderSizes: z.array(z.number().int().positive()).default([512, 384, 256, 170]),
   imageQuality: z.coerce.number().int().min(1).max(100).default(80),
   videoQuality: z.coerce.number().int().min(1).max(100).default(70),

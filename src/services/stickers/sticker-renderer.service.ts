@@ -38,7 +38,7 @@ export class StickerRendererService {
   }
 
   private async renderImage(input: Buffer, options: StickerRendererOptions): Promise<Buffer> {
-    const fit = options.fit === 'cover' ? 'cover' : 'contain'
+    const fit = options.fit === 'cover' ? 'cover' : options.fit === 'stretch' ? 'fill' : 'contain'
     return await sharp(input)
       .resize(options.size, options.size, {
         fit,
