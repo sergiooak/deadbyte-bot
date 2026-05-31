@@ -13,11 +13,17 @@ export type BotCliConfigOverrides = {
   clientId?: string
   sessionPath?: string
   runtimeConfig?: string
-  internalApi?: boolean
+  internalApi?: boolean | string
   internalHost?: string
   internalPort?: number
   showBrowser?: boolean
-  headless?: boolean
+  headless?: boolean | string
+}
+
+function coerceBoolean(v: boolean | string | undefined): boolean | undefined {
+  if (v == null) return undefined
+  if (typeof v === 'boolean') return v
+  return v === 'true'
 }
 
 async function loadRuntimeConfigFile(path?: string): Promise<DeadByteConfig> {
@@ -67,11 +73,11 @@ export async function loadBotConfig(overrides: BotCliConfigOverrides = {}) {
     whatsapp: {
       clientId: overrides.clientId,
       sessionPath: overrides.sessionPath,
-      headless: overrides.showBrowser ? false : overrides.headless,
+      headless: overrides.showBrowser ? false : coerceBoolean(overrides.headless),
       chromePath: env.DEADBYTE_CHROME_PATH || undefined
     },
     internalApi: {
-      enabled: overrides.internalApi,
+      enabled: coerceBoolean(overrides.internalApi),
       host: overrides.internalHost,
       port: overrides.internalPort
     }
