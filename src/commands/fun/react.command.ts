@@ -28,7 +28,7 @@ export const reactCommand = defineCommand({
       return
     }
 
-    // Use only the base codepoint (first htmlCode) to maximise reaction compatibility
+    // Usa apenas o codepoint base (primeiro htmlCode) para maximizar a compatibilidade da reação
     const emoji = decodeHtmlEntity(data.htmlCode[0])
 
     await ctx.react(emoji)

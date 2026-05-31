@@ -42,20 +42,20 @@ export function formatUtcOffset(minutes: number): string {
 }
 
 /**
- * Returns the clock emoji closest to the given hour and minute.
- * Covers full hours (🕐–🕛) and half hours (🕜–🕧).
+ * Retorna o emoji de relógio mais próximo da hora e minuto fornecidos.
+ * Cobre horas cheias (🕐–🕛) e meias horas (🕜–🕧).
  */
 export function clockEmoji(hour: number, minute: number): string {
   const useHalf = minute >= 15 && minute < 45
-  // When minutes >= 45 round up to next hour
+  // Quando os minutos >= 45, arredonda para a próxima hora
   const displayHour = minute >= 45 ? (hour + 1) % 24 : hour
   const h12 = displayHour % 12 || 12
 
   if (useHalf) {
-    // 🕜 U+1F55C = 1:30 … 🕦 U+1F566 = 11:30, 🕧 U+1F567 = 12:30
+    // 🕜 U+1F55C = 1:30 … 🕦 U+1F566 = 11:30, 🕧 U+1F567 = 12:30 (meias horas)
     return h12 === 12 ? '\u{1F567}' : String.fromCodePoint(0x1f55c + h12 - 1)
   }
-  // 🕐 U+1F550 = 1:00 … 🕚 U+1F55A = 11:00, 🕛 U+1F55B = 12:00
+  // 🕐 U+1F550 = 1:00 … 🕚 U+1F55A = 11:00, 🕛 U+1F55B = 12:00 (horas cheias)
   return h12 === 12 ? '\u{1F55B}' : String.fromCodePoint(0x1f550 + h12 - 1)
 }
 
@@ -115,8 +115,8 @@ export async function getTimeAtCoordinates(lat: number, lon: number): Promise<Om
 }
 
 export function buildShortLocationName(displayName: string): string {
-  // Nominatim returns long names like "São Paulo, Região Imediata de São Paulo, ..."
-  // Take the first two comma-separated parts for a concise label
+  // O Nominatim retorna nomes longos como "São Paulo, Região Imediata de São Paulo, ..."
+  // Pega as duas primeiras partes separadas por vírgula para um rótulo conciso
   const parts = displayName.split(',').map((p) => p.trim())
   return parts.slice(0, 2).join(', ')
 }
