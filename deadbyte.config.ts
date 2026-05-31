@@ -50,7 +50,7 @@ export default defineDeadByteConfig({
       enabled: true,
       aliases: ['emoji']
     },
-    'fun.emoji-react': {
+    'fun.react': {
       enabled: true,
       aliases: ['react', 'reacao', 'reagir']
     }

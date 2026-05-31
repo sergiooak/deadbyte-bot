@@ -18,10 +18,10 @@ function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string
   return ctx.config.commands[commandId]?.aliases ?? defaults
 }
 
-export const emojiReactCommand = defineCommand({
-  id: 'fun.emoji-react',
+export const reactCommand = defineCommand({
+  id: 'fun.react',
   group: 'fun',
-  name: 'Emoji React',
+  name: 'React',
   description: 'Reage à mensagem com um emoji aleatório.',
   aliases: ['react', 'reacao', 'reagir'],
   enabledByDefault: true,
@@ -35,7 +35,7 @@ export const emojiReactCommand = defineCommand({
   async match(ctx) {
     if (ctx.message.body === '.') return true
     const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(normalized && aliasesFor(ctx, 'fun.emoji-react', emojiReactCommand.aliases).map(normalizeCommandName).includes(normalized))
+    return Boolean(normalized && aliasesFor(ctx, 'fun.react', reactCommand.aliases).map(normalizeCommandName).includes(normalized))
   },
   async run(ctx) {
     const response = await fetch('https://emojihub.yurace.pro/api/random')
