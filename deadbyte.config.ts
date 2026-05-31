@@ -25,6 +25,10 @@ export default defineDeadByteConfig({
       enabled: true,
       aliases: ['status', 'stat']
     },
+    'system.time': {
+      enabled: true,
+      aliases: ['hora', 'time', 'horas', 'horario']
+    },
     'sticker.create': {
       enabled: true,
       aliases: ['s', 'sticker', 'f', 'fig', 'figurinha'],

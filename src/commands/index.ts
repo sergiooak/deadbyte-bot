@@ -4,7 +4,8 @@ import { createStickerCommand } from './stickers/create-sticker.command.js'
 import { stealStickerCommand } from './stickers/steal-sticker.command.js'
 import { pingCommand } from './system/ping.command.js'
 import { statusCommand } from './system/status.command.js'
+import { timeCommand } from './system/time.command.js'
 
-export const commands = [pingCommand, statusCommand, createStickerCommand, stealStickerCommand, emojiCommand, reactCommand]
+export const commands = [pingCommand, statusCommand, timeCommand, createStickerCommand, stealStickerCommand, emojiCommand, reactCommand]
 
-export { createStickerCommand, emojiCommand, reactCommand, pingCommand, statusCommand, stealStickerCommand }
+export { createStickerCommand, emojiCommand, reactCommand, pingCommand, statusCommand, stealStickerCommand, timeCommand }
