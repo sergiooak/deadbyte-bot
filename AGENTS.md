@@ -63,7 +63,8 @@ The spawner reads these to track state. Never write arbitrary content to stdout 
 ### Language
 
 - **Source code** (identifiers, variables, functions, classes, types, file names): always in **English**
-- **Comments and documentation** (inline comments, JSDoc, commit messages): always in **Brazilian Portuguese (pt-BR)**
+- **Commit messages**: always in **English**
+- **Comments and documentation** (inline comments, JSDoc): always in **Brazilian Portuguese (pt-BR)**
 
 ### Naming
 
