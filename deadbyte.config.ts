@@ -35,8 +35,6 @@ export default defineDeadByteConfig({
       config: {
         defaultPackName: 'DeadByte.com.br',
         defaultPackPublisher: 'bot de figurinhas',
-        outputSize: 512,
-        maxStickerBytes: 1000000,
         videoFps: 10,
         maxVideoSeconds: 7,
         defaultFit: 'contain',

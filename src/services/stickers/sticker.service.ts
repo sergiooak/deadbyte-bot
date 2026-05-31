@@ -18,11 +18,11 @@ export class StickerService {
       id: crypto.randomUUID(),
       name: DeadByteEventNames.StickerRenderStarted,
       level: 'info',
-      payload: { mimeType: media.mimeType, fit: options.fit, outputSize: options.outputSize },
+      payload: { mimeType: media.mimeType, fit: options.fit, outputSize: 512 },
       timestamp: new Date().toISOString()
     })
 
-    const sizes = [...new Set([options.outputSize, ...options.fallbackRenderSizes])]
+    const sizes = [...new Set([512, ...options.fallbackRenderSizes])]
     let lastSticker: Buffer | undefined
 
     for (const size of sizes) {
@@ -37,7 +37,7 @@ export class StickerService {
       const sticker = await this.exif.applyMetadata(rendered, metadata)
       lastSticker = sticker
 
-      if (sticker.byteLength <= options.maxStickerBytes) {
+      if (sticker.byteLength <= 1024 * 1024) {
         await this.events?.emit({
           id: crypto.randomUUID(),
           name: DeadByteEventNames.StickerRenderCompleted,
@@ -57,7 +57,7 @@ export class StickerService {
       })
     }
 
-    await this.compressor.assertWithinLimit(lastSticker ?? Buffer.alloc(0), options.maxStickerBytes, {
+    await this.compressor.assertWithinLimit(lastSticker ?? Buffer.alloc(0), 1024 * 1024, {
       triedSizes: sizes
     })
 

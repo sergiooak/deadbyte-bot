@@ -11,8 +11,6 @@ export type StickerMetadata = {
 
 export type StickerRenderOptions = {
   fit: StickerFit
-  outputSize: number
-  maxStickerBytes: number
   videoFps: number
   maxVideoSeconds: number
   imageQuality: number
@@ -27,8 +25,6 @@ export type RenderedSticker = BufferMedia & {
 export const StickerCommandConfigSchema = z.object({
   defaultPackName: z.string().default('DeadByte.com.br'),
   defaultPackPublisher: z.string().default('bot de figurinhas'),
-  outputSize: z.coerce.number().int().positive().default(512),
-  maxStickerBytes: z.coerce.number().int().positive().default(1000000),
   videoFps: z.coerce.number().int().positive().default(10),
   maxVideoSeconds: z.coerce.number().int().positive().default(7),
   defaultFit: z.enum(['contain', 'cover']).default('contain'),

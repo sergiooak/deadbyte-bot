@@ -25,8 +25,6 @@ export function resolveStickerOptions(rawConfig: unknown): {
     },
     options: {
       fit: config.defaultFit,
-      outputSize: config.outputSize,
-      maxStickerBytes: config.maxStickerBytes,
       videoFps: config.videoFps,
       maxVideoSeconds: config.maxVideoSeconds,
       imageQuality: config.imageQuality,
@@ -52,7 +50,6 @@ export const createStickerCommand = defineCommand({
   configFields: [
     { key: 'defaultPackName', label: 'Nome do pacote', type: 'string', defaultValue: 'DeadByte.com.br' },
     { key: 'defaultPackPublisher', label: 'Publicador', type: 'string', defaultValue: 'bot de figurinhas' },
-    { key: 'outputSize', label: 'Tamanho', type: 'number', defaultValue: 512 },
     { key: 'defaultFit', label: 'Fit', type: 'select', defaultValue: 'contain', options: ['contain', 'cover'] }
   ],
   async match(ctx) {
