@@ -2,14 +2,6 @@
 
 WhatsApp bot runtime for DeadByte v4. Connects via `whatsapp-web.js`, processes commands, creates stickers, and emits structured events to a spawner in managed mode. See [README.md](README.md) for project overview.
 
-## Critical Setup
-
-`@deadbyte/runtime` is a **local dependency** (`file:../deadbyte-runtime`). It must be built before this project:
-
-```bash
-cd ../deadbyte-runtime && pnpm build
-cd ../deadbyte-bot && pnpm install
-```
 
 ## Commands
 
