@@ -45,6 +45,10 @@ export default defineDeadByteConfig({
     'sticker.steal': {
       enabled: true,
       aliases: ['steal', 'roubar', 'rename', 'renomear']
+    },
+    'fun.emoji': {
+      enabled: true,
+      aliases: ['emoji']
     }
   }
 })
