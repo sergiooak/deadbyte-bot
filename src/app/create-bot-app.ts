@@ -65,6 +65,7 @@ export function createBotApp(options: {
   )
   const services: Record<string, unknown> = {
     stickers,
+    ffmpeg,
     runtime: state
   }
   const registry = createCommandRegistry(options.bot.commands, options.config)

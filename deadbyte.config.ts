@@ -38,11 +38,24 @@ export default defineDeadByteConfig({
         videoFps: 10,
         maxVideoSeconds: 7,
         defaultFit: 'contain',
+        squareThreshold: 0.85,
         fallbackRenderSizes: [512, 384, 256, 170],
         imageQuality: 80,
         videoQuality: 70,
         compressionEnabled: true
       }
+    },
+    'sticker.fit': {
+      enabled: true,
+      aliases: ['ff', 'fit', 'sf', 'inteira', 'inteiro', 'fi']
+    },
+    'sticker.crop': {
+      enabled: true,
+      aliases: ['fc', 'crop', 'sc', 'cortado', 'cortada', 'quadrado', 'quadrada']
+    },
+    'sticker.stretch': {
+      enabled: true,
+      aliases: ['fe', 'estica', 'stretch', 'ss', 'achatada', 'achatado']
     },
     'sticker.steal': {
       enabled: true,
