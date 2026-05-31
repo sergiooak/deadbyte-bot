@@ -13,7 +13,7 @@ export type StickerRendererOptions = {
 }
 
 export class StickerRendererService {
-  constructor(private readonly ffmpegService = new FfmpegService()) {}
+  constructor(private readonly ffmpegService = new FfmpegService()) { }
 
   async render(media: BufferMedia, options: StickerRendererOptions): Promise<Buffer> {
     if (media.mimeType === 'image/webp') {

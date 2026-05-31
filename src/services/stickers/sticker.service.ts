@@ -11,7 +11,7 @@ export class StickerService {
     private readonly exif = new StickerExifService(),
     private readonly compressor = new StickerCompressorService(),
     private readonly events?: DeadByteEventLogger
-  ) {}
+  ) { }
 
   async createSticker(media: BufferMedia, metadata: StickerMetadata, options: StickerRenderOptions): Promise<RenderedSticker> {
     await this.events?.emit({
