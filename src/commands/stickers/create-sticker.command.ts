@@ -47,7 +47,7 @@ export const createStickerCommand = defineCommand({
   supports: {
     private: true,
     groups: true,
-    implicit: false
+    implicit: true
   },
   configFields: [
     { key: 'defaultPackName', label: 'Nome do pacote', type: 'string', defaultValue: 'DeadByte.com.br' },
@@ -57,9 +57,12 @@ export const createStickerCommand = defineCommand({
   ],
   async match(ctx) {
     const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(
-      normalized && aliasesFor(ctx, 'sticker.create', createStickerCommand.aliases).map(normalizeCommandName).includes(normalized)
-    )
+    if (normalized && aliasesFor(ctx, 'sticker.create', createStickerCommand.aliases).map(normalizeCommandName).includes(normalized)) {
+      return true
+    }
+    const isPrivate = !ctx.chat.isGroup
+    const isMedia = ctx.message.hasMedia && ['image', 'video', 'gif'].includes(ctx.message.type ?? '')
+    return isPrivate && isMedia
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices
