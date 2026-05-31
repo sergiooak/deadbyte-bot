@@ -60,6 +60,13 @@ The spawner reads these to track state. Never write arbitrary content to stdout 
 
 ## Conventions
 
+### Language
+
+- **Source code** (identifiers, variables, functions, classes, types, file names): always in **English**
+- **Comments and documentation** (inline comments, JSDoc, commit messages): always in **Brazilian Portuguese (pt-BR)**
+
+### Naming
+
 | Category | Pattern | Example |
 |----------|---------|---------|
 | Files | `kebab-case.ts` | `create-bot-app.ts` |
