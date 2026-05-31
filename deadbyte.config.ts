@@ -17,6 +17,10 @@ export default defineDeadByteConfig({
     port: 41001
   },
   commands: {
+    'system.menu': {
+      enabled: true,
+      aliases: ['menu', 'ajuda', 'help', 'comandos']
+    },
     'system.ping': {
       enabled: true,
       aliases: ['ping', 'p']
@@ -60,6 +64,10 @@ export default defineDeadByteConfig({
     'sticker.steal': {
       enabled: true,
       aliases: ['steal', 'roubar', 'rename', 'renomear']
+    },
+    'sticker.to-media': {
+      enabled: true,
+      aliases: ['arquivo', 'desfig', 'unsticker', 'toimg']
     },
     'fun.emoji': {
       enabled: true,
