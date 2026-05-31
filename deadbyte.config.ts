@@ -49,6 +49,10 @@ export default defineDeadByteConfig({
     'fun.emoji': {
       enabled: true,
       aliases: ['emoji']
+    },
+    'fun.emoji-react': {
+      enabled: true,
+      aliases: ['react', 'reacao', 'reagir']
     }
   }
 })
