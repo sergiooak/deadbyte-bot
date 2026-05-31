@@ -94,28 +94,36 @@ export const createStickerCommand = defineCommand({
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices
-    const media = await services.resolveTargetMedia?.()
+    let media: BufferMedia | undefined
+    try {
+      media = await services.resolveTargetMedia?.()
+    } catch {
+      await ctx.reply('Erro ao baixar a mídia. Tente novamente.')
+      return
+    }
     if (!media) {
       await ctx.reply('Envie ou responda uma imagem/vídeo/sticker para criar a figurinha.')
       return
     }
 
-    const { metadata, options, squareThreshold } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
+    try {
+      const { metadata, options, squareThreshold } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
 
-    // Sempre envia a figurinha com contain (fit)
-    const fitSticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'contain' })
-    if (!fitSticker) {
-      throw new Error('Sticker service is not available.')
-    }
-    await ctx.replyWithSticker(fitSticker.buffer, fitSticker.mimeType)
+      // Sempre envia a figurinha com contain (fit)
+      const fitSticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'contain' })
+      if (!fitSticker) throw new Error('Sticker service is not available.')
+      await ctx.replyWithSticker(fitSticker.buffer, fitSticker.mimeType)
 
-    // Se não for quadrada o suficiente, também envia a versão crop (cover)
-    const square = await isSquareEnough(media, squareThreshold, services.ffmpeg)
-    if (!square) {
-      const cropSticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'cover' })
-      if (cropSticker) {
-        await ctx.replyWithSticker(cropSticker.buffer, cropSticker.mimeType)
+      // Se não for quadrada o suficiente, também envia a versão crop (cover)
+      const square = await isSquareEnough(media, squareThreshold, services.ffmpeg)
+      if (!square) {
+        const cropSticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'cover' })
+        if (cropSticker) {
+          await ctx.replyWithSticker(cropSticker.buffer, cropSticker.mimeType)
+        }
       }
+    } catch {
+      await ctx.reply('Erro ao criar a figurinha. Tente novamente.')
     }
   }
 })

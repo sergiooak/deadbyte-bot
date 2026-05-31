@@ -30,17 +30,25 @@ export const fitStickerCommand = defineCommand({
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices
-    const media = await services.resolveTargetMedia?.()
+    let media: BufferMedia | undefined
+    try {
+      media = await services.resolveTargetMedia?.()
+    } catch {
+      await ctx.reply('Erro ao baixar a mídia. Tente novamente.')
+      return
+    }
     if (!media) {
       await ctx.reply('Envie ou responda uma imagem/vídeo/sticker para criar a figurinha.')
       return
     }
 
-    const { metadata, options } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
-    const sticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'contain' })
-    if (!sticker) {
-      throw new Error('Sticker service is not available.')
+    try {
+      const { metadata, options } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
+      const sticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'contain' })
+      if (!sticker) throw new Error('Sticker service is not available.')
+      await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
+    } catch {
+      await ctx.reply('Erro ao criar a figurinha. Tente novamente.')
     }
-    await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
   }
 })

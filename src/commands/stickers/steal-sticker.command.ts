@@ -53,18 +53,26 @@ export const stealStickerCommand = defineCommand({
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices
-    const media = await services.resolveTargetMedia?.()
+    let media: BufferMedia | undefined
+    try {
+      media = await services.resolveTargetMedia?.()
+    } catch {
+      await ctx.reply('Erro ao baixar a mídia. Tente novamente.')
+      return
+    }
     if (!media) {
       await ctx.reply('Responda um sticker ou mídia para renomear.')
       return
     }
 
-    const defaults = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
-    const metadata = parseStolenMetadata(ctx.parsedCommand?.argsText ?? '')
-    const sticker = await services.stickers?.createSticker(media, metadata, defaults.options)
-    if (!sticker) {
-      throw new Error('Sticker service is not available.')
+    try {
+      const defaults = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
+      const metadata = parseStolenMetadata(ctx.parsedCommand?.argsText ?? '')
+      const sticker = await services.stickers?.createSticker(media, metadata, defaults.options)
+      if (!sticker) throw new Error('Sticker service is not available.')
+      await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
+    } catch {
+      await ctx.reply('Erro ao criar a figurinha. Tente novamente.')
     }
-    await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
   }
 })

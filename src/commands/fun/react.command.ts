@@ -21,7 +21,13 @@ export const reactCommand = defineCommand({
     return Boolean(normalized && aliasesFor(ctx, 'fun.react', reactCommand.aliases).map(normalizeCommandName).includes(normalized))
   },
   async run(ctx) {
-    const data = await fetchRandomEmoji()
+    let data
+    try {
+      data = await fetchRandomEmoji()
+    } catch {
+      await ctx.reply('Não foi possível obter um emoji no momento. Tente novamente.')
+      return
+    }
 
     if (!data) {
       await ctx.reply('Não foi possível obter um emoji no momento. Tente novamente.')
@@ -30,7 +36,6 @@ export const reactCommand = defineCommand({
 
     // Usa apenas o codepoint base (primeiro htmlCode) para maximizar a compatibilidade da reação
     const emoji = decodeHtmlEntity(data.htmlCode[0])
-
     await ctx.react(emoji)
   }
 })

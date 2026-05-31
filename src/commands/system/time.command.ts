@@ -30,7 +30,13 @@ export const timeCommand = defineCommand({
   async run(ctx) {
     const query = ctx.parsedCommand?.argsText?.trim() || DEFAULT_LOCATION
 
-    const result = await getTimeForLocation(query)
+    let result
+    try {
+      result = await getTimeForLocation(query)
+    } catch {
+      await ctx.reply('Erro ao buscar a hora. Tente novamente.')
+      return
+    }
 
     if (!result) {
       await ctx.reply(`Não encontrei a localização *${query}*. Tente com outro nome, estado ou país.`)
