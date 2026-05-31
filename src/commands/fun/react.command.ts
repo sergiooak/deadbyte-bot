@@ -1,22 +1,5 @@
 import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
-
-interface EmojiHubResponse {
-  name: string
-  category: string
-  group: string
-  htmlCode: string[]
-  unicode: string[]
-}
-
-function decodeHtmlEntity(entity: string): string {
-  const match = entity.match(/&#(\d+);/)
-  if (!match) return ''
-  return String.fromCodePoint(parseInt(match[1], 10))
-}
-
-function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string[] }> } }, commandId: string, defaults: string[]) {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
-}
+import { aliasesFor, decodeHtmlEntity, fetchRandomEmoji } from './emoji-hub.helper.js'
 
 export const reactCommand = defineCommand({
   id: 'fun.react',
@@ -38,14 +21,13 @@ export const reactCommand = defineCommand({
     return Boolean(normalized && aliasesFor(ctx, 'fun.react', reactCommand.aliases).map(normalizeCommandName).includes(normalized))
   },
   async run(ctx) {
-    const response = await fetch('https://emojihub.yurace.pro/api/random')
+    const data = await fetchRandomEmoji()
 
-    if (!response.ok) {
+    if (!data) {
       await ctx.reply('Não foi possível obter um emoji no momento. Tente novamente.')
       return
     }
 
-    const data = (await response.json()) as EmojiHubResponse
     // Use only the base codepoint (first htmlCode) to maximise reaction compatibility
     const emoji = decodeHtmlEntity(data.htmlCode[0])
 
