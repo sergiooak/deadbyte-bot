@@ -1,5 +1,6 @@
 import { dddCommand } from './utility/ddd.command.js'
 import { ddiCommand } from './utility/ddi.command.js'
+import { bootCorrectionCommand } from './fun/boot-correction.command.js'
 import { diceCommand } from './fun/dice.command.js'
 import { emojiCommand } from './fun/emoji.command.js'
 import { mathCommand } from './fun/math.command.js'
@@ -15,6 +16,6 @@ import { pingCommand } from './system/ping.command.js'
 import { statusCommand } from './system/status.command.js'
 import { timeCommand } from './system/time.command.js'
 
-export const commands = [menuCommand, pingCommand, statusCommand, timeCommand, createStickerCommand, fitStickerCommand, cropStickerCommand, stretchStickerCommand, stealStickerCommand, stickerToMediaCommand, emojiCommand, reactCommand, diceCommand, mathCommand, dddCommand, ddiCommand]
+export const commands = [menuCommand, pingCommand, statusCommand, timeCommand, createStickerCommand, fitStickerCommand, cropStickerCommand, stretchStickerCommand, stealStickerCommand, stickerToMediaCommand, emojiCommand, reactCommand, bootCorrectionCommand, diceCommand, mathCommand, dddCommand, ddiCommand]
 
-export { createStickerCommand, cropStickerCommand, dddCommand, ddiCommand, diceCommand, emojiCommand, fitStickerCommand, mathCommand, menuCommand, reactCommand, pingCommand, statusCommand, stealStickerCommand, stickerToMediaCommand, stretchStickerCommand, timeCommand }
+export { bootCorrectionCommand, createStickerCommand, cropStickerCommand, dddCommand, ddiCommand, diceCommand, emojiCommand, fitStickerCommand, mathCommand, menuCommand, reactCommand, pingCommand, statusCommand, stealStickerCommand, stickerToMediaCommand, stretchStickerCommand, timeCommand }

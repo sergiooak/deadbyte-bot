@@ -1,7 +1,7 @@
 import type { MessageContext, ResolvedDeadByteConfig } from '@deadbyte/runtime'
 import { downloadMessageMedia, bufferMediaToWhatsappMedia } from '../whatsapp/media.mapper.js'
 import { mapWhatsappChat, mapWhatsappContact, mapWhatsappMessage } from '../whatsapp/message.mapper.js'
-import type { WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
+import type { WhatsappClientLike, WhatsappMessageLike, WhatsappMessageSendOptionsLike } from '../whatsapp/whatsapp-adapter.js'
 import { parseCommand } from './parse-command.js'
 import { resolvePermissions } from './resolve-permissions.js'
 import { resolveTargetMessage } from './resolve-target-message.js'
@@ -44,12 +44,20 @@ export async function createMessageContext(
         await options.client.sendMessage(chat.id, media)
       }
     },
-    reply: async (text) => {
+    reply: async (text, replyOptions?: WhatsappMessageSendOptionsLike) => {
       if (rawMessage.reply) {
-        await rawMessage.reply(text)
+        if (!replyOptions) {
+          await rawMessage.reply(text)
+          return
+        }
+        await rawMessage.reply(text, undefined, replyOptions)
         return
       }
-      await options.client.sendMessage(chat.id, text)
+      if (!replyOptions) {
+        await options.client.sendMessage(chat.id, text)
+        return
+      }
+      await options.client.sendMessage(chat.id, text, replyOptions)
     },
     replyWithSticker: async (sticker, mimeType = 'image/webp') => {
       const media = bufferMediaToWhatsappMedia({ buffer: sticker, mimeType, filename: 'sticker.webp' })

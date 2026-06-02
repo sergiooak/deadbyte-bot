@@ -77,6 +77,10 @@ export default defineDeadByteConfig({
       enabled: true,
       aliases: ['react', 'reacao', 'reagir']
     },
+    'fun.boot-correction': {
+      enabled: true,
+      aliases: ['boot']
+    },
     'utility.ddd': {
       enabled: true,
       aliases: ['ddd']

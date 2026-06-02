@@ -26,6 +26,8 @@ export type WhatsappMediaLike = {
   filesize?: number
 }
 
+export type WhatsappMessageSendOptionsLike = Record<string, unknown>
+
 export type WhatsappMessageLike = {
   id?: WhatsappIdLike
   from: string
@@ -43,7 +45,7 @@ export type WhatsappMessageLike = {
   getContact?: () => Promise<WhatsappContactLike>
   getQuotedMessage?: () => Promise<WhatsappMessageLike>
   downloadMedia?: () => Promise<WhatsappMediaLike | undefined>
-  reply?: (text: string) => Promise<unknown>
+  reply?: (text: string, chatId?: string, options?: WhatsappMessageSendOptionsLike) => Promise<unknown>
   react?: (emoji: string) => Promise<unknown>
 }
 
@@ -55,7 +57,7 @@ export type WhatsappClientLike = {
   initialize: () => Promise<void>
   destroy: () => Promise<void>
   logout: () => Promise<void>
-  sendMessage: (chatId: string, content: unknown, options?: Record<string, unknown>) => Promise<unknown>
+  sendMessage: (chatId: string, content: unknown, options?: WhatsappMessageSendOptionsLike) => Promise<unknown>
   on: (event: string, listener: (...args: unknown[]) => void) => WhatsappClientLike
   getState?: () => Promise<string>
 }
