@@ -27,7 +27,7 @@ function parseFaces(raw: string): number {
 /** Rola um dado de N faces, retorna valor e eventual nota crítica */
 function roll(faces: number): { result: number; note: string } {
   const result = Math.floor(Math.random() * faces) + 1
-  const note = result === faces ? '{✨ crítico!|✨ tirou o máximo!}' : result === 1 ? '{💀 falha crítica!|💀 o mínimo possível!}' : ''
+  const note = result === faces ? '{✨ crítico!|✨ tirou o máximo!|✨ perfeito!|✨ sorte!}' : result === 1 ? '{💀 falha crítica!|💀 o mínimo possível!|💀 tragédia!|💀 desastre!}' : ''
   return { result, note }
 }
 
@@ -106,7 +106,7 @@ export const diceCommand = defineCommand({
     const finalTotal = hasModifier ? applyModifier(rawTotal, op, modifier) : rawTotal
 
     // Monta a mensagem
-    let message = `{🎲|✨|🎯} *${finalTotal}*`
+    let message = `🎲 *${finalTotal}*`
 
     if (hasModifier) {
       message += ` _(${rawTotal} ${op} ${modifier})_`
