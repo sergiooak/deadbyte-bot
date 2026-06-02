@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v4.0.2
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v4.0.1...v4.0.2)
+
+### 🚀 Enhancements
+
+- Add boot spelling correction command ([06ac579](https://github.com/sergiooak/deadbyte-bot/commit/06ac579))
+- **Spintax:** Add native message rendering ([7b81b8e](https://github.com/sergiooak/deadbyte-bot/commit/7b81b8e))
+- **boot-correction:** Update correction messages and remove unused code ([55b8c73](https://github.com/sergiooak/deadbyte-bot/commit/55b8c73))
+
+### 🩹 Fixes
+
+- Require explicit prefixes for command aliases ([2201551](https://github.com/sergiooak/deadbyte-bot/commit/2201551))
+
+### 💅 Refactors
+
+- Split math command utilities ([0a1e99f](https://github.com/sergiooak/deadbyte-bot/commit/0a1e99f))
+
+### ❤️ Contributors
+
+- Sergio Carvalho ([@sergiooak](https://github.com/sergiooak))
+
 ## v4.0.1
 
 [compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v4.0.0...v4.0.1)
