@@ -86,6 +86,25 @@ function fromSuperscript(s: string): number {
   return parseInt(s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (c) => SUPERSCRIPT_MAP[c] ?? c))
 }
 
+function isSuperscriptDigit(ch: string): boolean {
+  return /[⁰¹²³⁴⁵⁶⁷⁸⁹]/.test(ch)
+}
+
+function readSuperscriptExponent(input: string, start: number): { value: number; nextIndex: number } | null {
+  let i = start
+  while (i < input.length && isSuperscriptDigit(input[i])) {
+    i += 1
+  }
+
+  if (i === start) return null
+
+  const superscript = input.slice(start, i)
+  const value = fromSuperscript(superscript)
+  if (!Number.isFinite(value)) return null
+
+  return { value, nextIndex: i }
+}
+
 /** Formata número em pt-BR com separadores de milhar e até 8 casas decimais */
 function formatNum(n: number): string {
   if (!isFinite(n)) return 'indefinido'
@@ -122,11 +141,13 @@ type BinaryOperator = '+' | '-' | '*' | '/' | '^'
 type MathToken =
   | { type: 'number'; value: number }
   | { type: 'operator'; value: BinaryOperator }
+  | { type: 'factorial' }
   | { type: 'lparen' }
   | { type: 'rparen' }
 
 type ExprNode =
   | { kind: 'number'; id: number; value: number }
+  | { kind: 'unary'; id: number; op: '!'; operand: ExprNode }
   | { kind: 'binary'; id: number; op: BinaryOperator; left: ExprNode; right: ExprNode }
 
 const OP_PRECEDENCE: Record<BinaryOperator, number> = {
@@ -158,6 +179,10 @@ function makeNumberNode(value: number): ExprNode {
 
 function makeBinaryNode(op: BinaryOperator, left: ExprNode, right: ExprNode): ExprNode {
   return { kind: 'binary', id: nextNodeId(), op, left, right }
+}
+
+function makeUnaryNode(op: '!', operand: ExprNode): ExprNode {
+  return { kind: 'unary', id: nextNodeId(), op, operand }
 }
 
 /** Normaliza símbolos alternativos para operadores aritméticos ASCII */
@@ -199,6 +224,25 @@ function tokenizeArithmeticExpression(expr: string): MathToken[] | null {
       continue
     }
 
+    if (ch === '!') {
+      if (expectingValue) return null
+      tokens.push({ type: 'factorial' })
+      expectingValue = false
+      i += 1
+      continue
+    }
+
+    if (!expectingValue && isSuperscriptDigit(ch)) {
+      const exponent = readSuperscriptExponent(input, i)
+      if (!exponent) return null
+
+      tokens.push({ type: 'operator', value: '^' })
+      tokens.push({ type: 'number', value: exponent.value })
+      i = exponent.nextIndex
+      expectingValue = false
+      continue
+    }
+
     const isSignedNumber =
       expectingValue
       && (ch === '+' || ch === '-')
@@ -233,6 +277,14 @@ function tokenizeArithmeticExpression(expr: string): MathToken[] | null {
       if (!isFinite(value)) return null
 
       tokens.push({ type: 'number', value })
+
+      const exponent = readSuperscriptExponent(input, i)
+      if (exponent) {
+        tokens.push({ type: 'operator', value: '^' })
+        tokens.push({ type: 'number', value: exponent.value })
+        i = exponent.nextIndex
+      }
+
       expectingValue = false
       continue
     }
@@ -275,6 +327,13 @@ function parseArithmeticToAst(expr: string): ExprNode | null {
   for (const token of tokens) {
     if (token.type === 'number') {
       output.push(makeNumberNode(token.value))
+      continue
+    }
+
+    if (token.type === 'factorial') {
+      const operand = output.pop()
+      if (!operand) return null
+      output.push(makeUnaryNode('!', operand))
       continue
     }
 
@@ -358,6 +417,18 @@ function renderExpression(
     return formatNum(node.value)
   }
 
+  if (node.kind === 'unary') {
+    const operand = renderExpression(node.operand, highlightedNodeId)
+    const needsWrap = node.operand.kind !== 'number'
+    let rendered = `${needsWrap ? `(${operand})` : operand}${node.op}`
+
+    if (highlightedNodeId === node.id) {
+      rendered = `(${rendered})`
+    }
+
+    return rendered
+  }
+
   const left = renderExpression(node.left, highlightedNodeId, node.op, 'left')
   const right = renderExpression(node.right, highlightedNodeId, node.op, 'right')
   let rendered = `${left} ${node.op} ${right}`
@@ -376,9 +447,22 @@ function renderExpression(
   return rendered
 }
 
+type ReducibleExprNode = Extract<ExprNode, { kind: 'unary' | 'binary' }>
+
 /** Busca o próximo nó pronto para reduzir em ordem de avaliação real */
-function findNextReducibleNode(node: ExprNode): Extract<ExprNode, { kind: 'binary' }> | null {
+function findNextReducibleNode(node: ExprNode): ReducibleExprNode | null {
   if (node.kind === 'number') return null
+
+  if (node.kind === 'unary') {
+    const operandCandidate = findNextReducibleNode(node.operand)
+    if (operandCandidate) return operandCandidate
+
+    if (node.operand.kind === 'number') {
+      return node
+    }
+
+    return null
+  }
 
   const leftCandidate = findNextReducibleNode(node.left)
   if (leftCandidate) return leftCandidate
@@ -397,6 +481,13 @@ function replaceNodeById(root: ExprNode, nodeId: number, replacement: ExprNode):
   if (root.id === nodeId) return replacement
   if (root.kind === 'number') return root
 
+  if (root.kind === 'unary') {
+    return {
+      ...root,
+      operand: replaceNodeById(root.operand, nodeId, replacement),
+    }
+  }
+
   return {
     ...root,
     left: replaceNodeById(root.left, nodeId, replacement),
@@ -412,12 +503,26 @@ function evaluateAstWithSteps(ast: ExprNode): { result: number; steps: string[] 
   while (current.kind !== 'number') {
     const next = findNextReducibleNode(current)
     if (!next) return null
-    if (next.left.kind !== 'number' || next.right.kind !== 'number') return null
 
-    const value = evaluateBinaryOperator(next.op, next.left.value, next.right.value)
-    if (value === null || !isFinite(value)) return null
+    let reduced: ExprNode
+    if (next.kind === 'unary') {
+      if (next.operand.kind !== 'number') return null
 
-    const reduced = makeNumberNode(value)
+      const operandValue = next.operand.value
+      if (!Number.isInteger(operandValue) || operandValue < 0 || operandValue > 170) {
+        return null
+      }
+
+      reduced = makeNumberNode(factorial(operandValue))
+    } else {
+      if (next.left.kind !== 'number' || next.right.kind !== 'number') return null
+
+      const value = evaluateBinaryOperator(next.op, next.left.value, next.right.value)
+      if (value === null || !isFinite(value)) return null
+
+      reduced = makeNumberNode(value)
+    }
+
     const updatedTree = replaceNodeById(current, next.id, reduced)
 
     if (updatedTree.kind === 'number') {
@@ -437,6 +542,7 @@ function parseFreeArithmeticExpression(expr: string): MathResult | null {
   expressionNodeId = 0
   const ast = parseArithmeticToAst(expr)
   if (!ast) return null
+  if (ast.kind === 'number') return null
 
   const evaluation = evaluateAstWithSteps(ast)
   if (!evaluation) return null
@@ -465,21 +571,28 @@ function parseValidationExpression(expr: string): MathResult | null {
   if (!leftExpr || !rightExpr) return null
 
   const left = parseFreeArithmeticExpression(leftExpr)
-  const right = parseFreeArithmeticExpression(rightExpr)
-  if (!left || !right) return null
+  if (!left) return null
+
+  expressionNodeId = 0
+  const rightAst = parseArithmeticToAst(rightExpr)
+  if (!rightAst) return null
+
+  const rightEvaluation = evaluateAstWithSteps(rightAst)
+  if (!rightEvaluation) return null
 
   const epsilon = 1e-9
-  const isCorrect = Math.abs(left.result - right.result) <= epsilon
+  const isCorrect = Math.abs(left.result - rightEvaluation.result) <= epsilon
 
   const normalizedLeft = renderExpression(parseArithmeticToAst(leftExpr) ?? makeNumberNode(left.result))
   const expected = `${normalizedLeft} = ${formatNum(left.result)}`
+  const decomposition = left.explanation
 
   return {
     expression: expr,
     result: isCorrect ? 1 : 0,
     explanation: isCorrect
-      ? `✅ Correto\n${normalizedLeft} = ${formatNum(right.result)}`
-      : `❌ Errado\n${expected}`,
+      ? `✅ Correto\n${decomposition}\n${normalizedLeft} = ${formatNum(rightEvaluation.result)}`
+      : `❌ Errado\n${decomposition}\n${expected}`,
   }
 }
 
@@ -699,7 +812,11 @@ export const mathCommand = defineCommand({
       return
     }
 
-    await ctx.reply(`🧮 ${result.explanation}`)
+    const output = /^✅|^❌/.test(result.explanation)
+      ? result.explanation
+      : `🧮 ${result.explanation}`
+
+    await ctx.reply(output)
   }
 })
 
