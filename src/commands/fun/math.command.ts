@@ -117,9 +117,387 @@ function factorial(n: number): number {
 
 type MathResult = { expression: string; result: number; explanation: string }
 
+type BinaryOperator = '+' | '-' | '*' | '/' | '^'
+
+type MathToken =
+  | { type: 'number'; value: number }
+  | { type: 'operator'; value: BinaryOperator }
+  | { type: 'lparen' }
+  | { type: 'rparen' }
+
+type ExprNode =
+  | { kind: 'number'; id: number; value: number }
+  | { kind: 'binary'; id: number; op: BinaryOperator; left: ExprNode; right: ExprNode }
+
+const OP_PRECEDENCE: Record<BinaryOperator, number> = {
+  '+': 1,
+  '-': 1,
+  '*': 2,
+  '/': 2,
+  '^': 3,
+}
+
+const OP_ASSOCIATIVITY: Record<BinaryOperator, 'left' | 'right'> = {
+  '+': 'left',
+  '-': 'left',
+  '*': 'left',
+  '/': 'left',
+  '^': 'right',
+}
+
+let expressionNodeId = 0
+
+function nextNodeId(): number {
+  expressionNodeId += 1
+  return expressionNodeId
+}
+
+function makeNumberNode(value: number): ExprNode {
+  return { kind: 'number', id: nextNodeId(), value }
+}
+
+function makeBinaryNode(op: BinaryOperator, left: ExprNode, right: ExprNode): ExprNode {
+  return { kind: 'binary', id: nextNodeId(), op, left, right }
+}
+
+/** Normaliza símbolos alternativos para operadores aritméticos ASCII */
+function normalizeArithmeticOperators(expr: string): string {
+  return expr
+    .replace(/[×xX]/g, '*')
+    .replace(/÷/g, '/')
+    .replace(/−/g, '-')
+}
+
+/** Tokeniza expressão aritmética com suporte a números longos e parênteses */
+function tokenizeArithmeticExpression(expr: string): MathToken[] | null {
+  const tokens: MathToken[] = []
+  const input = normalizeArithmeticOperators(expr)
+
+  let i = 0
+  let expectingValue = true
+
+  while (i < input.length) {
+    const ch = input[i]
+
+    if (/\s/.test(ch)) {
+      i += 1
+      continue
+    }
+
+    if (ch === '(') {
+      tokens.push({ type: 'lparen' })
+      expectingValue = true
+      i += 1
+      continue
+    }
+
+    if (ch === ')') {
+      if (expectingValue) return null
+      tokens.push({ type: 'rparen' })
+      expectingValue = false
+      i += 1
+      continue
+    }
+
+    const isSignedNumber =
+      expectingValue
+      && (ch === '+' || ch === '-')
+      && i + 1 < input.length
+      && /[\d.,]/.test(input[i + 1])
+
+    if (/[\d.,]/.test(ch) || isSignedNumber) {
+      let start = i
+      if (isSignedNumber) i += 1
+
+      let seenSeparator = false
+      let seenDigit = false
+
+      while (i < input.length) {
+        const c = input[i]
+        if (/\d/.test(c)) {
+          seenDigit = true
+          i += 1
+          continue
+        }
+        if ((c === '.' || c === ',') && !seenSeparator) {
+          seenSeparator = true
+          i += 1
+          continue
+        }
+        break
+      }
+
+      const raw = input.slice(start, i)
+      if (!seenDigit || /^[-+]?[.,]$/.test(raw)) return null
+      const value = parseFloat(raw.replace(',', '.'))
+      if (!isFinite(value)) return null
+
+      tokens.push({ type: 'number', value })
+      expectingValue = false
+      continue
+    }
+
+    if (/^[+\-*/^]$/.test(ch)) {
+      if (expectingValue) return null
+      tokens.push({ type: 'operator', value: ch as BinaryOperator })
+      expectingValue = true
+      i += 1
+      continue
+    }
+
+    return null
+  }
+
+  if (expectingValue) return null
+  return tokens
+}
+
+/** Constrói AST via shunting-yard para respeitar precedência e associatividade */
+function parseArithmeticToAst(expr: string): ExprNode | null {
+  const tokens = tokenizeArithmeticExpression(expr)
+  if (!tokens || tokens.length === 0) return null
+
+  const output: ExprNode[] = []
+  const operators: Array<BinaryOperator | '('> = []
+
+  const applyTopOperator = (): boolean => {
+    const op = operators.pop()
+    if (!op || op === '(') return false
+
+    const right = output.pop()
+    const left = output.pop()
+    if (!left || !right) return false
+
+    output.push(makeBinaryNode(op, left, right))
+    return true
+  }
+
+  for (const token of tokens) {
+    if (token.type === 'number') {
+      output.push(makeNumberNode(token.value))
+      continue
+    }
+
+    if (token.type === 'lparen') {
+      operators.push('(')
+      continue
+    }
+
+    if (token.type === 'rparen') {
+      while (operators.length > 0 && operators[operators.length - 1] !== '(') {
+        if (!applyTopOperator()) return null
+      }
+      if (operators.length === 0) return null
+      operators.pop()
+      continue
+    }
+
+    if (token.type === 'operator') {
+      while (operators.length > 0) {
+        const top = operators[operators.length - 1]
+        if (top === '(') break
+
+        const currentPrec = OP_PRECEDENCE[token.value]
+        const topPrec = OP_PRECEDENCE[top]
+        const assoc = OP_ASSOCIATIVITY[token.value]
+
+        const shouldPop = assoc === 'left'
+          ? currentPrec <= topPrec
+          : currentPrec < topPrec
+
+        if (!shouldPop) break
+        if (!applyTopOperator()) return null
+      }
+      operators.push(token.value)
+    }
+  }
+
+  while (operators.length > 0) {
+    if (operators[operators.length - 1] === '(') return null
+    if (!applyTopOperator()) return null
+  }
+
+  if (output.length !== 1) return null
+  return output[0]
+}
+
+function evaluateBinaryOperator(op: BinaryOperator, left: number, right: number): number | null {
+  switch (op) {
+    case '+': return left + right
+    case '-': return left - right
+    case '*': return left * right
+    case '/': return right === 0 ? null : left / right
+    case '^': return Math.pow(left, right)
+  }
+}
+
+/** Decide quando parênteses são necessários para preservar semântica */
+function shouldWrapByParent(
+  child: Extract<ExprNode, { kind: 'binary' }>,
+  parentOp: BinaryOperator,
+  side: 'left' | 'right'
+): boolean {
+  const childPrec = OP_PRECEDENCE[child.op]
+  const parentPrec = OP_PRECEDENCE[parentOp]
+
+  if (childPrec < parentPrec) return true
+  if (childPrec > parentPrec) return false
+
+  if (side === 'right' && (parentOp === '-' || parentOp === '/')) return true
+  if (side === 'left' && parentOp === '^') return true
+  return false
+}
+
+function renderExpression(
+  node: ExprNode,
+  highlightedNodeId?: number,
+  parentOp?: BinaryOperator,
+  side?: 'left' | 'right'
+): string {
+  if (node.kind === 'number') {
+    return formatNum(node.value)
+  }
+
+  const left = renderExpression(node.left, highlightedNodeId, node.op, 'left')
+  const right = renderExpression(node.right, highlightedNodeId, node.op, 'right')
+  let rendered = `${left} ${node.op} ${right}`
+
+  const wrappedByParent = parentOp !== undefined
+    && shouldWrapByParent(node, parentOp, side ?? 'left')
+
+  if (wrappedByParent) {
+    rendered = `(${rendered})`
+  }
+
+  if (highlightedNodeId === node.id && !wrappedByParent) {
+    rendered = `(${rendered})`
+  }
+
+  return rendered
+}
+
+/** Busca o próximo nó pronto para reduzir em ordem de avaliação real */
+function findNextReducibleNode(node: ExprNode): Extract<ExprNode, { kind: 'binary' }> | null {
+  if (node.kind === 'number') return null
+
+  const leftCandidate = findNextReducibleNode(node.left)
+  if (leftCandidate) return leftCandidate
+
+  const rightCandidate = findNextReducibleNode(node.right)
+  if (rightCandidate) return rightCandidate
+
+  if (node.left.kind === 'number' && node.right.kind === 'number') {
+    return node
+  }
+
+  return null
+}
+
+function replaceNodeById(root: ExprNode, nodeId: number, replacement: ExprNode): ExprNode {
+  if (root.id === nodeId) return replacement
+  if (root.kind === 'number') return root
+
+  return {
+    ...root,
+    left: replaceNodeById(root.left, nodeId, replacement),
+    right: replaceNodeById(root.right, nodeId, replacement),
+  }
+}
+
+/** Avalia AST e gera decomposição passo a passo da expressão */
+function evaluateAstWithSteps(ast: ExprNode): { result: number; steps: string[] } | null {
+  let current = ast
+  const steps: string[] = []
+
+  while (current.kind !== 'number') {
+    const next = findNextReducibleNode(current)
+    if (!next) return null
+    if (next.left.kind !== 'number' || next.right.kind !== 'number') return null
+
+    const value = evaluateBinaryOperator(next.op, next.left.value, next.right.value)
+    if (value === null || !isFinite(value)) return null
+
+    const reduced = makeNumberNode(value)
+    const updatedTree = replaceNodeById(current, next.id, reduced)
+
+    if (updatedTree.kind === 'number') {
+      steps.push(`${renderExpression(current)} = *${formatNum(updatedTree.value)}*`)
+    } else {
+      steps.push(renderExpression(current, next.id))
+    }
+
+    current = updatedTree
+  }
+
+  return { result: current.value, steps }
+}
+
+/** Calcula expressão aritmética livre com suporte a parênteses */
+function parseFreeArithmeticExpression(expr: string): MathResult | null {
+  expressionNodeId = 0
+  const ast = parseArithmeticToAst(expr)
+  if (!ast) return null
+
+  const evaluation = evaluateAstWithSteps(ast)
+  if (!evaluation) return null
+
+  const explanation = evaluation.steps.length > 0
+    ? evaluation.steps.join('\n')
+    : `${renderExpression(ast)} = *${formatNum(evaluation.result)}*`
+
+  return {
+    expression: expr,
+    result: evaluation.result,
+    explanation,
+  }
+}
+
+/** Modo validação: "expressão = resultado" */
+function parseValidationExpression(expr: string): MathResult | null {
+  const equalMatches = expr.match(/=/g)
+  if (!equalMatches) return null
+  if (equalMatches.length !== 1) return null
+
+  const [leftRaw, rightRaw] = expr.split('=')
+  const leftExpr = leftRaw?.trim() ?? ''
+  const rightExpr = rightRaw?.trim() ?? ''
+
+  if (!leftExpr || !rightExpr) return null
+
+  const left = parseFreeArithmeticExpression(leftExpr)
+  const right = parseFreeArithmeticExpression(rightExpr)
+  if (!left || !right) return null
+
+  const epsilon = 1e-9
+  const isCorrect = Math.abs(left.result - right.result) <= epsilon
+
+  const normalizedLeft = renderExpression(parseArithmeticToAst(leftExpr) ?? makeNumberNode(left.result))
+  const expected = `${normalizedLeft} = ${formatNum(left.result)}`
+
+  return {
+    expression: expr,
+    result: isCorrect ? 1 : 0,
+    explanation: isCorrect
+      ? `✅ Correto\n${normalizedLeft} = ${formatNum(right.result)}`
+      : `❌ Errado\n${expected}`,
+  }
+}
+
 /** Tenta interpretar e calcular uma expressão matemática */
 function parseMathExpression(expr: string): MathResult | null {
   const trimmed = substitutePi(expr.trim())
+
+  // Modo de validação explícita: A = B
+  const validation = parseValidationExpression(trimmed)
+  if (validation) {
+    return validation
+  }
+
+  // Calculadora geral com precedência e parênteses
+  const freeArithmetic = parseFreeArithmeticExpression(trimmed)
+  if (freeArithmetic) {
+    return freeArithmetic
+  }
 
   // Raiz com símbolo: √N ∛N ∜N
   const rootSymbolMatch = ROOT_SYMBOL_RE.exec(trimmed)
@@ -283,7 +661,7 @@ export const mathCommand = defineCommand({
   group: 'fun',
   name: 'Calculadora',
   description:
-    'Calcula expressões matemáticas. Suporta +, −, ×, ÷, %, raiz (qualquer grau), potência e fatorial. Funciona implicitamente (ex: 2+2, raiz cúbica de 27) ou com !calc.',
+    'Calcula expressões matemáticas longas com precedência e parênteses. Também valida contas com "=" e responde Correto/Errado.',
   aliases: NAMED_ALIASES,
   enabledByDefault: true,
   ownerOnlyByDefault: false,
@@ -316,7 +694,7 @@ export const mathCommand = defineCommand({
 
     if (!result) {
       await ctx.reply(
-        '🧮 Não consegui calcular essa expressão.\n\nExemplos válidos:\n• `2 + 3` · `2,5 * 8`\n• `40% de 250` · `20%4`\n• `raiz de 36` · `raiz cúbica de 27` · `raiz 5 de 32`\n• `√25` · `∛27` · `∜16`\n• `2^10` · `2 elevado a 10` · `6³`\n• `2!` · `5!`'
+        '🧮 Não consegui calcular essa expressão.\n\nExemplos válidos:\n• `1 + 2 * 3`\n• `(4 + 6) / 2`\n• `2 ^ 3 ^ 2`\n• `1 + 1 = 2` (validação)\n• `1 + 1 = 3` (retorna Errado)\n• `40% de 250` · `raiz cúbica de 27` · `6³`'
       )
       return
     }
