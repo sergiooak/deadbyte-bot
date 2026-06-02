@@ -1,6 +1,57 @@
 # Changelog
 
 
+## v4.0.1
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v4.0.0...v4.0.1)
+
+### 🚀 Enhancements
+
+- **emoji:** Add emoji command to return a random emoji with details ([57af5c6](https://github.com/sergiooak/deadbyte-bot/commit/57af5c6))
+- **commands:** Add emoji-react command for random emoji reactions ([2d8255b](https://github.com/sergiooak/deadbyte-bot/commit/2d8255b))
+- **time:** Add time command to fetch current time for a location ([e97c069](https://github.com/sergiooak/deadbyte-bot/commit/e97c069))
+- **agents:** Add language and naming conventions ([5cce9c4](https://github.com/sergiooak/deadbyte-bot/commit/5cce9c4))
+- **Sticker:** Add stretch fit and probeAspectRatio ([0e62408](https://github.com/sergiooak/deadbyte-bot/commit/0e62408))
+- **Sticker:** Add fit/crop/stretch commands and auto-fit logic ([a22dd14](https://github.com/sergiooak/deadbyte-bot/commit/a22dd14))
+- **Menu:** Add system.menu command ([cd2ddef](https://github.com/sergiooak/deadbyte-bot/commit/cd2ddef))
+- **StickerToMedia:** Add sticker.to-media command ([02b63df](https://github.com/sergiooak/deadbyte-bot/commit/02b63df))
+- **Dice:** Add dice roller command ([61dfc22](https://github.com/sergiooak/deadbyte-bot/commit/61dfc22))
+- **DDD:** Add DDD area code lookup command ([8a02124](https://github.com/sergiooak/deadbyte-bot/commit/8a02124))
+- **DDI:** Add international dial code lookup command ([bba2b9e](https://github.com/sergiooak/deadbyte-bot/commit/bba2b9e))
+- **Math:** Add math calculator command ([f46bfc5](https://github.com/sergiooak/deadbyte-bot/commit/f46bfc5))
+- **math:** Add factorial support to math command ([2aae575](https://github.com/sergiooak/deadbyte-bot/commit/2aae575))
+- **math:** Enhance expression evaluation and validation ([1ed9334](https://github.com/sergiooak/deadbyte-bot/commit/1ed9334))
+- **math.command:** Add support for factorial and superscript exponents ([d92831f](https://github.com/sergiooak/deadbyte-bot/commit/d92831f))
+
+### 🩹 Fixes
+
+- **sticker:** Update implicit support and refine match logic ([e137244](https://github.com/sergiooak/deadbyte-bot/commit/e137244))
+- **Sticker:** Rewrite steal metadata parsing for all 4 scenarios ([0fb74f5](https://github.com/sergiooak/deadbyte-bot/commit/0fb74f5))
+- **deadbyte.config:** Update clientId to use environment variable ([13e01cd](https://github.com/sergiooak/deadbyte-bot/commit/13e01cd))
+
+### 💅 Refactors
+
+- **commands:** Rename emoji-react command to react ([73f26dc](https://github.com/sergiooak/deadbyte-bot/commit/73f26dc))
+- **fun:** Extract shared emoji-hub logic to helper ([9a4327c](https://github.com/sergiooak/deadbyte-bot/commit/9a4327c))
+- Translate comments to Portuguese ([6be34fd](https://github.com/sergiooak/deadbyte-bot/commit/6be34fd))
+- **sticker:** Remove outputSize and maxStickerBytes from config ([3d11e0d](https://github.com/sergiooak/deadbyte-bot/commit/3d11e0d))
+- **sticker:** Format constructor for consistency ([2ef25da](https://github.com/sergiooak/deadbyte-bot/commit/2ef25da))
+- **commands:** Add try-catch error handling to all commands ([dc812d4](https://github.com/sergiooak/deadbyte-bot/commit/dc812d4))
+
+### 📖 Documentation
+
+- Clarify commit message language in AGENTS.md ([4fa7290](https://github.com/sergiooak/deadbyte-bot/commit/4fa7290))
+
+### 🏡 Chore
+
+- **ci:** Opt into Node.js 24 for GitHub Actions runner ([a1f2965](https://github.com/sergiooak/deadbyte-bot/commit/a1f2965))
+- **config:** Register menu and sticker.to-media commands ([e1dbf18](https://github.com/sergiooak/deadbyte-bot/commit/e1dbf18))
+- Register dice, ddd, ddi and math commands ([c095317](https://github.com/sergiooak/deadbyte-bot/commit/c095317))
+
+### ❤️ Contributors
+
+- Sergio Carvalho ([@sergiooak](https://github.com/sergiooak))
+
 ## v4.0.0
 
 
