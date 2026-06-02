@@ -52,6 +52,11 @@ const POWER_NATURAL_RE = new RegExp(
   'i'
 )
 
+// Fatorial: N!
+const FACTORIAL_RE = new RegExp(
+  `^(${NUM_SRC})\\s*!$`
+)
+
 // Raiz com símbolo Unicode: √N ∛N ∜N
 const ROOT_SYMBOL_RE = /^([√∛∜])\s*(\d+(?:[.,]\d+)?)$/
 
@@ -96,6 +101,16 @@ function rootSymbol(degree: number): string {
   if (degree === 3) return '∛'
   if (degree === 4) return '∜'
   return `${degree}√`
+}
+
+/** Calcula fatorial de inteiro não negativo */
+function factorial(n: number): number {
+  if (n <= 1) return 1
+  let acc = 1
+  for (let i = 2; i <= n; i++) {
+    acc *= i
+  }
+  return acc
 }
 
 // ─── Parser principal ─────────────────────────────────────────────────────────
@@ -185,6 +200,26 @@ function parseMathExpression(expr: string): MathResult | null {
     }
   }
 
+  // Fatorial: "N!"
+  const factorialMatch = FACTORIAL_RE.exec(trimmed)
+  if (factorialMatch) {
+    const n = toNum(factorialMatch[1])
+    if (!Number.isInteger(n) || n < 0) return null
+    if (n > 170) {
+      return {
+        expression: trimmed,
+        result: Infinity,
+        explanation: `${formatNum(n)}! é grande demais para precisão numérica.`
+      }
+    }
+    const result = factorial(n)
+    return {
+      expression: trimmed,
+      result,
+      explanation: `${formatNum(n)}! = *${formatNum(result)}*`
+    }
+  }
+
   // Porcentagem: "40% de 250", "20% 4", "20%4"
   const pctMatch = PERCENT_RE.exec(trimmed)
   if (pctMatch) {
@@ -248,7 +283,7 @@ export const mathCommand = defineCommand({
   group: 'fun',
   name: 'Calculadora',
   description:
-    'Calcula expressões matemáticas. Suporta +, −, ×, ÷, %, raiz (qualquer grau) e potência. Funciona implicitamente (ex: 2+2, raiz cúbica de 27) ou com !calc.',
+    'Calcula expressões matemáticas. Suporta +, −, ×, ÷, %, raiz (qualquer grau), potência e fatorial. Funciona implicitamente (ex: 2+2, raiz cúbica de 27) ou com !calc.',
   aliases: NAMED_ALIASES,
   enabledByDefault: true,
   ownerOnlyByDefault: false,
@@ -281,7 +316,7 @@ export const mathCommand = defineCommand({
 
     if (!result) {
       await ctx.reply(
-        '🧮 Não consegui calcular essa expressão.\n\nExemplos válidos:\n• `2 + 3` · `2,5 * 8`\n• `40% de 250` · `20%4`\n• `raiz de 36` · `raiz cúbica de 27` · `raiz 5 de 32`\n• `√25` · `∛27` · `∜16`\n• `2^10` · `2 elevado a 10` · `6³`'
+        '🧮 Não consegui calcular essa expressão.\n\nExemplos válidos:\n• `2 + 3` · `2,5 * 8`\n• `40% de 250` · `20%4`\n• `raiz de 36` · `raiz cúbica de 27` · `raiz 5 de 32`\n• `√25` · `∛27` · `∜16`\n• `2^10` · `2 elevado a 10` · `6³`\n• `2!` · `5!`'
       )
       return
     }
