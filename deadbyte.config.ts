@@ -9,7 +9,7 @@ export default defineDeadByteConfig({
     headless: true,
     chromePath: undefined,
     sessionPath: './.wwebjs_auth',
-    clientId: 'deadbyte-local'
+    clientId: process.env.DEADBYTE_CLIENT_ID || 'deadbyte'
   },
   internalApi: {
     enabled: false,
