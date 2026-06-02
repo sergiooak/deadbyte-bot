@@ -18,7 +18,11 @@ export const reactCommand = defineCommand({
   async match(ctx) {
     if (ctx.message.body === '.') return true
     const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(normalized && aliasesFor(ctx, 'fun.react', reactCommand.aliases).map(normalizeCommandName).includes(normalized))
+    return Boolean(
+      ctx.parsedCommand?.explicit &&
+        normalized &&
+        aliasesFor(ctx, 'fun.react', reactCommand.aliases).map(normalizeCommandName).includes(normalized)
+    )
   },
   async run(ctx) {
     let data

@@ -85,7 +85,11 @@ export const createStickerCommand = defineCommand({
   ],
   async match(ctx) {
     const normalized = ctx.parsedCommand?.normalizedName
-    if (normalized && aliasesFor(ctx, 'sticker.create', createStickerCommand.aliases).map(normalizeCommandName).includes(normalized)) {
+    if (
+      ctx.parsedCommand?.explicit &&
+      normalized &&
+      aliasesFor(ctx, 'sticker.create', createStickerCommand.aliases).map(normalizeCommandName).includes(normalized)
+    ) {
       return true
     }
     const isPrivate = !ctx.chat.isGroup

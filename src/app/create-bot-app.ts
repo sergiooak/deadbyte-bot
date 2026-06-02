@@ -146,9 +146,12 @@ export function createBotApp(options: {
           timestamp: new Date().toISOString()
         })
 
+        const isExplicit = previewContext.parsedCommand?.explicit === true
         const normalized = previewContext.parsedCommand?.normalizedName
-        const registryMatch = normalized ? registry.byAlias.get(normalized) : undefined
-        const candidates = registryMatch ? [registryMatch] : options.bot.commands
+        const registryMatch = isExplicit && normalized ? registry.byAlias.get(normalized) : undefined
+        const candidates = registryMatch
+          ? [registryMatch]
+          : options.bot.commands.filter((command) => isExplicit || command.supports.implicit)
 
         for (const command of candidates) {
           const shouldRun = registryMatch ? true : await command.match(previewContext)
