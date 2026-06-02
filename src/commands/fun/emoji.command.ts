@@ -24,16 +24,16 @@ export const emojiCommand = defineCommand({
     try {
       data = await fetchRandomEmoji()
     } catch {
-      await ctx.reply('Não foi possível obter um emoji no momento. Tente novamente.')
+      await ctx.reply('Não foi possível obter um emoji {no momento|agora}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
       return
     }
 
     if (!data) {
-      await ctx.reply('Não foi possível obter um emoji no momento. Tente novamente.')
+      await ctx.reply('Não foi possível obter um emoji {no momento|agora}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
       return
     }
 
     const emoji = data.htmlCode.map(decodeHtmlEntity).join('')
-    await ctx.reply(`${emoji}\n\nNome: ${data.name}\nCategoria: ${data.category}\nGrupo: ${data.group}`)
+    await ctx.reply(`${emoji}\n\n*{Nome|Chamam de}:* ${data.name}\n*Categoria:* ${data.category}\n*Grupo:* ${data.group}`)
   }
 })

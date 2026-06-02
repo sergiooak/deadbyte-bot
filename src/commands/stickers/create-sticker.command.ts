@@ -102,11 +102,11 @@ export const createStickerCommand = defineCommand({
     try {
       media = await services.resolveTargetMedia?.()
     } catch {
-      await ctx.reply('Erro ao baixar a mídia. Tente novamente.')
+      await ctx.reply('{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}')
       return
     }
     if (!media) {
-      await ctx.reply('Envie ou responda uma imagem/vídeo/sticker para criar a figurinha.')
+      await ctx.reply('{Envie|Mande} ou {responda|marque} uma imagem/vídeo/sticker para {criar|fazer} a figurinha{.|!}')
       return
     }
 
@@ -127,7 +127,7 @@ export const createStickerCommand = defineCommand({
         }
       }
     } catch {
-      await ctx.reply('Erro ao criar a figurinha. Tente novamente.')
+      await ctx.reply('{Erro|Falhei} ao criar a figurinha. {Tente novamente.|Pode tentar de novo.}')
     }
   }
 })

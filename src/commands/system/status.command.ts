@@ -28,6 +28,8 @@ export const statusCommand = defineCommand({
     const uptime = runtime?.startedAt ? formatUptime(Date.now() - runtime.startedAt) : 'unknown'
     await ctx.reply(
       [
+        '{🤖|⚙️|📡} *Status da instância*',
+        '',
         `instance: ${ctx.config.instanceId}`,
         `mode: ${ctx.config.mode}`,
         `uptime: ${uptime}`,

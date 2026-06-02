@@ -1,4 +1,5 @@
 import type { MessageContext, ResolvedDeadByteConfig } from '@deadbyte/runtime'
+import type { SpintaxService } from '../services/text/spintax.service.js'
 import { downloadMessageMedia, bufferMediaToWhatsappMedia } from '../whatsapp/media.mapper.js'
 import { mapWhatsappChat, mapWhatsappContact, mapWhatsappMessage } from '../whatsapp/message.mapper.js'
 import type { WhatsappClientLike, WhatsappMessageLike, WhatsappMessageSendOptionsLike } from '../whatsapp/whatsapp-adapter.js'
@@ -10,6 +11,21 @@ export type CreateMessageContextOptions = {
   client: WhatsappClientLike
   config: ResolvedDeadByteConfig
   services: Record<string, unknown>
+  spintax?: SpintaxService
+}
+
+function renderSendOptions(
+  options: WhatsappMessageSendOptionsLike | undefined,
+  spintax: SpintaxService | undefined
+): WhatsappMessageSendOptionsLike | undefined {
+  if (!options || !spintax || typeof options.caption !== 'string') {
+    return options
+  }
+
+  return {
+    ...options,
+    caption: spintax.render(options.caption)
+  }
 }
 
 export async function createMessageContext(
@@ -26,6 +42,7 @@ export async function createMessageContext(
     botId: options.client.info?.wid?._serialized
   })
   const permissions = resolvePermissions(options.config, chat, sender)
+  const spintax = options.spintax ?? (options.services.spintax as SpintaxService | undefined)
 
   return {
     message,
@@ -45,19 +62,21 @@ export async function createMessageContext(
       }
     },
     reply: async (text, replyOptions?: WhatsappMessageSendOptionsLike) => {
+      const renderedText = spintax?.render(text) ?? text
+      const renderedOptions = renderSendOptions(replyOptions, spintax)
       if (rawMessage.reply) {
-        if (!replyOptions) {
-          await rawMessage.reply(text)
+        if (!renderedOptions) {
+          await rawMessage.reply(renderedText)
           return
         }
-        await rawMessage.reply(text, undefined, replyOptions)
+        await rawMessage.reply(renderedText, undefined, renderedOptions)
         return
       }
-      if (!replyOptions) {
-        await options.client.sendMessage(chat.id, text)
+      if (!renderedOptions) {
+        await options.client.sendMessage(chat.id, renderedText)
         return
       }
-      await options.client.sendMessage(chat.id, text, replyOptions)
+      await options.client.sendMessage(chat.id, renderedText, renderedOptions)
     },
     replyWithSticker: async (sticker, mimeType = 'image/webp') => {
       const media = bufferMediaToWhatsappMedia({ buffer: sticker, mimeType, filename: 'sticker.webp' })

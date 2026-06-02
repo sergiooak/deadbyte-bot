@@ -31,6 +31,6 @@ export async function runCommandWithBoundary(
       },
       timestamp: new Date().toISOString()
     })
-    await ctx.reply('Erro ao executar comando.')
+    await ctx.reply('{Erro|Opa, deu erro} ao executar {o comando|essa função}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
   }
 }

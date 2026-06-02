@@ -27,7 +27,7 @@ function parseFaces(raw: string): number {
 /** Rola um dado de N faces, retorna valor e eventual nota crítica */
 function roll(faces: number): { result: number; note: string } {
   const result = Math.floor(Math.random() * faces) + 1
-  const note = result === faces ? '✨ crítico!' : result === 1 ? '💀 falha crítica!' : ''
+  const note = result === faces ? '{✨ crítico!|✨ tirou o máximo!}' : result === 1 ? '{💀 falha crítica!|💀 o mínimo possível!}' : ''
   return { result, note }
 }
 
@@ -87,7 +87,7 @@ export const diceCommand = defineCommand({
 
     if (!expression) {
       await ctx.reply(
-        '🎲 Informe uma expressão válida!\n\nExemplos:\n• `!2d6+3` — 2 dados de 6 lados, +3\n• `!d20` — 1 dado de 20 lados\n• `!dado 4d6` — 4 dados de 6 lados'
+        '{🎲|🧮} {Informe|Mande} uma expressão válida!\n\nExemplos:\n• `!2d6+3` — 2 dados de 6 lados, +3\n• `!d20` — 1 dado de 20 lados\n• `!dado 4d6` — 4 dados de 6 lados'
       )
       return
     }
@@ -106,7 +106,7 @@ export const diceCommand = defineCommand({
     const finalTotal = hasModifier ? applyModifier(rawTotal, op, modifier) : rawTotal
 
     // Monta a mensagem
-    let message = `🎲 *${finalTotal}*`
+    let message = `{🎲|✨|🎯} *${finalTotal}*`
 
     if (hasModifier) {
       message += ` _(${rawTotal} ${op} ${modifier})_`
@@ -114,9 +114,9 @@ export const diceCommand = defineCommand({
 
     // Detalha cada dado se mais de um
     if (diceCount > 1) {
-      message += `\n\n_${diceCount} dados de ${faces} lados:_\n`
+      message += `\n\n_${diceCount} {dados|rolagens} de ${faces} lados:_\n`
       rolls.forEach((r, i) => {
-        message += `• ${i + 1}º dado: \`${r.result}\`${r.note ? ` ${r.note}` : ''}\n`
+        message += `• ${i + 1}º {dado|rolagem}: \`${r.result}\`${r.note ? ` ${r.note}` : ''}\n`
       })
     } else {
       const note = rolls[0].note

@@ -34,12 +34,12 @@ export const timeCommand = defineCommand({
     try {
       result = await getTimeForLocation(query)
     } catch {
-      await ctx.reply('Erro ao buscar a hora. Tente novamente.')
+      await ctx.reply('{Erro|Falhei} ao buscar a hora. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
       return
     }
 
     if (!result) {
-      await ctx.reply(`Não encontrei a localização *${query}*. Tente com outro nome, estado ou país.`)
+      await ctx.reply(`Não encontrei a localização *${query}*. Tente com {outro nome|uma cidade, estado ou país diferente}.`)
       return
     }
 
@@ -56,8 +56,8 @@ export const timeCommand = defineCommand({
     const lines: string[] = [
       `${clock} *${formattedTime}*`,
       '',
-      `📍 ${shortName}`,
-      `🌐 ${gmtLabel}`,
+      `{📍|🗺️} ${shortName}`,
+      `{🌐|🕓} ${gmtLabel}`,
     ]
 
     if (!isSameTzAsBrasilia) {
@@ -66,7 +66,7 @@ export const timeCommand = defineCommand({
       const diffM = absDiff % 60
       const diffLabel = diffM ? `${diffH}h${diffM}min` : `${diffH}h`
       const relation = diffMinutes > 0 ? 'à frente de' : 'atrás de'
-      lines.push(`⏱️ ${diffLabel} ${relation} Brasília`)
+      lines.push(`{⏱️|⌚} ${diffLabel} ${relation} Brasília`)
     }
 
     await ctx.reply(lines.join('\n'))

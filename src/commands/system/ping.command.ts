@@ -23,6 +23,6 @@ export const pingCommand = defineCommand({
     return Boolean(normalized && aliasesFor(ctx, 'system.ping', pingCommand.aliases).map(normalizeCommandName).includes(normalized))
   },
   async run(ctx) {
-    await ctx.reply('pong')
+    await ctx.reply('{pong|pong!|online por aqui|tô vivo}')
   }
 })

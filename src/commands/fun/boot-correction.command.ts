@@ -1,7 +1,4 @@
 import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
-import { SpintaxService } from '../../services/text/spintax.service.js'
-
-const spintax = new SpintaxService()
 
 const correctionResponses = [
   '{Opa!|Oops!} {certo|correto} e *bot*{!|!!|!!!}',
@@ -39,7 +36,7 @@ export function messageContainsWord(messageBody: string | undefined, word: strin
 function createCorrectionMessage(): string {
   const randomResponse = correctionResponses[Math.floor(Math.random() * correctionResponses.length)] ?? correctionResponses[0]
   const randomFooter = correctionFooters[Math.floor(Math.random() * correctionFooters.length)] ?? correctionFooters[0]
-  return spintax.render(`- ${randomResponse}\n\n${randomFooter} ${wikipediaUrl}`)
+  return `- ${randomResponse}\n\n${randomFooter} ${wikipediaUrl}`
 }
 
 export const bootCorrectionCommand = defineCommand({

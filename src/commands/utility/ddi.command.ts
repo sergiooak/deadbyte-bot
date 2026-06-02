@@ -64,7 +64,7 @@ export const ddiCommand = defineCommand({
     const ddiStr = extractDdiArg(normalized, argsText, normalizedAliases)
 
     if (!ddiStr || !/^\d{1,4}$/.test(ddiStr)) {
-      await ctx.reply('Informe um DDI válido (1 a 4 dígitos). Ex: *!ddi 55*')
+      await ctx.reply('{Informe|Mande} um DDI válido (1 a 4 dígitos). Ex: *!ddi 55*')
       return
     }
 
@@ -72,18 +72,18 @@ export const ddiCommand = defineCommand({
     const countries = lookupDdi(ddiNum)
 
     if (!countries || countries.length === 0) {
-      await ctx.reply(`DDI *+${ddiStr}* não encontrado na base de dados.`)
+      await ctx.reply(`DDI *+${ddiStr}* {não foi encontrado|não apareceu} na base de dados.`)
       return
     }
 
     if (countries.length === 1) {
       const c = countries[0]
-      await ctx.reply(`🌍 *DDI +${ddiStr}* — ${flagEmoji(c.iso)} ${c.name}`)
+      await ctx.reply(`{🌍|☎️} *{DDI|Código} +${ddiStr}* — ${flagEmoji(c.iso)} ${c.name}`)
       return
     }
 
     // Múltiplos países compartilham o mesmo DDI
     const list = countries.map((c) => `• ${flagEmoji(c.iso)} ${c.name}`).join('\n')
-    await ctx.reply(`🌍 *DDI +${ddiStr}* é compartilhado por ${countries.length} países/territórios:\n\n${list}`)
+    await ctx.reply(`{🌍|☎️} *{DDI|Código} +${ddiStr}* é compartilhado por ${countries.length} {países/territórios|lugares}:\n\n${list}`)
   }
 })

@@ -4,7 +4,7 @@ export async function ensureOwnerAllowed(command: DeadByteCommand, ctx: CommandC
   const config = ctx.config.commands[command.id]
   const ownerOnly = config?.ownerOnly ?? command.ownerOnlyByDefault
   if (ownerOnly && !ctx.permissions.isOwner) {
-    await ctx.reply('Este comando é restrito ao dono da instância.')
+    await ctx.reply('{Esse comando|Esta função} é {restrito|reservado} ao dono da instância{.|, foi mal.}')
     return false
   }
   return true

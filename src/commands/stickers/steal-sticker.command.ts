@@ -57,11 +57,11 @@ export const stealStickerCommand = defineCommand({
     try {
       media = await services.resolveTargetMedia?.()
     } catch {
-      await ctx.reply('Erro ao baixar a mídia. Tente novamente.')
+      await ctx.reply('{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}')
       return
     }
     if (!media) {
-      await ctx.reply('Responda um sticker ou mídia para renomear.')
+      await ctx.reply('{Responda|Marque} {um sticker|uma figurinha} ou {uma mídia|mídia} para {renomear|trocar os metadados|mudar pacote/autor}.')
       return
     }
 
@@ -72,7 +72,7 @@ export const stealStickerCommand = defineCommand({
       if (!sticker) throw new Error('Sticker service is not available.')
       await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
     } catch {
-      await ctx.reply('Erro ao criar a figurinha. Tente novamente.')
+      await ctx.reply('{Erro|Falhei} ao criar a figurinha. {Tente novamente.|Pode tentar de novo.}')
     }
   }
 })

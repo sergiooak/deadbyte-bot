@@ -77,6 +77,29 @@ describe('createBotApp command dispatch', () => {
     await app.handleMessage(message)
 
     expect(events.some((event) => event.name === DeadByteEventNames.CommandMatched)).toBe(true)
-    expect(message.reply).toHaveBeenCalledWith('Envie ou responda uma imagem/vídeo/sticker para criar a figurinha.')
+    expect(message.reply.mock.calls[0]?.[0]).toMatch(/^(Envie|Mande) ou (responda|marque) uma imagem\/vídeo\/sticker para (criar|fazer) a figurinha[.!]$/)
+  })
+
+  it('renders spintax natively before sending internal messages', async () => {
+    const client = createClient()
+    const app = createBotApp({
+      bot: {
+        name: 'Test Bot',
+        version: '0.0.0',
+        commands: [],
+        events: { message: async () => undefined }
+      },
+      config: resolveDeadByteConfig(defaultConfig),
+      client,
+      events: {
+        emit: async () => undefined
+      }
+    })
+
+    await app.sendMessage('user@c.us', 'Oi {Sergio|DeadByte}')
+
+    const sentText = vi.mocked(client.sendMessage).mock.calls[0]?.[1]
+    expect(sentText).toMatch(/^Oi (Sergio|DeadByte)$/)
+    expect(sentText).not.toContain('{')
   })
 })

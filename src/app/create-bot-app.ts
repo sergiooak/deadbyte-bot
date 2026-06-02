@@ -16,6 +16,7 @@ import { StickerCompressorService } from '../services/stickers/sticker-compresso
 import { StickerExifService } from '../services/stickers/sticker-exif.service.js'
 import { StickerRendererService } from '../services/stickers/sticker-renderer.service.js'
 import { StickerService } from '../services/stickers/sticker.service.js'
+import { SpintaxService } from '../services/text/spintax.service.js'
 import { readBotEnv } from '../utils/env.js'
 import type { WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
 
@@ -63,9 +64,11 @@ export function createBotApp(options: {
     new StickerCompressorService(options.events),
     options.events
   )
+  const spintax = new SpintaxService()
   const services: Record<string, unknown> = {
     stickers,
     ffmpeg,
+    spintax,
     runtime: state,
     commands: options.bot.commands
   }
@@ -75,7 +78,8 @@ export function createBotApp(options: {
     const ctx = await createMessageContext(rawMessage, {
       client: options.client,
       config: options.config,
-      services
+      services,
+      spintax
     })
 
     if (!ctx.parsedCommand?.explicit && !command.supports.implicit) {
@@ -130,7 +134,8 @@ export function createBotApp(options: {
         const previewContext = await createMessageContext(rawMessage, {
           client: options.client,
           config: options.config,
-          services
+          services,
+          spintax
         })
 
         await options.events.emit({
@@ -173,7 +178,7 @@ export function createBotApp(options: {
       })
     },
     async sendMessage(chatId, text) {
-      await options.client.sendMessage(chatId, text)
+      await options.client.sendMessage(chatId, spintax.render(text))
     },
     async shutdown() {
       state.status = 'stopping'

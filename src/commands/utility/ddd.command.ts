@@ -101,7 +101,7 @@ export const dddCommand = defineCommand({
     const dddStr = extractDddArg(normalized, argsText, normalizedAliases)
 
     if (!dddStr || !/^\d{2}$/.test(dddStr)) {
-      await ctx.reply('Informe um DDD válido com 2 dígitos. Ex: *!ddd 34*')
+      await ctx.reply('{Informe|Mande} um DDD válido com 2 dígitos. Ex: *!ddd 34*')
       return
     }
 
@@ -111,7 +111,7 @@ export const dddCommand = defineCommand({
         `https://brasilapi.com.br/api/ddd/v1/${dddStr}`
       )
     } catch {
-      await ctx.reply(`DDD *${dddStr}* não encontrado. Verifique se é um DDD válido.`)
+      await ctx.reply(`DDD *${dddStr}* {não foi encontrado|não apareceu por aqui}. Verifique se é um DDD válido.`)
       return
     }
 
@@ -127,7 +127,7 @@ export const dddCommand = defineCommand({
         : cities.join(', ')
 
     await ctx.reply(
-      `📍 *DDD ${dddStr}* — ${stateName} (${data.state})\n\n🏙️ *Cidades (${cities.length}):* ${cityList}`
+      `{📍|☎️} *{DDD|Código} ${dddStr}* — ${stateName} (${data.state})\n\n🏙️ *{Cidades|Municípios} (${cities.length}):* ${cityList}`
     )
   }
 })

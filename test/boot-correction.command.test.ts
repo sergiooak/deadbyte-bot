@@ -65,6 +65,7 @@ describe('bootCorrectionCommand', () => {
     expect(message.reply).toHaveBeenCalledOnce()
     expect(message.reply.mock.calls[0]?.[0]).toContain('*bot*')
     expect(message.reply.mock.calls[0]?.[0]).toContain('https://pt.wikipedia.org/wiki/Bot')
+    expect(message.reply.mock.calls[0]?.[0]).not.toContain('{')
     expect(message.reply.mock.calls[0]?.[2]).toEqual({ linkPreview: false })
   })
 

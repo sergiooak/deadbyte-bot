@@ -23,7 +23,7 @@ function buildMenuText(
   prefix: string,
   commandConfig: CommandConfig
 ): string {
-  const lines: string[] = [`🤖 *DeadByte — Menu de Comandos*`, '']
+  const lines: string[] = [`{🤖|📋|🧭} *DeadByte — {Menu de Comandos|Comandos disponíveis|Ajuda}*`, '']
 
   const grouped = new Map<string, DeadByteCommand[]>()
 
@@ -48,7 +48,7 @@ function buildMenuText(
       const aliases = aliasesFor(commandConfig, cmd.id, cmd.aliases)
       const primary = `${prefix}${aliases[0]}`
       const rest = aliases.slice(1, 3).map((a) => `${prefix}${a}`)
-      const altStr = rest.length > 0 ? ` _(ou ${rest.join(', ')})_` : ''
+      const altStr = rest.length > 0 ? ` _({ou|também} ${rest.join(', ')})_` : ''
       lines.push(`• *${primary}*${altStr} — ${cmd.description}`)
     }
 

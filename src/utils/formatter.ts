@@ -15,5 +15,5 @@ export function formatRootSymbol(degree: number): string {
 }
 
 export function formatMathCommandOutput(explanation: string): string {
-  return /^[✅❌]/.test(explanation) ? explanation : `🧮 ${explanation}`
+  return /^[✅❌]/.test(explanation) ? explanation : `{🧮|📐|🔢} ${explanation}`
 }

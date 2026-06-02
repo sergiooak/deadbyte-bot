@@ -35,17 +35,17 @@ export const stickerToMediaCommand = defineCommand({
     try {
       media = await services.resolveTargetMedia?.()
     } catch {
-      await ctx.reply('Erro ao baixar a mídia. Tente novamente.')
+      await ctx.reply('{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}')
       return
     }
 
     if (!media) {
-      await ctx.reply('Responda uma figurinha para converter em imagem ou vídeo.')
+      await ctx.reply('{Responda|Marque} uma figurinha para {converter|transformar} em imagem ou vídeo.')
       return
     }
 
     if (media.mimeType !== 'image/webp') {
-      await ctx.reply(`Essa mídia não é uma figurinha. Tipo recebido: ${media.mimeType}`)
+      await ctx.reply(`Essa mídia {não é|não parece ser} uma figurinha. Tipo recebido: ${media.mimeType}`)
       return
     }
 
@@ -66,7 +66,7 @@ export const stickerToMediaCommand = defineCommand({
         await services.replyWithMedia?.({ buffer: pngBuffer, mimeType: 'image/png', filename: 'sticker.png' })
       }
     } catch {
-      await ctx.reply('Ocorreu um erro ao converter a figurinha. Tente novamente.')
+      await ctx.reply('{Ocorreu um erro|Falhei} ao converter a figurinha. {Tente novamente.|Pode tentar de novo.}')
     }
   }
 })

@@ -29,12 +29,12 @@ export const reactCommand = defineCommand({
     try {
       data = await fetchRandomEmoji()
     } catch {
-      await ctx.reply('Não foi possível obter um emoji no momento. Tente novamente.')
+      await ctx.reply('Não foi possível obter um emoji {no momento|agora}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
       return
     }
 
     if (!data) {
-      await ctx.reply('Não foi possível obter um emoji no momento. Tente novamente.')
+      await ctx.reply('Não foi possível obter um emoji {no momento|agora}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
       return
     }
 
