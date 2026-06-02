@@ -28,15 +28,72 @@ function renderSendOptions(
   }
 }
 
+function onlyDigits(value: string | undefined): string {
+  return value?.replace(/\D/g, '') ?? ''
+}
+
+function contactId(contact: { id?: { _serialized?: string; user?: string } }): string {
+  return contact.id?._serialized ?? contact.id?.user ?? ''
+}
+
+function contactUserId(contact: { id?: { _serialized?: string; user?: string } }): string {
+  const id = contactId(contact)
+  return contact.id?.user ?? id.replace(/@.+$/, '')
+}
+
+async function resolveContactPhoneMap(
+  client: WhatsappClientLike,
+  contacts: Array<{ id?: { _serialized?: string; user?: string } }>
+): Promise<Map<string, string>> {
+  if (!client.getContactLidAndPhone) return new Map()
+
+  const ids = [...new Set(contacts.map(contactId).filter((id) => id.includes('@lid')))]
+  if (ids.length === 0) return new Map()
+
+  const pairs = await client.getContactLidAndPhone(ids)
+  const entries: Array<[string, string]> = pairs.flatMap((pair) => {
+    const phone = onlyDigits(pair.pn)
+    if (!phone) return []
+
+    const lid = pair.lid.includes('@') ? pair.lid : `${pair.lid}@lid`
+    return [
+      [pair.lid, phone] as [string, string],
+      [lid, phone] as [string, string]
+    ]
+  })
+
+  return new Map(entries)
+}
+
+function mapContactWithResolvedPhone(
+  contact: { id?: { _serialized?: string; user?: string }; number?: string; name?: string; pushname?: string; isMe?: boolean; isMyContact?: boolean },
+  fallbackId: string,
+  phoneByLid: Map<string, string>
+) {
+  const id = contactId(contact)
+  const directPhone = id.endsWith('@c.us') ? onlyDigits(contactUserId(contact)) : ''
+  const resolvedPhone = phoneByLid.get(id)
+  const contactNumber = onlyDigits(contact.number)
+
+  return mapWhatsappContact(
+    {
+      ...contact,
+      number: directPhone || resolvedPhone || contactNumber || undefined
+    },
+    fallbackId
+  )
+}
+
 export async function createMessageContext(
   rawMessage: WhatsappMessageLike,
   options: CreateMessageContextOptions
 ): Promise<MessageContext> {
   const rawChat = rawMessage.getChat ? await rawMessage.getChat() : { id: { _serialized: rawMessage.from }, isGroup: false }
   const rawSender = rawMessage.getContact ? await rawMessage.getContact() : { id: { _serialized: rawMessage.author ?? rawMessage.from } }
+  const senderPhoneByLid = await resolveContactPhoneMap(options.client, [rawSender])
   const message = mapWhatsappMessage(rawMessage)
   const chat = mapWhatsappChat(rawChat, rawMessage.from)
-  const sender = mapWhatsappContact(rawSender, rawMessage.author ?? rawMessage.from)
+  const sender = mapContactWithResolvedPhone(rawSender, rawMessage.author ?? rawMessage.from, senderPhoneByLid)
   const target = await resolveTargetMessage(rawMessage)
   const parsedCommand = parseCommand(message.body, options.config.prefixes, options.config.fallbackPrefixes, {
     botId: options.client.info?.wid?._serialized
@@ -56,6 +113,23 @@ export async function createMessageContext(
     services: {
       ...options.services,
       resolveTargetMedia: () => downloadMessageMedia(target.rawTargetMessage),
+      resolveTargetContact: async () => {
+        const rawContact = target.rawTargetMessage.getContact
+          ? await target.rawTargetMessage.getContact()
+          : { id: { _serialized: target.rawTargetMessage.author ?? target.rawTargetMessage.from } }
+        const phoneByLid = await resolveContactPhoneMap(options.client, [rawContact])
+
+        return mapContactWithResolvedPhone(rawContact, target.rawTargetMessage.author ?? target.rawTargetMessage.from, phoneByLid)
+      },
+      resolveMentionedContacts: async () => {
+        if (rawMessage.getMentions) {
+          const rawMentions = await rawMessage.getMentions()
+          const phoneByLid = await resolveContactPhoneMap(options.client, rawMentions)
+          return rawMentions.map((contact) => mapContactWithResolvedPhone(contact, contact.id?._serialized ?? contact.id?.user ?? contact.number ?? '', phoneByLid))
+        }
+
+        return (message.mentionedIds ?? []).map((id) => mapWhatsappContact({ id: { _serialized: id } }, id))
+      },
       replyWithMedia: async (bufMedia: { buffer: Buffer; mimeType: string; filename?: string }) => {
         const media = bufferMediaToWhatsappMedia(bufMedia)
         await options.client.sendMessage(chat.id, media)

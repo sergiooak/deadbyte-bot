@@ -12,6 +12,11 @@ export type WhatsappContactLike = {
   isMyContact?: boolean
 }
 
+export type WhatsappLidPhoneLike = {
+  lid: string
+  pn: string
+}
+
 export type WhatsappChatLike = {
   id?: WhatsappIdLike
   name?: string
@@ -43,6 +48,7 @@ export type WhatsappMessageLike = {
   hasQuotedMsg?: boolean
   getChat?: () => Promise<WhatsappChatLike>
   getContact?: () => Promise<WhatsappContactLike>
+  getMentions?: () => Promise<WhatsappContactLike[]>
   getQuotedMessage?: () => Promise<WhatsappMessageLike>
   downloadMedia?: () => Promise<WhatsappMediaLike | undefined>
   reply?: (text: string, chatId?: string, options?: WhatsappMessageSendOptionsLike) => Promise<unknown>
@@ -60,4 +66,5 @@ export type WhatsappClientLike = {
   sendMessage: (chatId: string, content: unknown, options?: WhatsappMessageSendOptionsLike) => Promise<unknown>
   on: (event: string, listener: (...args: unknown[]) => void) => WhatsappClientLike
   getState?: () => Promise<string>
+  getContactLidAndPhone?: (userIds: string[]) => Promise<WhatsappLidPhoneLike[]>
 }

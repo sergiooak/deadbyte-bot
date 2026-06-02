@@ -1,8 +1,8 @@
 import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
 import { ofetch } from 'ofetch'
 import { sortCitiesByRelevance } from './ddd-data.helper.js'
+import { collectPhoneTargets, parsePhoneNumber } from './phone-code.helper.js'
 
-// Mapa de siglas de estado → nome completo
 const STATE_NAMES: Record<string, string> = {
   AC: 'Acre',
   AL: 'Alagoas',
@@ -30,7 +30,7 @@ const STATE_NAMES: Record<string, string> = {
   SC: 'Santa Catarina',
   SP: 'São Paulo',
   SE: 'Sergipe',
-  TO: 'Tocantins',
+  TO: 'Tocantins'
 }
 
 interface BrasilApiDddResponse {
@@ -46,16 +46,14 @@ function aliasesFor(
   return ctx.config.commands[commandId]?.aliases ?? defaults
 }
 
-/** Extrai o número de DDD tanto de "!ddd 34" quanto de "!ddd34" */
+/** Extrai o DDD tanto de "!ddd 34" quanto de "!ddd34". */
 function extractDddArg(
   normalizedName: string,
   argsText: string,
   normalizedAliases: string[]
 ): string {
-  // Caso: !ddd 34 → argsText = '34'
   if (argsText.trim()) return argsText.trim()
 
-  // Caso: !ddd34 → normalizedName = 'ddd34'
   for (const alias of normalizedAliases) {
     if (normalizedName.startsWith(alias) && normalizedName.length > alias.length) {
       return normalizedName.slice(alias.length)
@@ -63,6 +61,32 @@ function extractDddArg(
   }
 
   return ''
+}
+
+function normalizeCityName(city: string): string {
+  const titled = city
+    .toLocaleLowerCase('pt-BR')
+    .replace(/(^|\s|-|')\p{L}/gu, (match) => match.toLocaleUpperCase('pt-BR'))
+
+  return titled.replace(/\b(De|Da|Do|Das|Dos|E)\b/g, (match) => match.toLocaleLowerCase('pt-BR'))
+}
+
+async function lookupDdd(dddStr: string): Promise<string | undefined> {
+  let data: BrasilApiDddResponse
+
+  try {
+    data = await ofetch<BrasilApiDddResponse>(
+      `https://brasilapi.com.br/api/ddd/v1/${dddStr}`
+    )
+  } catch {
+    return undefined
+  }
+
+  const stateName = STATE_NAMES[data.state] ?? data.state
+  const cities = sortCitiesByRelevance(data.cities.map(normalizeCityName), data.state)
+  const cityList = cities.join(', ')
+
+  return `{📍|☎️} *{DDD|Código} ${dddStr}* — ${stateName} (${data.state})\n\n🏙️ *{Cidades|Municípios} (${cities.length}):* ${cityList}`
 }
 
 export const dddCommand = defineCommand({
@@ -84,7 +108,6 @@ export const dddCommand = defineCommand({
     const aliases = aliasesFor(ctx, 'utility.ddd', dddCommand.aliases)
     const normalizedAliases = aliases.map(normalizeCommandName)
 
-    // Aceita: !ddd 34 (normalized = 'ddd') ou !ddd34 (normalized = 'ddd34')
     return (
       normalizedAliases.includes(normalized) ||
       normalizedAliases.some(
@@ -97,37 +120,34 @@ export const dddCommand = defineCommand({
     const argsText = ctx.parsedCommand?.argsText ?? ''
     const aliases = aliasesFor(ctx, 'utility.ddd', dddCommand.aliases)
     const normalizedAliases = aliases.map(normalizeCommandName)
+    const argValue = extractDddArg(normalized, argsText, normalizedAliases)
+    const targets = await collectPhoneTargets(ctx, argValue)
 
-    const dddStr = extractDddArg(normalized, argsText, normalizedAliases)
-
-    if (!dddStr || !/^\d{2}$/.test(dddStr)) {
-      await ctx.reply('{Informe|Mande} um DDD válido com 2 dígitos. Ex: *!ddd 34*')
+    if (targets.length === 0) {
+      await ctx.reply('{Informe|Mande} um DDD, responda alguém ou marque a pessoa. Ex: *!ddd 34*')
       return
     }
 
-    let data: BrasilApiDddResponse
-    try {
-      data = await ofetch<BrasilApiDddResponse>(
-        `https://brasilapi.com.br/api/ddd/v1/${dddStr}`
-      )
-    } catch {
-      await ctx.reply(`DDD *${dddStr}* {não foi encontrado|não apareceu por aqui}. Verifique se é um DDD válido.`)
-      return
+    const replies: string[] = []
+
+    for (const target of targets) {
+      const parsed = parsePhoneNumber(target)
+      const ddd = parsed.kind === 'brazil' || parsed.kind === 'local' ? parsed.ddd : undefined
+
+      if (parsed.kind === 'international') {
+        replies.push(`*${target.label}*: isso aí tem cara de número gringo, meu consagrado. DDD é coisa de BR; usa *!ddi +${parsed.ddi}* e para de botar passaporte na fila do SUS.`)
+        continue
+      }
+
+      if (!ddd || !/^\d{2}$/.test(ddd)) {
+        replies.push(`*${target.label}*: me dá um DDD válido com 2 dígitos, criatura iluminada. Ex: *!ddd 34*`)
+        continue
+      }
+
+      const result = await lookupDdd(ddd)
+      replies.push(result ?? `*${target.label}*: DDD *${ddd}* não foi encontrado. Ou ele é inválido, ou você inventou telefonia freestyle.`)
     }
 
-    const stateName = STATE_NAMES[data.state] ?? data.state
-    const MAX_CITIES = 20
-    const cities = sortCitiesByRelevance(
-      data.cities.map((c) => c.charAt(0) + c.slice(1).toLowerCase())
-    )
-
-    const cityList =
-      cities.length > MAX_CITIES
-        ? cities.slice(0, MAX_CITIES).join(', ') + ` e mais ${cities.length - MAX_CITIES} cidades...`
-        : cities.join(', ')
-
-    await ctx.reply(
-      `{📍|☎️} *{DDD|Código} ${dddStr}* — ${stateName} (${data.state})\n\n🏙️ *{Cidades|Municípios} (${cities.length}):* ${cityList}`
-    )
+    await ctx.reply(replies.join('\n\n'))
   }
 })
