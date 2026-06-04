@@ -1,6 +1,38 @@
 # Changelog
 
 
+## v4.0.3
+
+[compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v4.0.2...v4.0.3)
+
+### 🚀 Enhancements
+
+- **ddd, ddi:** Enhance response messages with additional options and clarity ([a0d3d22](https://github.com/sergiooak/deadbyte-bot/commit/a0d3d22))
+- **dice:** Enhance roll notes and update message format ([f34b42e](https://github.com/sergiooak/deadbyte-bot/commit/f34b42e))
+
+### 🩹 Fixes
+
+- Resolve phone codes from WhatsApp contacts ([8c083cd](https://github.com/sergiooak/deadbyte-bot/commit/8c083cd))
+
+### 💅 Refactors
+
+- Move phone code lookup data to json ([77dc52c](https://github.com/sergiooak/deadbyte-bot/commit/77dc52c))
+- Centralize command alias matching ([9df301d](https://github.com/sergiooak/deadbyte-bot/commit/9df301d))
+- Extract sticker fit command factory ([1d59d79](https://github.com/sergiooak/deadbyte-bot/commit/1d59d79))
+
+### 📖 Documentation
+
+- Add refactor and improvement checklist ([8622fbe](https://github.com/sergiooak/deadbyte-bot/commit/8622fbe))
+- Record passing test baseline ([98e5cbd](https://github.com/sergiooak/deadbyte-bot/commit/98e5cbd))
+
+### ✅ Tests
+
+- **PhoneCodeCommands:** Improve reply assertions ([bad2097](https://github.com/sergiooak/deadbyte-bot/commit/bad2097))
+
+### ❤️ Contributors
+
+- Sergio Carvalho ([@sergiooak](https://github.com/sergiooak))
+
 ## v4.0.2
 
 [compare changes](https://github.com/sergiooak/deadbyte-bot/compare/v4.0.1...v4.0.2)

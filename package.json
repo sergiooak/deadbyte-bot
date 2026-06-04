@@ -1,6 +1,6 @@
 {
   "name": "deadbyte-bot",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "private": true,
   "description": "Runtime do bot DeadByte v4",
   "type": "module",
