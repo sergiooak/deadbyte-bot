@@ -1,18 +1,11 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
+import { matchesCommandAlias } from '../../utils/commands.js'
 
 /** Regex que valida expressões de dado: [N]dF[op][M] ex: 2d6+3, d20, 4d6*2 */
 const DICE_REGEX = /^(?<dice>\d*)d(?<faces>\d+)((?<op>[+\-*/])(?<mod>\d+))?$/i
 
 /** Aliases textuais para o comando (sem ser a expressão em si) */
 const NAMED_ALIASES = ['dado', 'dice', 'rolar', 'rola', 'd']
-
-function aliasesFor(
-  ctx: { config: { commands: Record<string, { aliases?: string[] }> } },
-  commandId: string,
-  defaults: string[]
-): string[] {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
-}
 
 /** Clamps e parseia a quantidade de dados (1–100) */
 function parseDiceCount(raw: string): number {
@@ -43,13 +36,12 @@ function applyModifier(total: number, op: string, mod: number): number {
 }
 
 /** Extrai a expressão de dado do rawName ou do argsText */
-function resolveExpression(rawName: string, argsText: string, namedAliases: string[]): string | null {
+function resolveExpression(isNamedAlias: boolean, rawName: string, argsText: string): string | null {
   // Modo 1: !2d6+3 → rawName é a própria expressão
   if (DICE_REGEX.test(rawName)) return rawName
 
   // Modo 2: !dado 2d6+3 → argsText é a expressão
-  const normalizedRaw = normalizeCommandName(rawName)
-  if (namedAliases.map(normalizeCommandName).includes(normalizedRaw)) {
+  if (isNamedAlias) {
     const arg = argsText.trim()
     if (DICE_REGEX.test(arg)) return arg
   }
@@ -74,16 +66,14 @@ export const diceCommand = defineCommand({
   async match(ctx) {
     const rawName = ctx.parsedCommand?.rawName ?? ''
     const argsText = ctx.parsedCommand?.argsText ?? ''
-    const aliases = aliasesFor(ctx, 'fun.dice', diceCommand.aliases)
 
-    return resolveExpression(rawName, argsText, aliases) !== null
+    return resolveExpression(matchesCommandAlias(ctx, 'fun.dice', diceCommand.aliases), rawName, argsText) !== null
   },
   async run(ctx) {
     const rawName = ctx.parsedCommand?.rawName ?? ''
     const argsText = ctx.parsedCommand?.argsText ?? ''
-    const aliases = aliasesFor(ctx, 'fun.dice', diceCommand.aliases)
 
-    const expression = resolveExpression(rawName, argsText, aliases)
+    const expression = resolveExpression(matchesCommandAlias(ctx, 'fun.dice', diceCommand.aliases), rawName, argsText)
 
     if (!expression) {
       await ctx.reply(

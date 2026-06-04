@@ -1,14 +1,7 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
+import { getNormalizedCommandAliases, matchesCommandAliasWithSuffix } from '../../utils/commands.js'
 import { flagEmoji, lookupDdi } from './ddi-data.helper.js'
 import { collectPhoneTargets, parsePhoneNumber } from './phone-code.helper.js'
-
-function aliasesFor(
-  ctx: { config: { commands: Record<string, { aliases?: string[] }> } },
-  commandId: string,
-  defaults: string[]
-): string[] {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
-}
 
 /** Extrai o DDI tanto de "!ddi 55" quanto de "!ddi55". */
 function extractDdiArg(
@@ -59,22 +52,12 @@ export const ddiCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName ?? ''
-    const aliases = aliasesFor(ctx, 'utility.ddi', ddiCommand.aliases)
-    const normalizedAliases = aliases.map(normalizeCommandName)
-
-    return (
-      normalizedAliases.includes(normalized) ||
-      normalizedAliases.some(
-        (a) => normalized.startsWith(a) && /^\d+$/.test(normalized.slice(a.length))
-      )
-    )
+    return matchesCommandAliasWithSuffix(ctx, 'utility.ddi', ddiCommand.aliases, /^\d+$/)
   },
   async run(ctx) {
     const normalized = ctx.parsedCommand?.normalizedName ?? ''
     const argsText = ctx.parsedCommand?.argsText ?? ''
-    const aliases = aliasesFor(ctx, 'utility.ddi', ddiCommand.aliases)
-    const normalizedAliases = aliases.map(normalizeCommandName)
+    const normalizedAliases = getNormalizedCommandAliases(ctx.config, 'utility.ddi', ddiCommand.aliases)
     const argValue = extractDdiArg(normalized, argsText, normalizedAliases)
     const targets = await collectPhoneTargets(ctx, argValue)
 

@@ -1,6 +1,7 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
+import { matchesCommandAlias } from '../../utils/commands.js'
 import { resolveStickerOptions } from './create-sticker.command.js'
 
 // Comando que força o fit "stretch": estica a mídia para preencher o quadrado sem recortar
@@ -24,9 +25,7 @@ export const stretchStickerCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    const aliases = ctx.config.commands['sticker.stretch']?.aliases ?? stretchStickerCommand.aliases
-    return Boolean(normalized && aliases.map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'sticker.stretch', stretchStickerCommand.aliases)
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices

@@ -1,5 +1,6 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 import { ofetch } from 'ofetch'
+import { getNormalizedCommandAliases, matchesCommandAliasWithSuffix } from '../../utils/commands.js'
 import { sortCitiesByRelevance } from './ddd-data.helper.js'
 import { collectPhoneTargets, parsePhoneNumber } from './phone-code.helper.js'
 
@@ -36,14 +37,6 @@ const STATE_NAMES: Record<string, string> = {
 interface BrasilApiDddResponse {
   state: string
   cities: string[]
-}
-
-function aliasesFor(
-  ctx: { config: { commands: Record<string, { aliases?: string[] }> } },
-  commandId: string,
-  defaults: string[]
-): string[] {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
 }
 
 /** Extrai o DDD tanto de "!ddd 34" quanto de "!ddd34". */
@@ -104,22 +97,12 @@ export const dddCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName ?? ''
-    const aliases = aliasesFor(ctx, 'utility.ddd', dddCommand.aliases)
-    const normalizedAliases = aliases.map(normalizeCommandName)
-
-    return (
-      normalizedAliases.includes(normalized) ||
-      normalizedAliases.some(
-        (a) => normalized.startsWith(a) && /^\d+$/.test(normalized.slice(a.length))
-      )
-    )
+    return matchesCommandAliasWithSuffix(ctx, 'utility.ddd', dddCommand.aliases, /^\d+$/)
   },
   async run(ctx) {
     const normalized = ctx.parsedCommand?.normalizedName ?? ''
     const argsText = ctx.parsedCommand?.argsText ?? ''
-    const aliases = aliasesFor(ctx, 'utility.ddd', dddCommand.aliases)
-    const normalizedAliases = aliases.map(normalizeCommandName)
+    const normalizedAliases = getNormalizedCommandAliases(ctx.config, 'utility.ddd', dddCommand.aliases)
     const argValue = extractDddArg(normalized, argsText, normalizedAliases)
     const targets = await collectPhoneTargets(ctx, argValue)
 

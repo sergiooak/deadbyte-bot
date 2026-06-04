@@ -1,18 +1,15 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 import sharp from 'sharp'
 import type { FfmpegService } from '../../services/media/ffmpeg.service.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import { StickerCommandConfigSchema, type StickerMetadata, type StickerRenderOptions } from '../../services/stickers/sticker.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
+import { matchesExplicitAlias } from '../../utils/commands.js'
 
 type StickerCommandServices = {
   stickers?: StickerService
   ffmpeg?: FfmpegService
   resolveTargetMedia?: () => Promise<BufferMedia | undefined>
-}
-
-function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string[] }> } }, commandId: string, defaults: string[]) {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
 }
 
 export function resolveStickerOptions(rawConfig: unknown): {
@@ -84,12 +81,7 @@ export const createStickerCommand = defineCommand({
     { key: 'defaultFit', label: 'Fit', type: 'select', defaultValue: 'contain', options: ['contain', 'cover'] }
   ],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    if (
-      ctx.parsedCommand?.explicit &&
-      normalized &&
-      aliasesFor(ctx, 'sticker.create', createStickerCommand.aliases).map(normalizeCommandName).includes(normalized)
-    ) {
+    if (matchesExplicitAlias(ctx, 'sticker.create', createStickerCommand.aliases)) {
       return true
     }
     const isPrivate = !ctx.chat.isGroup

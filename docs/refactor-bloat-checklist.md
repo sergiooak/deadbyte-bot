@@ -35,30 +35,30 @@ Decision needed:
 
 ## 2. Deduplicate Command Alias and Match Boilerplate
 
-- [ ] Create a shared alias helper.
-  - [ ] Replace repeated `aliasesFor()` implementations.
-  - [ ] Suggested API: `getCommandAliases(ctx.config, commandId, defaults)`.
-  - [ ] Suggested API: `matchesExplicitAlias(ctx, commandId, defaults)`.
-  - [ ] Cover prefix-normalized names through `normalizeCommandName()`.
-- [ ] Apply to small/simple commands first.
-  - [ ] `system.ping`
-  - [ ] `system.status`
-  - [ ] `system.time`
-  - [ ] `system.menu`
-  - [ ] `fun.emoji`
-  - [ ] `fun.react`
-- [ ] Then apply to more complex commands.
-  - [ ] `fun.math`
-  - [ ] `fun.dice`
-  - [ ] `fun.boot-correction`
-  - [ ] `utility.ddd`
-  - [ ] `utility.ddi`
-  - [ ] sticker commands
+[x] Create a shared alias helper.
+  - [x] Replace repeated `aliasesFor()` implementations.
+  - [x] Suggested API: `getCommandAliases(ctx.config, commandId, defaults)`.
+  - [x] Suggested API: `matchesExplicitAlias(ctx, commandId, defaults)`.
+  - [x] Cover prefix-normalized names through `normalizeCommandName()`.
+- [x] Apply to small/simple commands first.
+  - [x] `system.ping`
+  - [x] `system.status`
+  - [x] `system.time`
+  - [x] `system.menu`
+  - [x] `fun.emoji`
+  - [x] `fun.react`
+- [x] Then apply to more complex commands.
+  - [x] `fun.math`
+  - [x] `fun.dice`
+  - [x] `fun.boot-correction`
+  - [x] `utility.ddd`
+  - [x] `utility.ddi`
+  - [x] sticker commands
 
 Decision needed:
-- [ ] Choose whether this helper belongs in:
+- [x] Choose whether this helper belongs in:
   - [ ] `src/commands/command-utils.ts`
-  - [ ] `src/utils/commands.ts`
+  - [x] `src/utils/commands.ts`
   - [ ] runtime package later, if multiple DeadByte packages need it.
 
 ## 3. Extract Sticker Command Factory and Shared Media Flow

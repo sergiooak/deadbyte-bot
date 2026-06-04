@@ -1,6 +1,7 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
+import { matchesCommandAlias } from '../../utils/commands.js'
 import { resolveStickerOptions } from './create-sticker.command.js'
 
 // Comando que força o fit "contain": preserva proporção com fundo transparente
@@ -24,9 +25,7 @@ export const fitStickerCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    const aliases = ctx.config.commands['sticker.fit']?.aliases ?? fitStickerCommand.aliases
-    return Boolean(normalized && aliases.map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'sticker.fit', fitStickerCommand.aliases)
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices

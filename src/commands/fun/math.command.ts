@@ -1,17 +1,10 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 
 import { formatMathCommandOutput } from '../../utils/formatter'
+import { matchesCommandAlias } from '../../utils/commands.js'
 import { parseMathExpression } from '../../utils/math'
 
 const NAMED_ALIASES = ['calc', 'calcular', 'math', 'conta']
-
-function aliasesFor(
-  ctx: { config: { commands: Record<string, { aliases?: string[] }> } },
-  commandId: string,
-  defaults: string[]
-): string[] {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
-}
 
 function getExpressionText(ctx: { parsedCommand?: { explicit?: boolean; argsText: string }; message: { body: string } }): string {
   return ctx.parsedCommand?.explicit
@@ -36,9 +29,7 @@ export const mathCommand = defineCommand({
   configFields: [],
   async match(ctx) {
     if (ctx.parsedCommand?.explicit) {
-      const normalized = ctx.parsedCommand.normalizedName ?? ''
-      const aliases = aliasesFor(ctx, 'fun.math', mathCommand.aliases)
-      if (!aliases.map(normalizeCommandName).includes(normalized)) return false
+      if (!matchesCommandAlias(ctx, 'fun.math', mathCommand.aliases)) return false
 
       return parseMathExpression(ctx.parsedCommand.argsText.trim()) !== null
     }

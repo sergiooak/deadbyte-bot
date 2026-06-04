@@ -1,16 +1,13 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import type { StickerMetadata } from '../../services/stickers/sticker.types.js'
+import { matchesCommandAlias } from '../../utils/commands.js'
 import { resolveStickerOptions } from './create-sticker.command.js'
 
 type StickerCommandServices = {
   stickers?: StickerService
   resolveTargetMedia?: () => Promise<BufferMedia | undefined>
-}
-
-function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string[] }> } }, commandId: string, defaults: string[]) {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
 }
 
 // Parseia os metadados do sticker roubado com base nos argumentos do comando.
@@ -46,10 +43,7 @@ export const stealStickerCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(
-      normalized && aliasesFor(ctx, 'sticker.steal', stealStickerCommand.aliases).map(normalizeCommandName).includes(normalized)
-    )
+    return matchesCommandAlias(ctx, 'sticker.steal', stealStickerCommand.aliases)
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices

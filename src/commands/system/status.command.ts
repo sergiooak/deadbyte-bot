@@ -1,9 +1,6 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 import { formatUptime } from '../../app/create-bot-app.js'
-
-function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string[] }> } }, commandId: string, defaults: string[]) {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
-}
+import { matchesCommandAlias } from '../../utils/commands.js'
 
 export const statusCommand = defineCommand({
   id: 'system.status',
@@ -20,8 +17,7 @@ export const statusCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(normalized && aliasesFor(ctx, 'system.status', statusCommand.aliases).map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'system.status', statusCommand.aliases)
   },
   async run(ctx) {
     const runtime = ctx.services.runtime as { startedAt?: number } | undefined

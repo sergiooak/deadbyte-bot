@@ -1,4 +1,5 @@
-import { defineCommand, normalizeCommandName, type DeadByteCommand } from '@deadbyte/runtime'
+import { defineCommand, type DeadByteCommand } from '@deadbyte/runtime'
+import { getCommandAliases, matchesCommandAlias } from '../../utils/commands.js'
 
 type MenuServices = {
   commands?: DeadByteCommand[]
@@ -12,10 +13,6 @@ const GROUP_LABELS: Record<string, string> = {
 }
 
 type CommandConfig = Record<string, { aliases?: string[]; enabled?: boolean } | undefined>
-
-function aliasesFor(config: CommandConfig, commandId: string, defaults: string[]): string[] {
-  return config[commandId]?.aliases ?? defaults
-}
 
 // Monta o texto do menu agrupando os comandos habilitados por grupo
 function buildMenuText(
@@ -45,7 +42,7 @@ function buildMenuText(
     lines.push(`*${label}*`)
 
     for (const cmd of cmds) {
-      const aliases = aliasesFor(commandConfig, cmd.id, cmd.aliases)
+      const aliases = getCommandAliases({ commands: commandConfig }, cmd.id, cmd.aliases)
       const primary = `${prefix}${aliases[0]}`
       const rest = aliases.slice(1, 3).map((a) => `${prefix}${a}`)
       const altStr = rest.length > 0 ? ` _({ou|também} ${rest.join(', ')})_` : ''
@@ -73,13 +70,7 @@ export const menuCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    const aliases = aliasesFor(
-      ctx.config.commands as CommandConfig,
-      'system.menu',
-      menuCommand.aliases
-    )
-    return Boolean(normalized && aliases.map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'system.menu', menuCommand.aliases)
   },
   async run(ctx) {
     const services = ctx.services as MenuServices

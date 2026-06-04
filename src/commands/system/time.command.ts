@@ -1,13 +1,10 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
+import { matchesCommandAlias } from '../../utils/commands.js'
 import { buildShortLocationName, clockEmoji, formatUtcOffset, getTimeForLocation, getUtcOffsetMinutes } from './time.helper.js'
 
 const BRASILIA_TZ = 'America/Sao_Paulo'
 
 const DEFAULT_LOCATION = 'Brasília, Brasil'
-
-function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string[] }> } }, commandId: string, defaults: string[]) {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
-}
 
 export const timeCommand = defineCommand({
   id: 'system.time',
@@ -24,8 +21,7 @@ export const timeCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(normalized && aliasesFor(ctx, 'system.time', timeCommand.aliases).map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'system.time', timeCommand.aliases)
   },
   async run(ctx) {
     const query = ctx.parsedCommand?.argsText?.trim() || DEFAULT_LOCATION

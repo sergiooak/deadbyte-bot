@@ -1,8 +1,5 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
-
-function aliasesFor(ctx: { config: { commands: Record<string, { aliases?: string[] }> } }, commandId: string, defaults: string[]) {
-  return ctx.config.commands[commandId]?.aliases ?? defaults
-}
+import { defineCommand } from '@deadbyte/runtime'
+import { matchesCommandAlias } from '../../utils/commands.js'
 
 export const pingCommand = defineCommand({
   id: 'system.ping',
@@ -19,8 +16,7 @@ export const pingCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(normalized && aliasesFor(ctx, 'system.ping', pingCommand.aliases).map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'system.ping', pingCommand.aliases)
   },
   async run(ctx) {
     await ctx.reply('{pong|pong!|online por aqui|tô vivo}')

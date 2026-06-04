@@ -1,5 +1,6 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
-import { aliasesFor, decodeHtmlEntity, fetchRandomEmoji } from './emoji-hub.helper.js'
+import { defineCommand } from '@deadbyte/runtime'
+import { matchesCommandAlias } from '../../utils/commands.js'
+import { decodeHtmlEntity, fetchRandomEmoji } from './emoji-hub.helper.js'
 
 export const emojiCommand = defineCommand({
   id: 'fun.emoji',
@@ -16,8 +17,7 @@ export const emojiCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    return Boolean(normalized && aliasesFor(ctx, 'fun.emoji', emojiCommand.aliases).map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'fun.emoji', emojiCommand.aliases)
   },
   async run(ctx) {
     let data

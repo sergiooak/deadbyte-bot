@@ -1,7 +1,8 @@
-import { defineCommand, normalizeCommandName } from '@deadbyte/runtime'
+import { defineCommand } from '@deadbyte/runtime'
 import sharp from 'sharp'
 import type { FfmpegService } from '../../services/media/ffmpeg.service.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
+import { matchesCommandAlias } from '../../utils/commands.js'
 
 type StickerToMediaServices = {
   ffmpeg?: FfmpegService
@@ -24,9 +25,7 @@ export const stickerToMediaCommand = defineCommand({
   },
   configFields: [],
   async match(ctx) {
-    const normalized = ctx.parsedCommand?.normalizedName
-    const aliases = ctx.config.commands['sticker.to-media']?.aliases ?? stickerToMediaCommand.aliases
-    return Boolean(normalized && aliases.map(normalizeCommandName).includes(normalized))
+    return matchesCommandAlias(ctx, 'sticker.to-media', stickerToMediaCommand.aliases)
   },
   async run(ctx) {
     const services = ctx.services as StickerToMediaServices
