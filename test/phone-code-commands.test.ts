@@ -112,7 +112,10 @@ describe('phone code commands', () => {
     expect(ctx.reply).toHaveBeenCalledOnce()
     expect(ofetch).toHaveBeenCalledOnce()
     const reply = vi.mocked(ctx.reply).mock.calls[0]?.[0] ?? ''
-    expect(reply).toContain('*{DDD|Código} 34*')
+    expect(reply).toContain('DDD|Código')
+    expect(reply).toContain('34*')
+    expect(reply).toContain('Minas Gerais')
+    expect(reply).toContain('MG')
     expect(reply).toContain('Uberlândia')
     expect(reply).toContain('número gringo')
   })
@@ -169,8 +172,11 @@ describe('phone code commands', () => {
     await dddCommand.run(ctx)
 
     expect(ctx.reply).toHaveBeenCalledOnce()
-    expect(vi.mocked(ctx.reply).mock.calls[0]?.[0]).toContain('responda alguém ou marque a pessoa')
-    expect(vi.mocked(ctx.reply).mock.calls[0]?.[0]).not.toContain('!ddi +47')
+    const reply = vi.mocked(ctx.reply).mock.calls[0]?.[0] ?? ''
+    expect(reply).toContain('um DDD')
+    expect(reply).toContain('marque a pessoa')
+    expect(reply).toContain('!ddd 34')
+    expect(reply).not.toContain('!ddi +47')
     expect(ofetch).not.toHaveBeenCalled()
   })
 
@@ -201,7 +207,8 @@ describe('phone code commands', () => {
 
     expect(ctx.reply).toHaveBeenCalledOnce()
     const reply = vi.mocked(ctx.reply).mock.calls[0]?.[0] ?? ''
-    expect(reply).toContain('*{DDI|Código} +351*')
+    expect(reply).toContain('DDI|Código')
+    expect(reply).toContain('+351*')
     expect(reply).toContain('Portugal')
   })
 })
