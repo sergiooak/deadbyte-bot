@@ -63,24 +63,24 @@ Decision needed:
 
 ## 3. Extract Sticker Command Factory and Shared Media Flow
 
-- [ ] Create a shared sticker command flow for media-based sticker creation.
-  - [ ] Extract repeated `resolveTargetMedia()` try/catch.
-  - [ ] Extract common "missing media" reply.
-  - [ ] Extract common "sticker service unavailable" handling.
-  - [ ] Extract `createSticker()` + `replyWithSticker()` path.
-- [ ] Replace triplicated fit commands.
-  - [ ] Convert `sticker.fit` to a factory call with `fit: 'contain'`.
-  - [ ] Convert `sticker.crop` to a factory call with `fit: 'cover'`.
-  - [ ] Convert `sticker.stretch` to a factory call with `fit: 'stretch'`.
-- [ ] Keep specialized commands explicit where needed.
-  - [ ] Keep `sticker.create` custom because it can emit both contain and crop versions.
-  - [ ] Keep `sticker.steal` custom for metadata parsing.
-  - [ ] Keep `sticker.to-media` custom for WebP-to-PNG/MP4 conversion.
-- [ ] Add focused tests for all sticker command variants after extraction.
+[x] Create a shared sticker command flow for media-based sticker creation.
+  - [x] Extract repeated `resolveTargetMedia()` try/catch.
+  - [x] Extract common "missing media" reply.
+  - [x] Extract common "sticker service unavailable" handling.
+  - [x] Extract `createSticker()` + `replyWithSticker()` path.
+- [x] Replace triplicated fit commands.
+  - [x] Convert `sticker.fit` to a factory call with `fit: 'contain'`.
+  - [x] Convert `sticker.crop` to a factory call with `fit: 'cover'`.
+  - [x] Convert `sticker.stretch` to a factory call with `fit: 'stretch'`.
+- [x] Keep specialized commands explicit where needed.
+  - [x] Keep `sticker.create` custom because it can emit both contain and crop versions.
+  - [x] Keep `sticker.steal` custom for metadata parsing.
+  - [x] Keep `sticker.to-media` custom for WebP-to-PNG/MP4 conversion.
+- [x] Add focused tests for all sticker command variants after extraction.
 
 Decision needed:
-- [ ] Choose abstraction shape:
-  - [ ] `defineStickerFitCommand(options)` factory.
+- [x] Choose abstraction shape:
+  - [x] `defineStickerFitCommand(options)` factory.
   - [ ] Shared `runStickerCreation(ctx, options)` helper used inside regular commands.
   - [ ] Hybrid: helper first, factory only if the commands become nearly empty.
 

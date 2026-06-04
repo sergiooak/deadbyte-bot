@@ -1,53 +1,9 @@
-import { defineCommand } from '@deadbyte/runtime'
-import type { BufferMedia } from '../../services/media/media.types.js'
-import type { StickerService } from '../../services/stickers/sticker.service.js'
-import { matchesCommandAlias } from '../../utils/commands.js'
-import { resolveStickerOptions } from './create-sticker.command.js'
+import { defineStickerFitCommand } from './sticker-fit-command.factory.js'
 
-// Comando que força o fit "stretch": estica a mídia para preencher o quadrado sem recortar
-type StickerCommandServices = {
-  stickers?: StickerService
-  resolveTargetMedia?: () => Promise<BufferMedia | undefined>
-}
-
-export const stretchStickerCommand = defineCommand({
+export const stretchStickerCommand = defineStickerFitCommand({
   id: 'sticker.stretch',
-  group: 'sticker',
   name: 'Sticker stretch',
   description: 'Converte mídia em sticker com fit "stretch" (estica para preencher o quadrado, sem recortar).',
   aliases: ['fe', 'estica', 'stretch', 'ss', 'achatada', 'achatado'],
-  enabledByDefault: true,
-  ownerOnlyByDefault: false,
-  supports: {
-    private: true,
-    groups: true,
-    implicit: false
-  },
-  configFields: [],
-  async match(ctx) {
-    return matchesCommandAlias(ctx, 'sticker.stretch', stretchStickerCommand.aliases)
-  },
-  async run(ctx) {
-    const services = ctx.services as StickerCommandServices
-    let media: BufferMedia | undefined
-    try {
-      media = await services.resolveTargetMedia?.()
-    } catch {
-      await ctx.reply('{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}')
-      return
-    }
-    if (!media) {
-      await ctx.reply('{Envie|Mande} ou {responda|marque} uma imagem/vídeo/sticker para {criar|fazer} a figurinha{.|!}')
-      return
-    }
-
-    try {
-      const { metadata, options } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
-      const sticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'stretch' })
-      if (!sticker) throw new Error('Sticker service is not available.')
-      await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
-    } catch {
-      await ctx.reply('{Erro|Falhei} ao criar a figurinha. {Tente novamente.|Pode tentar de novo.}')
-    }
-  }
+  fit: 'stretch'
 })
