@@ -16,20 +16,20 @@ This checklist captures the repo review findings from 2026-06-04. It is meant to
 
 ## 1. Move Giant Static Lookup Data Out of Command Code
 
-- [ ] Refactor `src/commands/utility/ddd-data.helper.ts`.
-  - [ ] Move the 5,632-line `CITY_POPULATION_RANK` dataset out of command/helper code.
-  - [ ] Create a data-focused location such as `src/data/ddd-city-population-rank.json`.
-  - [ ] Keep only ranking behavior in TypeScript, e.g. `sortCitiesByRelevance()`.
-  - [ ] Add a small test for ordering by city/state after extraction.
-  - [ ] Confirm build output handles JSON import cleanly with current ESM/unbuild setup.
-- [ ] Refactor `src/commands/utility/ddi-data.helper.ts`.
-  - [ ] Decide whether `DDI_MAP` stays as TS or moves to JSON with a typed loader.
-  - [ ] Keep `flagEmoji()` and `lookupDdi()` as the stable public API.
-  - [ ] Add/keep tests for shared codes such as `1`, `7`, and single-country codes such as `351`.
+[x] Refactor `src/commands/utility/ddd-data.helper.ts`.
+  - [x] Move the 5,632-line `CITY_POPULATION_RANK` dataset out of command/helper code.
+  - [x] Create a data-focused location such as `src/data/ddd-city-population-rank.json`.
+  - [x] Keep only ranking behavior in TypeScript, e.g. `sortCitiesByRelevance()`.
+  - [x] Add a small test for ordering by city/state after extraction.
+  - [x] Confirm build output handles JSON import cleanly with current ESM/unbuild setup.
+- [x] Refactor `src/commands/utility/ddi-data.helper.ts`.
+  - [x] Decide whether `DDI_MAP` stays as TS or moves to JSON with a typed loader.
+  - [x] Keep `flagEmoji()` and `lookupDdi()` as the stable public API.
+  - [x] Add/keep tests for shared codes such as `1`, `7`, and single-country codes such as `351`.
 
 Decision needed:
-- [ ] Choose data strategy:
-  - [ ] JSON imported at runtime/build time.
+- [x] Choose data strategy:
+  - [x] JSON imported at runtime/build time.
   - [ ] Generated `.ts` data file kept out of command folders.
   - [ ] External package/API if accuracy and updates matter more than zero dependency cost.
 
