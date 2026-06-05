@@ -17,8 +17,9 @@ import { StickerExifService } from '../services/stickers/sticker-exif.service.js
 import { StickerRendererService } from '../services/stickers/sticker-renderer.service.js'
 import { StickerService } from '../services/stickers/sticker.service.js'
 import { SpintaxService } from '../services/text/spintax.service.js'
+import { GroupConfigService } from '../groups/group-config.service.js'
 import { readBotEnv } from '../utils/env.js'
-import type { WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
+import type { WhatsappChatLike, WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
 
 export type BotState = {
   status: 'created' | 'starting' | 'waiting_qr' | 'authenticated' | 'ready' | 'disconnected' | 'stopping' | 'stopped' | 'error'
@@ -65,10 +66,13 @@ export function createBotApp(options: {
     options.events
   )
   const spintax = new SpintaxService()
+  const groupConfigs = new GroupConfigService()
   const services: Record<string, unknown> = {
     stickers,
     ffmpeg,
     spintax,
+    groupConfigs,
+    whatsappClient: options.client,
     runtime: state,
     commands: options.bot.commands
   }
@@ -150,6 +154,10 @@ export function createBotApp(options: {
           },
           timestamp: new Date().toISOString()
         })
+
+        if (previewContext.chat.isGroup) {
+          await groupConfigs.ensureLoaded(previewContext.services.rawChat as WhatsappChatLike)
+        }
 
         const isExplicit = previewContext.parsedCommand?.explicit === true
         const normalized = previewContext.parsedCommand?.normalizedName

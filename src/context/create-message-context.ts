@@ -112,6 +112,8 @@ export async function createMessageContext(
     config: options.config,
     services: {
       ...options.services,
+      rawChat,
+      whatsappClient: options.client,
       resolveTargetMedia: () => downloadMessageMedia(target.rawTargetMessage),
       resolveTargetContact: async () => {
         const rawContact = target.rawTargetMessage.getContact

@@ -5,10 +5,12 @@ import type { BufferMedia } from '../../services/media/media.types.js'
 import { StickerCommandConfigSchema, type StickerMetadata, type StickerRenderOptions } from '../../services/stickers/sticker.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
+import type { GroupConfigService } from '../../groups/group-config.service.js'
 
 type StickerCommandServices = {
   stickers?: StickerService
   ffmpeg?: FfmpegService
+  groupConfigs?: GroupConfigService
   resolveTargetMedia?: () => Promise<BufferMedia | undefined>
 }
 
@@ -86,7 +88,10 @@ export const createStickerCommand = defineCommand({
     }
     const isPrivate = !ctx.chat.isGroup
     const isMedia = ctx.message.hasMedia && ['image', 'video', 'gif'].includes(ctx.message.type ?? '')
-    return isPrivate && isMedia
+    if (isPrivate) return isMedia
+
+    const services = ctx.services as StickerCommandServices
+    return isMedia && services.groupConfigs?.get(ctx.chat.id).sticker === true
   },
   async run(ctx) {
     const services = ctx.services as StickerCommandServices
@@ -104,16 +109,22 @@ export const createStickerCommand = defineCommand({
 
     try {
       const { metadata, options, squareThreshold } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
+      const groupConfig = ctx.chat.isGroup ? services.groupConfigs?.get(ctx.chat.id) : undefined
+      const groupMetadata = {
+        ...metadata,
+        packName: groupConfig?.pacote ?? metadata.packName,
+        packPublisher: groupConfig?.autor ?? metadata.packPublisher
+      }
 
       // Sempre envia a figurinha com contain (fit)
-      const fitSticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'contain' })
+      const fitSticker = await services.stickers?.createSticker(media, groupMetadata, { ...options, fit: 'contain' })
       if (!fitSticker) throw new Error('Sticker service is not available.')
       await ctx.replyWithSticker(fitSticker.buffer, fitSticker.mimeType)
 
       // Se não for quadrada o suficiente, também envia a versão crop (cover)
       const square = await isSquareEnough(media, squareThreshold, services.ffmpeg)
       if (!square) {
-        const cropSticker = await services.stickers?.createSticker(media, metadata, { ...options, fit: 'cover' })
+        const cropSticker = await services.stickers?.createSticker(media, groupMetadata, { ...options, fit: 'cover' })
         if (cropSticker) {
           await ctx.replyWithSticker(cropSticker.buffer, cropSticker.mimeType)
         }

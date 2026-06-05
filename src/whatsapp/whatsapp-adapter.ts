@@ -12,6 +12,12 @@ export type WhatsappContactLike = {
   isMyContact?: boolean
 }
 
+export type WhatsappGroupParticipantLike = {
+  id?: WhatsappIdLike
+  isAdmin?: boolean
+  isSuperAdmin?: boolean
+}
+
 export type WhatsappLidPhoneLike = {
   lid: string
   pn: string
@@ -21,7 +27,11 @@ export type WhatsappChatLike = {
   id?: WhatsappIdLike
   name?: string
   isGroup?: boolean
+  description?: string
+  participants?: WhatsappGroupParticipantLike[]
   sendMessage?: (content: unknown, options?: Record<string, unknown>) => Promise<unknown>
+  setDescription?: (description: string) => Promise<unknown>
+  fetch?: () => Promise<WhatsappChatLike>
 }
 
 export type WhatsappMediaLike = {
@@ -67,4 +77,13 @@ export type WhatsappClientLike = {
   on: (event: string, listener: (...args: unknown[]) => void) => WhatsappClientLike
   getState?: () => Promise<string>
   getContactLidAndPhone?: (userIds: string[]) => Promise<WhatsappLidPhoneLike[]>
+  getChatById?: (chatId: string) => Promise<WhatsappChatLike>
+}
+
+export type WhatsappGroupNotificationLike = {
+  chatId?: string
+  id?: WhatsappIdLike
+  author?: string
+  recipientIds?: string[]
+  recipients?: string[]
 }

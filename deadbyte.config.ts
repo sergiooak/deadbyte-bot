@@ -33,6 +33,22 @@ export default defineDeadByteConfig({
       enabled: true,
       aliases: ['hora', 'time', 'horas', 'horario']
     },
+    'group.config': {
+      enabled: true,
+      aliases: ['config']
+    },
+    'group.config-on': {
+      enabled: true,
+      aliases: ['on']
+    },
+    'group.config-off': {
+      enabled: true,
+      aliases: ['off']
+    },
+    'group.config-set': {
+      enabled: true,
+      aliases: ['set']
+    },
     'sticker.create': {
       enabled: true,
       aliases: ['s', 'sticker', 'f', 'fig', 'figurinha'],
