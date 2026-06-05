@@ -5,6 +5,15 @@ export function serializedId(value: { _serialized?: string; user?: string } | un
   return value?._serialized ?? value?.user ?? fallback
 }
 
+export function normalizeWhatsappMentionIds(mentionedIds: WhatsappMessageLike['mentionedIds']): string[] {
+  return (mentionedIds ?? []).flatMap((mention) => {
+    if (typeof mention === 'string') return mention ? [mention] : []
+
+    const id = serializedId(mention)
+    return id ? [id] : []
+  })
+}
+
 export function mapWhatsappMessage(message: WhatsappMessageLike): DeadByteMessage {
   return {
     id: serializedId(message.id, `${message.from}:${message.timestamp ?? Date.now()}`),
@@ -17,7 +26,7 @@ export function mapWhatsappMessage(message: WhatsappMessageLike): DeadByteMessag
     hasMedia: message.hasMedia ?? false,
     isForwarded: message.isForwarded,
     isStatus: message.isStatus,
-    mentionedIds: message.mentionedIds
+    mentionedIds: normalizeWhatsappMentionIds(message.mentionedIds)
   }
 }
 
