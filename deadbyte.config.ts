@@ -49,6 +49,62 @@ export default defineDeadByteConfig({
       enabled: true,
       aliases: ['set']
     },
+    'group.open': {
+      enabled: true,
+      aliases: ['abrir', 'open']
+    },
+    'group.close': {
+      enabled: true,
+      aliases: ['fechar', 'close']
+    },
+    'group.promote': {
+      enabled: true,
+      aliases: ['promover', 'promote', 'promove']
+    },
+    'group.demote': {
+      enabled: true,
+      aliases: ['rebaixar', 'demote', 'rebaixa']
+    },
+    'group.ban': {
+      enabled: true,
+      aliases: ['ban', 'banir', 'kick', 'remover']
+    },
+    'group.add': {
+      enabled: true,
+      aliases: ['adicionar', 'add']
+    },
+    'group.delete': {
+      enabled: true,
+      aliases: ['deletar', 'delete', 'apagar']
+    },
+    'group.call-admins': {
+      enabled: true,
+      aliases: ['adm', 'admins', 'adms']
+    },
+    'group.everyone': {
+      enabled: true,
+      aliases: ['todos', 'all']
+    },
+    'group.giveaway': {
+      enabled: true,
+      aliases: ['sorteio', 'sortear']
+    },
+    'group.giveaway-admins': {
+      enabled: true,
+      aliases: ['sorteioadm', 'sortearadm']
+    },
+    'group.russian-roulette': {
+      enabled: true,
+      aliases: ['roleta', 'roletarussa', 'russianroulette']
+    },
+    'group.rules': {
+      enabled: true,
+      aliases: ['regras', 'rules']
+    },
+    'group.membership-requests': {
+      enabled: true,
+      aliases: ['solicitacoes', 'solicitacao', 'pedidos', 'requests']
+    },
     'sticker.create': {
       enabled: true,
       aliases: ['s', 'sticker', 'f', 'fig', 'figurinha'],
@@ -96,6 +152,10 @@ export default defineDeadByteConfig({
     'fun.boot-correction': {
       enabled: true,
       aliases: ['boot']
+    },
+    'fun.coin': {
+      enabled: true,
+      aliases: ['moeda', 'coin', 'caraoucoroa', 'cara-coroa']
     },
     'utility.ddd': {
       enabled: true,
