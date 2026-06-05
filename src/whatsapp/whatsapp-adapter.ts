@@ -18,6 +18,12 @@ export type WhatsappGroupParticipantLike = {
   isSuperAdmin?: boolean
 }
 
+export type WhatsappGroupMembershipRequestLike = {
+  id?: WhatsappIdLike | string
+  requesterId?: WhatsappIdLike | string
+  participantId?: WhatsappIdLike | string
+}
+
 export type WhatsappLidPhoneLike = {
   lid: string
   pn: string
@@ -30,6 +36,15 @@ export type WhatsappChatLike = {
   description?: string
   participants?: WhatsappGroupParticipantLike[]
   sendMessage?: (content: unknown, options?: Record<string, unknown>) => Promise<unknown>
+  fetchMessages?: (searchOptions: { limit?: number; fromMe?: boolean }) => Promise<WhatsappMessageLike[]>
+  setMessagesAdminsOnly?: (adminsOnly?: boolean) => Promise<unknown>
+  promoteParticipants?: (participantIds: string[]) => Promise<unknown>
+  demoteParticipants?: (participantIds: string[]) => Promise<unknown>
+  removeParticipants?: (participantIds: string[]) => Promise<unknown>
+  addParticipants?: (participantIds: string[], options?: Record<string, unknown>) => Promise<unknown>
+  getGroupMembershipRequests?: () => Promise<WhatsappGroupMembershipRequestLike[]>
+  approveGroupMembershipRequests?: (options?: Record<string, unknown>) => Promise<unknown>
+  rejectGroupMembershipRequests?: (options?: Record<string, unknown>) => Promise<unknown>
   setDescription?: (description: string) => Promise<unknown>
   fetch?: () => Promise<WhatsappChatLike>
 }
@@ -54,13 +69,14 @@ export type WhatsappMessageLike = {
   hasMedia?: boolean
   isForwarded?: boolean
   isStatus?: boolean
-  mentionedIds?: string[]
+  mentionedIds?: Array<string | WhatsappIdLike>
   hasQuotedMsg?: boolean
   getChat?: () => Promise<WhatsappChatLike>
   getContact?: () => Promise<WhatsappContactLike>
   getMentions?: () => Promise<WhatsappContactLike[]>
   getQuotedMessage?: () => Promise<WhatsappMessageLike>
   downloadMedia?: () => Promise<WhatsappMediaLike | undefined>
+  delete?: (everyone?: boolean, clearMedia?: boolean) => Promise<unknown>
   reply?: (text: string, chatId?: string, options?: WhatsappMessageSendOptionsLike) => Promise<unknown>
   react?: (emoji: string) => Promise<unknown>
 }
