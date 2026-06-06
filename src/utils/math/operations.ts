@@ -62,8 +62,8 @@ export function parseValidationExpression(expr: string): MathResult | null {
     expression: expr,
     result: isCorrect ? 1 : 0,
     explanation: isCorrect
-      ? `✅ Correto\n${left.explanation}\n${normalizedLeft} = ${formatNumber(rightEvaluation.result)}`
-      : `❌ Errado\n${left.explanation}\n${expected}`,
+      ? `✅ {Correto|Certo|Certa resposta (com a voz do Silvio Santos)}\n${left.explanation}\n${normalizedLeft} = ${formatNumber(rightEvaluation.result)}`
+      : `❌ {Errado|Incorreto|Resposta errada|Ta errado|Acertou miserável 🤣}\n${left.explanation}\n${expected}`,
   }
 }
 
