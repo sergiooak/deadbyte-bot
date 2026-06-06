@@ -86,24 +86,24 @@ Decision needed:
 
 ## 4. Move Spintax and Personality Copy Out of Behavior Files
 
-- [ ] Extract large response templates from command files.
-  - [ ] Move `CORRECTION_MESSAGE` from `fun.boot-correction`.
-  - [ ] Move long DDD international/invalid responses.
-  - [ ] Move long DDI invalid/local/Brazil responses.
-  - [ ] Move repeated sticker error replies into one message catalog.
-- [ ] Use named message helpers.
-  - [ ] Example: `phoneMessages.dddInternational(target, parsed)`.
-  - [ ] Example: `stickerMessages.mediaDownloadFailed`.
-  - [ ] Example: `stickerMessages.missingMedia`.
-- [ ] Reduce test brittleness.
-  - [ ] Test branch behavior and essential facts, not exact spintax variants.
-  - [ ] Keep snapshots only for stable, non-spintax outputs.
-  - [ ] Consider testing rendered text with a deterministic spintax seed if supported later.
+- [x] Extract large response templates from command files.
+  - [x] Move `CORRECTION_MESSAGE` from `fun.boot-correction`.
+  - [x] Move long DDD international/invalid responses.
+  - [x] Move long DDI invalid/local/Brazil responses.
+  - [x] Move repeated sticker error replies into one message catalog.
+- [x] Use named message helpers.
+  - [x] Example: `phoneMessages.dddInternational(target, parsed)`.
+  - [x] Example: `stickerMessages.mediaDownloadFailed`.
+  - [x] Example: `stickerMessages.missingMedia`.
+- [x] Reduce test brittleness.
+  - [x] Test branch behavior and essential facts, not exact spintax variants.
+  - [x] Keep snapshots only for stable, non-spintax outputs.
+  - [x] Consider testing rendered text with a deterministic spintax seed if supported later.
 
 Decision needed:
-- [ ] Choose message organization:
+- [x] Choose message organization:
   - [ ] Per-domain files, e.g. `src/commands/utility/phone-code.messages.ts`.
-  - [ ] Central catalog, e.g. `src/messages/*.ts`.
+  - [x] Central catalog, e.g. `src/messages/*.ts`.
   - [ ] Plain JSON/template files if copy should be editable by non-code contributors.
 
 ## 5. Avoid Building Message Context Twice
