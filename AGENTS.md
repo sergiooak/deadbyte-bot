@@ -96,6 +96,7 @@ Skills live in [.agents/](.agents/) and are invocable as slash commands in chat.
 | Skill | Trigger | Purpose |
 |-------|---------|---------|
 | [commits](.agents/commits/SKILL.md) | `/commits` | Review changes, group by topic, generate Conventional Commit messages, and optionally stage + commit. Accepts `commit`, `review`, or `plan` as arguments. |
+| [deadbyte-replies](.agents/deadbyte-replies/SKILL.md) | `/deadbyte-replies` | Keep WhatsApp-facing replies in message catalogs with natural pt-BR spintax variation and DeadByte tone. |
 | [find-skills](.agents/find-skills/SKILL.md) | `/find-skills` | Search the [skills.sh](https://skills.sh/) ecosystem for installable agent skills when you need a new capability. |
 
 ## Tech Stack
