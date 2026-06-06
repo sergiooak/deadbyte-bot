@@ -3,7 +3,7 @@
 // 
 
 const casualPrefix =
-  '{|{Pô|Poxa|Porra|Se liga} {véi|mano|bro|brother|bixo|bicho}{| kk}{||!|}\n\n}'
+  '{|{Pô|Poxa|Porra|Se liga|Uai} {véi|mano|bro|brother|bixo|bicho}{| kk}{||!|}\n\n}'
 
 const errorPrefix =
   '{|{Opa|Oops|Eita|Putz|Vixe|Vish|Uai|Porra{| caralho}|Caralho}{!|!!|!!!} }'
