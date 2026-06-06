@@ -13,7 +13,3 @@ export function formatRootSymbol(degree: number): string {
   if (degree === 4) return '∜'
   return `${degree}√`
 }
-
-export function formatMathCommandOutput(explanation: string): string {
-  return /^[✅❌]/.test(explanation) ? explanation : `{🧮|📐|🔢} ${explanation}`
-}

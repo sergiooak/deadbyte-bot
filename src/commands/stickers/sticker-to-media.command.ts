@@ -1,5 +1,6 @@
 import { defineCommand } from '@deadbyte/runtime'
 import sharp from 'sharp'
+import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { FfmpegService } from '../../services/media/ffmpeg.service.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
@@ -34,17 +35,17 @@ export const stickerToMediaCommand = defineCommand({
     try {
       media = await services.resolveTargetMedia?.()
     } catch {
-      await ctx.reply('{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}')
+      await ctx.reply(stickerMessages.mediaDownloadFailed)
       return
     }
 
     if (!media) {
-      await ctx.reply('{Responda|Marque} uma figurinha para {converter|transformar} em imagem ou vídeo.')
+      await ctx.reply(stickerMessages.toMediaMissing)
       return
     }
 
     if (media.mimeType !== 'image/webp') {
-      await ctx.reply(`Essa mídia {não é|não parece ser} uma figurinha. Tipo recebido: ${media.mimeType}`)
+      await ctx.reply(stickerMessages.toMediaInvalid(media.mimeType))
       return
     }
 
@@ -65,7 +66,7 @@ export const stickerToMediaCommand = defineCommand({
         await services.replyWithMedia?.({ buffer: pngBuffer, mimeType: 'image/png', filename: 'sticker.png' })
       }
     } catch {
-      await ctx.reply('{Ocorreu um erro|Falhei} ao converter a figurinha. {Tente novamente.|Pode tentar de novo.}')
+      await ctx.reply(stickerMessages.conversionFailed)
     }
   }
 })

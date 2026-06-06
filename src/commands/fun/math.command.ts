@@ -1,6 +1,5 @@
 import { defineCommand } from '@deadbyte/runtime'
-
-import { formatMathCommandOutput } from '../../utils/formatter'
+import { funMessages } from '../../messages/fun.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { parseMathExpression } from '../../utils/math'
 
@@ -40,12 +39,10 @@ export const mathCommand = defineCommand({
     const result = parseMathExpression(getExpressionText(ctx))
 
     if (!result) {
-      await ctx.reply(
-        '{🧮|📐} Não consegui calcular essa expressão.\n\nExemplos válidos:\n• `1 + 2 * 3`\n• `(4 + 6) / 2`\n• `2 ^ 3 ^ 2`\n• `1 + 1 = 2` (validação)\n• `1 + 1 = 3` (retorna Errado)\n• `40% de 250` · `raiz cúbica de 27` · `6³`'
-      )
+      await ctx.reply(funMessages.mathInvalid)
       return
     }
 
-    await ctx.reply(formatMathCommandOutput(result.explanation))
+    await ctx.reply(funMessages.mathResult(result.explanation))
   },
 })

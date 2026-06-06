@@ -1,30 +1,24 @@
 import { defineCommand } from '@deadbyte/runtime'
+import { funMessages } from '../../messages/fun.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 
-/** Regex que valida expressões de dado: [N]dF[op][M] ex: 2d6+3, d20, 4d6*2 */
 const DICE_REGEX = /^(?<dice>\d*)d(?<faces>\d+)((?<op>[+\-*/])(?<mod>\d+))?$/i
-
-/** Aliases textuais para o comando (sem ser a expressão em si) */
 const NAMED_ALIASES = ['dado', 'dice', 'rolar', 'rola', 'd']
 
-/** Clamps e parseia a quantidade de dados (1–100) */
 function parseDiceCount(raw: string): number {
   return Math.min(Math.max(parseInt(raw || '1') || 1, 1), 100)
 }
 
-/** Clamps e parseia a quantidade de faces (2–1000) */
 function parseFaces(raw: string): number {
   return Math.min(Math.max(parseInt(raw) || 6, 2), 1000)
 }
 
-/** Rola um dado de N faces, retorna valor e eventual nota crítica */
 function roll(faces: number): { result: number; note: string } {
   const result = Math.floor(Math.random() * faces) + 1
-  const note = result === faces ? '{✨ crítico!|✨ tirou o máximo!|✨ perfeito!|✨ sorte!}' : result === 1 ? '{💀 falha crítica!|💀 o mínimo possível!|💀 tragédia!|💀 desastre!}' : ''
+  const note = result === faces ? funMessages.diceCriticalNote : result === 1 ? funMessages.diceFumbleNote : ''
   return { result, note }
 }
 
-/** Aplica o modificador sobre o total */
 function applyModifier(total: number, op: string, mod: number): number {
   switch (op) {
     case '+': return total + mod
@@ -35,12 +29,9 @@ function applyModifier(total: number, op: string, mod: number): number {
   }
 }
 
-/** Extrai a expressão de dado do rawName ou do argsText */
 function resolveExpression(isNamedAlias: boolean, rawName: string, argsText: string): string | null {
-  // Modo 1: !2d6+3 → rawName é a própria expressão
   if (DICE_REGEX.test(rawName)) return rawName
 
-  // Modo 2: !dado 2d6+3 → argsText é a expressão
   if (isNamedAlias) {
     const arg = argsText.trim()
     if (DICE_REGEX.test(arg)) return arg
@@ -76,9 +67,7 @@ export const diceCommand = defineCommand({
     const expression = resolveExpression(matchesCommandAlias(ctx, 'fun.dice', diceCommand.aliases), rawName, argsText)
 
     if (!expression) {
-      await ctx.reply(
-        '{🎲|🧮} {Informe|Mande} uma expressão válida!\n\nExemplos:\n• `!2d6+3` — 2 dados de 6 lados, +3\n• `!d20` — 1 dado de 20 lados\n• `!dado 4d6` — 4 dados de 6 lados'
-      )
+      await ctx.reply(funMessages.diceInvalid)
       return
     }
 
@@ -89,30 +78,10 @@ export const diceCommand = defineCommand({
     const faces = parseFaces(facesRaw)
     const modifier = modRaw ? parseInt(modRaw) : 0
     const hasModifier = Boolean(op && modRaw)
-
-    // Rola todos os dados
     const rolls = Array.from({ length: diceCount }, () => roll(faces))
-    const rawTotal = rolls.reduce((acc, r) => acc + r.result, 0)
+    const rawTotal = rolls.reduce((acc, item) => acc + item.result, 0)
     const finalTotal = hasModifier ? applyModifier(rawTotal, op, modifier) : rawTotal
 
-    // Monta a mensagem
-    let message = `🎲 *${finalTotal}*`
-
-    if (hasModifier) {
-      message += ` _(${rawTotal} ${op} ${modifier})_`
-    }
-
-    // Detalha cada dado se mais de um
-    if (diceCount > 1) {
-      message += `\n\n_${diceCount} {dados|rolagens} de ${faces} lados:_\n`
-      rolls.forEach((r, i) => {
-        message += `• ${i + 1}º {dado|rolagem}: \`${r.result}\`${r.note ? ` ${r.note}` : ''}\n`
-      })
-    } else {
-      const note = rolls[0].note
-      if (note) message += `\n_${note}_`
-    }
-
-    await ctx.reply(message)
+    await ctx.reply(funMessages.diceRoll(finalTotal, rawTotal, op, modifier, diceCount, faces, rolls))
   }
 })

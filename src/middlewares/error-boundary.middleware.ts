@@ -1,4 +1,5 @@
 import { DeadByteEventNames, type CommandContext, type DeadByteCommand, type DeadByteEventLogger } from '@deadbyte/runtime'
+import { middlewareMessages } from '../messages/middleware.messages.js'
 
 export async function runCommandWithBoundary(
   command: DeadByteCommand,
@@ -31,6 +32,6 @@ export async function runCommandWithBoundary(
       },
       timestamp: new Date().toISOString()
     })
-    await ctx.reply('{Erro|Opa, deu erro} ao executar {o comando|essa função}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
+    await ctx.reply(middlewareMessages.commandFailed)
   }
 }

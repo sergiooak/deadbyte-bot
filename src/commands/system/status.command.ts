@@ -1,5 +1,6 @@
 import { defineCommand } from '@deadbyte/runtime'
 import { formatUptime } from '../../app/create-bot-app.js'
+import { systemMessages } from '../../messages/system.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 
 export const statusCommand = defineCommand({
@@ -21,16 +22,12 @@ export const statusCommand = defineCommand({
   },
   async run(ctx) {
     const runtime = ctx.services.runtime as { startedAt?: number } | undefined
-    const uptime = runtime?.startedAt ? formatUptime(Date.now() - runtime.startedAt) : 'unknown'
-    await ctx.reply(
-      [
-        '{🤖|⚙️|📡} *Status da instância*',
-        '',
-        `instance: ${ctx.config.instanceId}`,
-        `mode: ${ctx.config.mode}`,
-        `uptime: ${uptime}`,
-        `client: ${ctx.config.clientId}`
-      ].join('\n')
-    )
+    const uptime = runtime?.startedAt ? formatUptime(Date.now() - runtime.startedAt) : 'desconhecido'
+    await ctx.reply(systemMessages.status({
+      instanceId: ctx.config.instanceId,
+      mode: ctx.config.mode,
+      uptime,
+      clientId: ctx.config.clientId
+    }))
   }
 })

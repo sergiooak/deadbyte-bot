@@ -1,4 +1,5 @@
 import { defineCommand } from '@deadbyte/runtime'
+import { funMessages } from '../../messages/fun.messages.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
 import { decodeHtmlEntity, fetchRandomEmoji } from './emoji-hub.helper.js'
 
@@ -25,16 +26,15 @@ export const reactCommand = defineCommand({
     try {
       data = await fetchRandomEmoji()
     } catch {
-      await ctx.reply('Não foi possível obter um emoji {no momento|agora}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
+      await ctx.reply(funMessages.emojiUnavailable)
       return
     }
 
     if (!data) {
-      await ctx.reply('Não foi possível obter um emoji {no momento|agora}. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
+      await ctx.reply(funMessages.emojiUnavailable)
       return
     }
 
-    // Usa apenas o codepoint base (primeiro htmlCode) para maximizar a compatibilidade da reação
     const emoji = decodeHtmlEntity(data.htmlCode[0])
     await ctx.react(emoji)
   }

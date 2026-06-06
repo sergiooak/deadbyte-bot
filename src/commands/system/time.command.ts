@@ -1,9 +1,9 @@
 import { defineCommand } from '@deadbyte/runtime'
+import { systemMessages } from '../../messages/system.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { buildShortLocationName, clockEmoji, formatUtcOffset, getTimeForLocation, getUtcOffsetMinutes } from './time.helper.js'
 
 const BRASILIA_TZ = 'America/Sao_Paulo'
-
 const DEFAULT_LOCATION = 'Brasília, Brasil'
 
 export const timeCommand = defineCommand({
@@ -30,12 +30,12 @@ export const timeCommand = defineCommand({
     try {
       result = await getTimeForLocation(query)
     } catch {
-      await ctx.reply('{Erro|Falhei} ao buscar a hora. {Tente novamente.|Pode tentar de novo daqui a pouco.}')
+      await ctx.reply(systemMessages.timeLookupFailed)
       return
     }
 
     if (!result) {
-      await ctx.reply(`Não encontrei a localização *${query}*. Tente com {outro nome|uma cidade, estado ou país diferente}.`)
+      await ctx.reply(systemMessages.timeNotFound(query))
       return
     }
 
@@ -48,23 +48,17 @@ export const timeCommand = defineCommand({
     const brasiliaOffset = getUtcOffsetMinutes(BRASILIA_TZ)
     const diffMinutes = result.utcOffsetMinutes - brasiliaOffset
     const isSameTzAsBrasilia = diffMinutes === 0
-
-    const lines: string[] = [
-      `${clock} *${formattedTime}*`,
-      '',
-      `{📍|🗺️} ${shortName}`,
-      `{🌐|🕓} ${gmtLabel}`,
-    ]
+    let diffLabel: string | undefined
+    let relation: string | undefined
 
     if (!isSameTzAsBrasilia) {
       const absDiff = Math.abs(diffMinutes)
       const diffH = Math.floor(absDiff / 60)
       const diffM = absDiff % 60
-      const diffLabel = diffM ? `${diffH}h${diffM}min` : `${diffH}h`
-      const relation = diffMinutes > 0 ? 'à frente de' : 'atrás de'
-      lines.push(`{⏱️|⌚} ${diffLabel} ${relation} Brasília`)
+      diffLabel = diffM ? `${diffH}h${diffM}min` : `${diffH}h`
+      relation = diffMinutes > 0 ? 'à frente de' : 'atrás de'
     }
 
-    await ctx.reply(lines.join('\n'))
+    await ctx.reply(systemMessages.timeResult({ clock, formattedTime, shortName, gmtLabel, diffLabel, relation }))
   }
 })

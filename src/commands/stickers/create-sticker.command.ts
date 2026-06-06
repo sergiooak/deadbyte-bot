@@ -1,5 +1,6 @@
 import { defineCommand } from '@deadbyte/runtime'
 import sharp from 'sharp'
+import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { FfmpegService } from '../../services/media/ffmpeg.service.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import { StickerCommandConfigSchema, type StickerMetadata, type StickerRenderOptions } from '../../services/stickers/sticker.types.js'
@@ -99,11 +100,11 @@ export const createStickerCommand = defineCommand({
     try {
       media = await services.resolveTargetMedia?.()
     } catch {
-      await ctx.reply('{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}')
+      await ctx.reply(stickerMessages.mediaDownloadFailed)
       return
     }
     if (!media) {
-      await ctx.reply('{Envie|Mande} ou {responda|marque} uma imagem/vídeo/sticker para {criar|fazer} a figurinha{.|!}')
+      await ctx.reply(stickerMessages.missingCreationMedia)
       return
     }
 
@@ -130,7 +131,7 @@ export const createStickerCommand = defineCommand({
         }
       }
     } catch {
-      await ctx.reply('{Erro|Falhei} ao criar a figurinha. {Tente novamente.|Pode tentar de novo.}')
+      await ctx.reply(stickerMessages.creationFailed)
     }
   }
 })

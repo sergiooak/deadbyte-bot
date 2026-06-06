@@ -1,12 +1,14 @@
 import { defineCommand, type CommandContext } from '@deadbyte/runtime'
 import { resolveGroupAdminState } from '../../groups/group-admins.js'
 import { collectGroupTargets, participantUser } from '../../groups/group-targets.js'
+import { groupMessages } from '../../messages/group.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import type { WhatsappChatLike, WhatsappClientLike, WhatsappMessageLike } from '../../whatsapp/whatsapp-adapter.js'
 
 type GroupModerationServices = {
   rawChat?: WhatsappChatLike
   rawMessage?: WhatsappMessageLike
+  spintax?: { render(input: string): string }
   whatsappClient?: WhatsappClientLike
 }
 
@@ -18,6 +20,10 @@ type GroupAccess = {
 
 function servicesOf(ctx: CommandContext): GroupModerationServices {
   return ctx.services as GroupModerationServices
+}
+
+function renderCopy(ctx: CommandContext, text: string): string {
+  return servicesOf(ctx).spintax?.render(text) ?? text
 }
 
 function idOf(value: { id?: { _serialized?: string; user?: string } } | undefined): string {
@@ -37,7 +43,7 @@ async function requireGroup(ctx: CommandContext): Promise<GroupAccess | undefine
   const client = services.whatsappClient
   const chat = services.rawChat
   if (!client || !chat || !ctx.chat.isGroup) {
-    await ctx.reply('Este comando so funciona em grupos.')
+    await ctx.reply(groupMessages.groupOnly)
     return undefined
   }
 
@@ -48,27 +54,27 @@ async function requireGroupAdmin(ctx: CommandContext): Promise<GroupAccess | und
   const services = servicesOf(ctx)
   const client = services.whatsappClient
   if (!client) {
-    await ctx.reply('Cliente do WhatsApp indisponivel neste runtime.')
+    await ctx.reply(groupMessages.whatsappClientUnavailable)
     return undefined
   }
 
   const admin = await resolveGroupAdminState(ctx, client, services.rawChat)
   if (!admin.isGroup) {
-    await ctx.reply('Este comando so funciona em grupos.')
+    await ctx.reply(groupMessages.groupOnly)
     return undefined
   }
   if (!admin.isSenderAdmin) {
-    await ctx.reply('Apenas admins do grupo podem usar este comando.')
+    await ctx.reply(groupMessages.senderAdminRequired)
     return undefined
   }
   if (!admin.isBotAdmin) {
-    await ctx.reply('Preciso ser admin do grupo para executar esta acao.')
+    await ctx.reply(groupMessages.botAdminRequired)
     return undefined
   }
 
   const chat = admin.chat ?? services.rawChat
   if (!chat) {
-    await ctx.reply('Nao consegui carregar os dados do grupo.')
+    await ctx.reply(groupMessages.groupLoadFailed)
     return undefined
   }
 
@@ -89,16 +95,17 @@ function requireMethod<T extends keyof WhatsappChatLike>(chat: WhatsappChatLike,
 }
 
 async function replyNoTargets(ctx: CommandContext): Promise<void> {
-  await ctx.reply('Marque alguem, responda uma mensagem ou informe o numero com DDI.')
+  await ctx.reply(groupMessages.noTargets)
 }
 
 async function sendWithMentions(ctx: CommandContext, chat: WhatsappChatLike, text: string, mentions: string[]): Promise<void> {
+  const renderedText = renderCopy(ctx, text)
   if (chat.sendMessage) {
-    await chat.sendMessage(text, { mentions })
+    await chat.sendMessage(renderedText, { mentions })
     return
   }
 
-  await ctx.reply(text)
+  await ctx.reply(renderedText)
 }
 
 async function setGroupClosed(ctx: CommandContext, adminsOnly: boolean): Promise<void> {
@@ -107,12 +114,12 @@ async function setGroupClosed(ctx: CommandContext, adminsOnly: boolean): Promise
 
   const setMessagesAdminsOnly = requireMethod(access.chat, 'setMessagesAdminsOnly')
   if (!setMessagesAdminsOnly) {
-    await ctx.reply('Este runtime nao expoe a alteracao de mensagens apenas para admins.')
+    await ctx.reply(groupMessages.messagesAdminsOnlyUnavailable)
     return
   }
 
   await setMessagesAdminsOnly.call(access.chat, adminsOnly)
-  await ctx.reply(adminsOnly ? 'Grupo fechado. Agora apenas admins podem enviar mensagens.' : 'Grupo aberto. Todos podem enviar mensagens.')
+  await ctx.reply(adminsOnly ? groupMessages.groupClosed : groupMessages.groupOpened)
 }
 
 async function changeAdmin(ctx: CommandContext, mode: 'promote' | 'demote'): Promise<void> {
@@ -128,12 +135,12 @@ async function changeAdmin(ctx: CommandContext, mode: 'promote' | 'demote'): Pro
   const method = mode === 'promote' ? 'promoteParticipants' : 'demoteParticipants'
   const action = requireMethod(access.chat, method)
   if (!action) {
-    await ctx.reply('Este runtime nao expoe a alteracao de admins do grupo.')
+    await ctx.reply(groupMessages.adminChangeUnavailable)
     return
   }
 
   await action.call(access.chat, ids)
-  await sendWithMentions(ctx, access.chat, `${mode === 'promote' ? 'Admin concedido' : 'Admin removido'}: ${ids.map(participantDisplay).join(', ')}`, ids)
+  await sendWithMentions(ctx, access.chat, groupMessages.adminChanged(mode, ids.map(participantDisplay).join(', ')), ids)
 }
 
 function randomItem<T>(items: T[]): T | undefined {
@@ -177,11 +184,11 @@ async function showRules(ctx: CommandContext): Promise<void> {
   const chat = await getLoadedGroupChat(access.chat)
   const rules = groupDescription(chat)
   if (!rules) {
-    await ctx.reply('Este grupo ainda nao tem regras na descricao.')
+    await ctx.reply(groupMessages.noRules)
     return
   }
 
-  await ctx.reply(`*Regras do grupo*\n\n${rules}`)
+  await ctx.reply(groupMessages.rules(rules))
 }
 
 async function handleMembershipRequests(ctx: CommandContext): Promise<void> {
@@ -190,7 +197,7 @@ async function handleMembershipRequests(ctx: CommandContext): Promise<void> {
 
   const getRequests = requireMethod(access.chat, 'getGroupMembershipRequests')
   if (!getRequests) {
-    await ctx.reply('Este runtime nao expoe as solicitacoes de entrada do grupo.')
+    await ctx.reply(groupMessages.membershipRequestsUnavailable)
     return
   }
 
@@ -199,31 +206,31 @@ async function handleMembershipRequests(ctx: CommandContext): Promise<void> {
   const action = argsText(ctx).toLowerCase()
 
   if (count === 0) {
-    await ctx.reply('Nao ha solicitacoes de entrada no grupo.')
+    await ctx.reply(groupMessages.noMembershipRequests)
     return
   }
 
   if (/\b(?:aceitar|aprovar|accept|approve|all|todas)\b/.test(action)) {
     const approve = requireMethod(access.chat, 'approveGroupMembershipRequests')
     if (!approve) {
-      await ctx.reply('Este runtime nao expoe a aprovacao de solicitacoes.')
+      await ctx.reply(groupMessages.approveRequestsUnavailable)
       return
     }
 
     await approve.call(access.chat)
-    await ctx.reply(`Aprovei ${count} solicitacao(oes) de entrada.`)
+    await ctx.reply(groupMessages.approvedRequests(count))
     return
   }
 
   if (/\b(?:rejeitar|recusar|reject|deny|negar)\b/.test(action)) {
     const reject = requireMethod(access.chat, 'rejectGroupMembershipRequests')
     if (!reject) {
-      await ctx.reply('Este runtime nao expoe a rejeicao de solicitacoes.')
+      await ctx.reply(groupMessages.rejectRequestsUnavailable)
       return
     }
 
     await reject.call(access.chat)
-    await ctx.reply(`Rejeitei ${count} solicitacao(oes) de entrada.`)
+    await ctx.reply(groupMessages.rejectedRequests(count))
     return
   }
 
@@ -232,9 +239,7 @@ async function handleMembershipRequests(ctx: CommandContext): Promise<void> {
   await sendWithMentions(
     ctx,
     access.chat,
-    preview
-      ? `Ha ${count} solicitacao(oes) de entrada: ${preview}${ids.length > 10 ? '...' : ''}\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*.`
-      : `Ha ${count} solicitacao(oes) de entrada.\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*.`,
+    groupMessages.membershipRequestsPreview(count, preview, ids.length > 10),
     ids
   )
 }
@@ -251,17 +256,13 @@ async function giveaway(ctx: CommandContext, adminsOnly: boolean): Promise<void>
   const winner = randomItem(participants)
   const winnerId = idOf(winner)
   if (!winnerId) {
-    await ctx.reply(adminsOnly ? 'Nao encontrei admins para sortear.' : 'Nao encontrei participantes para sortear.')
+    await ctx.reply(groupMessages.noGiveawayTargets(adminsOnly))
     return
   }
 
   const prize = argsText(ctx)
-  const message = prize
-    ? `${participantDisplay(winnerId)} parabens! Voce ganhou o sorteio de *${prize}*!`
-    : `${participantDisplay(winnerId)} parabens! Voce ganhou o sorteio!`
-
-  await sendWithMentions(ctx, access.chat, message, [winnerId])
-  await ctx.react('🎉')
+  await sendWithMentions(ctx, access.chat, groupMessages.giveawayWinner(participantDisplay(winnerId), prize), [winnerId])
+  await ctx.react(randomItem(groupMessages.giveawayReactions) ?? '🎉')
 }
 
 async function russianRoulette(ctx: CommandContext): Promise<void> {
@@ -276,17 +277,17 @@ async function russianRoulette(ctx: CommandContext): Promise<void> {
   const unlucky = randomItem(candidates)
   const unluckyId = idOf(unlucky)
   if (!unluckyId) {
-    await ctx.reply('Nao encontrei participante comum para a roleta.')
+    await ctx.reply(groupMessages.noRouletteCandidate)
     return
   }
 
   const removeParticipants = requireMethod(access.chat, 'removeParticipants')
   if (!removeParticipants) {
-    await ctx.reply('Este runtime nao expoe a remocao de participantes.')
+    await ctx.reply(groupMessages.participantRemovalUnavailable)
     return
   }
 
-  await sendWithMentions(ctx, access.chat, `Roleta russa: ${participantDisplay(unluckyId)} perdeu.`, [unluckyId])
+  await sendWithMentions(ctx, access.chat, groupMessages.rouletteLoser(participantDisplay(unluckyId)), [unluckyId])
   await removeParticipants.call(access.chat, [unluckyId])
 }
 
@@ -296,7 +297,7 @@ async function deleteMessageWithReplies(ctx: CommandContext): Promise<void> {
 
   const rawMessage = access.rawMessage
   if (!rawMessage?.hasQuotedMsg || !rawMessage.getQuotedMessage) {
-    await ctx.reply('Responda a mensagem que devo apagar.')
+    await ctx.reply(groupMessages.deleteReplyRequired)
     return
   }
 
@@ -323,7 +324,7 @@ async function deleteMessageWithReplies(ctx: CommandContext): Promise<void> {
     deleted += 1
   }
 
-  await ctx.reply(`Pronto. Apaguei ${deleted} mensagem(ns), incluindo replies recentes quando foi possivel.`)
+  await ctx.reply(groupMessages.deletedMessages(deleted))
 }
 
 export const closeGroupCommand = defineCommand({
@@ -423,12 +424,12 @@ export const banCommand = defineCommand({
 
     const removeParticipants = requireMethod(access.chat, 'removeParticipants')
     if (!removeParticipants) {
-      await ctx.reply('Este runtime nao expoe a remocao de participantes.')
+      await ctx.reply(groupMessages.participantRemovalUnavailable)
       return
     }
 
     await removeParticipants.call(access.chat, ids)
-    await sendWithMentions(ctx, access.chat, `Removido(s): ${ids.map(participantDisplay).join(', ')}`, ids)
+    await sendWithMentions(ctx, access.chat, groupMessages.removedParticipants(ids.map(participantDisplay).join(', ')), ids)
   }
 })
 
@@ -457,12 +458,12 @@ export const addParticipantCommand = defineCommand({
 
     const addParticipants = requireMethod(access.chat, 'addParticipants')
     if (!addParticipants) {
-      await ctx.reply('Este runtime nao expoe a adicao de participantes.')
+      await ctx.reply(groupMessages.participantAddUnavailable)
       return
     }
 
     await addParticipants.call(access.chat, ids)
-    await sendWithMentions(ctx, access.chat, `Tentei adicionar: ${ids.map(participantDisplay).join(', ')}`, ids)
+    await sendWithMentions(ctx, access.chat, groupMessages.addAttempted(ids.map(participantDisplay).join(', ')), ids)
   }
 })
 
@@ -507,11 +508,11 @@ export const callAdminsCommand = defineCommand({
       .map((participant) => idOf(participant)))
 
     if (ids.length === 0) {
-      await ctx.reply('Nao encontrei admins na lista de participantes.')
+      await ctx.reply(groupMessages.noAdmins)
       return
     }
 
-    await sendWithMentions(ctx, access.chat, argsText(ctx) || 'Chamando admins.', ids)
+    await sendWithMentions(ctx, access.chat, argsText(ctx) || groupMessages.callAdminsDefault, ids)
   }
 })
 
@@ -625,11 +626,11 @@ export const everyoneCommand = defineCommand({
     const chat = access.chat.participants ? access.chat : await access.chat.fetch?.()
     const ids = unique((chat?.participants ?? []).map((participant) => idOf(participant)))
     if (ids.length === 0) {
-      await ctx.reply('Nao encontrei participantes para marcar.')
+      await ctx.reply(groupMessages.noParticipantsToMention)
       return
     }
 
-    const text = argsText(ctx) || '@todos'
+    const text = argsText(ctx) || groupMessages.everyoneDefault
     await sendWithMentions(ctx, access.chat, text, ids)
   }
 })

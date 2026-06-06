@@ -1,8 +1,9 @@
 import { defineCommand, type CommandContext } from '@deadbyte/runtime'
-import { matchesCommandAlias } from '../../utils/commands.js'
 import { resolveGroupAdminState } from '../../groups/group-admins.js'
 import { GROUP_CONFIG_BOOLEAN_KEYS, GROUP_CONFIG_STRING_KEYS, type GroupConfig, type GroupConfigBooleanKey, type GroupConfigStringKey } from '../../groups/group-config.types.js'
 import type { GroupConfigService } from '../../groups/group-config.service.js'
+import { groupMessages } from '../../messages/group.messages.js'
+import { matchesCommandAlias } from '../../utils/commands.js'
 import type { WhatsappChatLike, WhatsappClientLike } from '../../whatsapp/whatsapp-adapter.js'
 
 type GroupConfigCommandServices = {
@@ -23,40 +24,24 @@ async function requireGroupAdmin(ctx: CommandContext): Promise<{ ok: boolean; se
   const client = services.whatsappClient
   const service = services.groupConfigs
   if (!client || !service) {
-    await ctx.reply('Configuração de grupos indisponível neste runtime.')
+    await ctx.reply(groupMessages.configUnavailable)
     return { ok: false }
   }
 
   const admin = await resolveGroupAdminState(ctx, client, services.rawChat)
   if (!admin.isGroup) {
-    await ctx.reply('Este comando só funciona em grupos.')
+    await ctx.reply(groupMessages.groupOnly)
     return { ok: false }
   }
   if (!admin.isSenderAdmin) {
     return { ok: false }
   }
   if (!admin.isBotAdmin) {
-    await ctx.reply('Preciso ser admin do grupo para atualizar a descrição e salvar a configuração.')
+    await ctx.reply(groupMessages.configBotAdminRequired)
     return { ok: false }
   }
 
   return { ok: true, service, chat: admin.chat ?? services.rawChat }
-}
-
-function describeConfig(config: GroupConfig): string {
-  const enabled = GROUP_CONFIG_BOOLEAN_KEYS.filter((key) => config[key])
-  const disabled = GROUP_CONFIG_BOOLEAN_KEYS.filter((key) => !config[key])
-  const strings = GROUP_CONFIG_STRING_KEYS.map((key) => `*${key}:* ${config[key] ?? '(padrão global)'}`)
-
-  return [
-    '*Configuração do grupo*',
-    '',
-    `Ativos: ${enabled.length ? enabled.map((key) => `*${key}*`).join(', ') : 'nenhum'}`,
-    `Desligados: ${disabled.map((key) => `*${key}*`).join(', ')}`,
-    ...strings,
-    '',
-    'Use !on welcome, !off welcome, !set autor Sergio ou !set pacote DeadByte.'
-  ].join('\n')
 }
 
 function splitArgs(ctx: CommandContext): string[] {
@@ -72,7 +57,7 @@ async function updateConfig(ctx: CommandContext, mutate: (config: GroupConfig) =
   if (!next) return
 
   await access.service.updateDescription(access.chat, next)
-  await ctx.reply('Configuração do grupo atualizada na descrição.')
+  await ctx.reply(groupMessages.configUpdated)
 }
 
 export const showGroupConfigCommand = defineCommand({
@@ -96,12 +81,12 @@ export const showGroupConfigCommand = defineCommand({
     const services = servicesOf(ctx)
     const chat = services.rawChat
     if (!ctx.chat.isGroup || !chat || !services.groupConfigs) {
-      await ctx.reply('Este comando só funciona em grupos.')
+      await ctx.reply(groupMessages.groupOnly)
       return
     }
 
     const config = await services.groupConfigs.ensureLoaded(chat)
-    await ctx.reply(describeConfig(config))
+    await ctx.reply(groupMessages.describeConfig(config))
   }
 })
 
@@ -125,7 +110,7 @@ export const enableGroupConfigCommand = defineCommand({
   async run(ctx) {
     const key = splitArgs(ctx)[0] as GroupConfigBooleanKey | undefined
     if (!key || !BOOLEAN_SET.has(key)) {
-      await ctx.reply(`Opção booleana inválida. Use: ${GROUP_CONFIG_BOOLEAN_KEYS.join(', ')}.`)
+      await ctx.reply(groupMessages.booleanOptionInvalid())
       return
     }
 
@@ -156,7 +141,7 @@ export const disableGroupConfigCommand = defineCommand({
   async run(ctx) {
     const key = splitArgs(ctx)[0] as GroupConfigBooleanKey | undefined
     if (!key || !BOOLEAN_SET.has(key)) {
-      await ctx.reply(`Opção booleana inválida. Use: ${GROUP_CONFIG_BOOLEAN_KEYS.join(', ')}.`)
+      await ctx.reply(groupMessages.booleanOptionInvalid())
       return
     }
 
@@ -188,7 +173,7 @@ export const setGroupConfigCommand = defineCommand({
     const [rawKey, ...valueParts] = splitArgs(ctx)
     const key = rawKey as GroupConfigStringKey | undefined
     if (!key || !STRING_SET.has(key)) {
-      await ctx.reply(`Opção textual inválida. Use: ${GROUP_CONFIG_STRING_KEYS.join(', ')}.`)
+      await ctx.reply(groupMessages.stringOptionInvalid())
       return
     }
 

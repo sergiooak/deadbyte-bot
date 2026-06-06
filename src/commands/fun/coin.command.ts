@@ -1,4 +1,5 @@
 import { defineCommand } from '@deadbyte/runtime'
+import { funMessages } from '../../messages/fun.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 
 const MAX_COINS = 100
@@ -42,16 +43,10 @@ export const coinCommand = defineCommand({
     const tails = coinCount - heads
 
     if (coinCount === 1) {
-      await ctx.reply(`🪙 Deu *${flips[0]}*.`)
+      await ctx.reply(funMessages.coinSingle(flips[0]))
       return
     }
 
-    const lines = [
-      `🪙 *${coinCount} moedas*: ${heads} cara, ${tails} coroa.`,
-      '',
-      flips.map((result, index) => `• ${index + 1}º: *${result}*`).join('\n')
-    ]
-
-    await ctx.reply(lines.join('\n'))
+    await ctx.reply(funMessages.coinMany(coinCount, heads, tails, flips))
   }
 })

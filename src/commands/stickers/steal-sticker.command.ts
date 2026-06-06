@@ -1,4 +1,5 @@
 import { defineCommand } from '@deadbyte/runtime'
+import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import type { StickerMetadata } from '../../services/stickers/sticker.types.js'
@@ -51,11 +52,11 @@ export const stealStickerCommand = defineCommand({
     try {
       media = await services.resolveTargetMedia?.()
     } catch {
-      await ctx.reply('{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}')
+      await ctx.reply(stickerMessages.mediaDownloadFailed)
       return
     }
     if (!media) {
-      await ctx.reply('{Responda|Marque} {um sticker|uma figurinha} ou {uma mídia|mídia} para {renomear|trocar os metadados|mudar pacote/autor}.')
+      await ctx.reply(stickerMessages.stealMissingMedia)
       return
     }
 
@@ -66,7 +67,7 @@ export const stealStickerCommand = defineCommand({
       if (!sticker) throw new Error('Sticker service is not available.')
       await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
     } catch {
-      await ctx.reply('{Erro|Falhei} ao criar a figurinha. {Tente novamente.|Pode tentar de novo.}')
+      await ctx.reply(stickerMessages.creationFailed)
     }
   }
 })

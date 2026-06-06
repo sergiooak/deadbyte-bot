@@ -77,7 +77,10 @@ describe('createBotApp command dispatch', () => {
     await app.handleMessage(message)
 
     expect(events.some((event) => event.name === DeadByteEventNames.CommandMatched)).toBe(true)
-    expect(message.reply.mock.calls[0]?.[0]).toMatch(/^(Envie|Mande) ou (responda|marque) uma imagem\/vídeo\/sticker para (criar|fazer) a figurinha[.!]$/)
+    const reply = message.reply.mock.calls[0]?.[0]
+    expect(reply).toMatch(/imagem\/.*\/sticker/)
+    expect(reply).toContain('figurinha')
+    expect(reply).not.toContain('{')
   })
 
   it('renders spintax natively before sending internal messages', async () => {

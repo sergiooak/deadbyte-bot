@@ -1,4 +1,5 @@
 import { defineCommand } from '@deadbyte/runtime'
+import { systemMessages } from '../../messages/system.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 
 export const pingCommand = defineCommand({
@@ -6,7 +7,7 @@ export const pingCommand = defineCommand({
   group: 'system',
   name: 'Ping',
   description: 'Responde pong para validar se o bot está vivo.',
-  aliases: ['ping', 'p'],
+  aliases: ['ping'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
   supports: {
@@ -19,6 +20,6 @@ export const pingCommand = defineCommand({
     return matchesCommandAlias(ctx, 'system.ping', pingCommand.aliases)
   },
   async run(ctx) {
-    await ctx.reply('{pong|pong!|online por aqui|tô vivo}')
+    await ctx.reply(systemMessages.ping)
   }
 })

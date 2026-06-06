@@ -1,4 +1,5 @@
 import { defineCommand, type CommandContext } from '@deadbyte/runtime'
+import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import type { StickerFit } from '../../services/stickers/sticker.types.js'
@@ -18,10 +19,6 @@ type StickerFitCommandOptions = {
   fit: StickerFit
 }
 
-const MEDIA_DOWNLOAD_ERROR = '{Erro|Falhei} ao baixar a mídia. {Tente novamente.|Manda de novo daqui a pouco.}'
-const MISSING_MEDIA_MESSAGE = '{Envie|Mande} ou {responda|marque} uma imagem/vídeo/sticker para {criar|fazer} a figurinha{.|!}'
-const STICKER_CREATION_ERROR = '{Erro|Falhei} ao criar a figurinha. {Tente novamente.|Pode tentar de novo.}'
-
 type MediaResolution =
   | { status: 'found'; media: BufferMedia }
   | { status: 'missing' }
@@ -32,7 +29,7 @@ async function resolveStickerMedia(ctx: CommandContext, services: StickerCommand
     const media = await services.resolveTargetMedia?.()
     return media ? { status: 'found', media } : { status: 'missing' }
   } catch {
-    await ctx.reply(MEDIA_DOWNLOAD_ERROR)
+    await ctx.reply(stickerMessages.mediaDownloadFailed)
     return { status: 'failed' }
   }
 }
@@ -75,14 +72,14 @@ export function defineStickerFitCommand(options: StickerFitCommandOptions) {
       }
 
       if (resolution.status === 'missing') {
-        await ctx.reply(MISSING_MEDIA_MESSAGE)
+        await ctx.reply(stickerMessages.missingCreationMedia)
         return
       }
 
       try {
         await createAndReplyWithSticker(ctx, services, resolution.media, options.fit)
       } catch {
-        await ctx.reply(STICKER_CREATION_ERROR)
+        await ctx.reply(stickerMessages.creationFailed)
       }
     }
   })
