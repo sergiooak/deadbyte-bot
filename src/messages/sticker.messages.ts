@@ -1,17 +1,23 @@
 export const stickerMessages = {
   mediaDownloadFailed:
-    '{Ih, falhei|Deu ruim aqui|Não consegui} ao baixar a mídia. {Tenta de novo daqui a pouco|Manda de novo, só pra eu fingir que foi culpa da internet|Tenta novamente, porque aparentemente a mídia decidiu sumir}.',
+    '{{Putz|Vixe|Eita}, deu ruim|Deu certo não|Não rolou} de baixar essa mídia. {Tenta mandar de novo daqui a pouco|{Manda|Envia|Tenta} aí {novamente|de novo} que eu finjo que foi {culpa da|a} internet{| kk}|{Manda|Tenta} de novo, vai que dessa vez da certo{| uai| kk}}.',
+
   missingCreationMedia:
-    '{Manda|Envia|Joga aqui} uma imagem/vídeo/sticker ou {responde|marca} uma mídia para eu virar figurinha, {porque adivinhar arquivo ainda não veio no plano|já que telepatia de mídia está fora do ar|senão eu fico só olhando pro nada}{.|!}',
+    '{Manda|Envia|Me manda|Me envia} uma {foto|imagem}, vídeo, gif ou {sticker|figurinha}{| aí}, ou {respond{a|e} |marca }{|{a|uma} mensagem {com |que seja }}{{alguma|uma} mídia|{algum|um} arquivo} {pra|para} eu {transformar em|criar uma} figurinha{.|!} {|Pq se não eu não vou conseguir {tirar do {cu|rabo} oq vc quer{|!| criar| fazer}{|!| kk| uai}|fazer nada{|!| né?| uai| kk}}|Pq eu não tenho bola de cristal{!| kk|porra!}}',
+
   creationFailed:
-    '{Não consegui|Falhei bonito|Deu ruim} ao criar a figurinha. {Tenta de novo|Pode tentar outra vez|Manda novamente, vai que agora o universo coopera}.',
+    '{|{Eita|Vixe|Vish|Uai}{!|!!|!!!} }{Não consegui|Deu ruim|Falhei bonito} {ao|de}{| tentar} criar a figurinha{.|!|!!|!!!}\n{Tenta de novo|Tente novamente|Joga outra aí|Manda {novamente|de novo}}, vai que{| agora} {{|o {bagulho|esse trem}} resolve funcionar|da certo?}{| kk| uai| né?}',
+
   stealMissingMedia:
-    '{Responde|Marca} {um sticker|uma figurinha} ou {uma mídia|alguma mídia} para eu {renomear|trocar os metadados|mexer no pacote/autor}, {porque roubar vento ainda é difícil|já que sticker imaginário não tem metadata}.',
+    '{|{Pô|Poxa|Porra|Se liga} {véi|mano|bro|brother|bixo|bicho}{|.|!| kk} }{{Vc|Você|Ocê} tem que {responde|reponder|macar|marca}|{Responda|Responde|Marca}} {a|uma|a uma}{ | mensagem {que tenha|com uma|da}} figurinha{| aí} pra eu {trocar o autor/pacote|roubar|trocar os metadados|roubar pra vc}{|.|!|}{| uai| kk}',
+
   toMediaMissing:
-    '{Responde|Marca} uma figurinha para eu {converter|transformar} em imagem ou vídeo, {porque arquivo fantasma eu ainda não exporto|senão eu vou converter exatamente nada}.',
+    '{|{Pô|Poxa|Porra|Se liga} {véi|mano|bro|brother|bixo|bicho}{| kk}{|.|!|} }{{Vc|Você|Ocê} tem que {responde|reponder|macar|marca}|{Responda|Responde|Marca}} {a|uma|a uma}{ | mensagem {que tenha|com uma|da}} figurinha{| aí} {pra|para} eu {|conseguir }converter em {{imagem|foto} ou vídeo|arquivo}{.|!|!!!}{| Senão {vc|você|ocê} me complica| Ai fica dificil| Fica dificil assim}{| kk| uai}',
+
   toMediaInvalid(mimeType: string): string {
-    return `{Isso aí não parece|Essa mídia não é|Olhei aqui e isso não virou} uma figurinha. Tipo recebido: *${mimeType}*. {WebP, meu nobre|Preciso de sticker de verdade|Ajuda o bot a te ajudar}.`
+    return `{|{Pô|Poxa|Porra|Se liga} {véi|mano|bro|brother|bixo|bicho}{| kk}{|.|!|} }{Isso aí não é|Esse trem|Essa mensagem|Olha, isso não parece} uma figurinha não.\n{Tipo detectado|O mimetype disso ai é}: *${mimeType}*. {Preciso de WebP de verdade{| meu consagrado| manin| caralho}|Me ajuda a te ajudar|Me manda uma figurinha de verdade{|, faz favor}}{|.|!|!!|!!!| uai| kk}`
   },
+
   conversionFailed:
-    '{Não consegui|Falhei} ao converter a figurinha. {Tenta de novo|Pode tentar outra vez|Manda novamente, porque hoje o WebP acordou dramático}.'
+    '{|{Opa|Oops|Eita}{!} }{Não consegui|Deu ruim ao|Falhei ao|Deu xablau tentando} {converter|criar|fazer} a figurinha. {{Tenta|Manda} {outra mídia|outro arquivo}|{Tenta|Tente} de novo}{| aí| ai}{.|!|!!|!!!| uai| kk}'
 }
