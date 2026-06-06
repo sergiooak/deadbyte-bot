@@ -48,17 +48,21 @@ export const timeCommand = defineCommand({
     const brasiliaOffset = getUtcOffsetMinutes(BRASILIA_TZ)
     const diffMinutes = result.utcOffsetMinutes - brasiliaOffset
     const isSameTzAsBrasilia = diffMinutes === 0
-    let diffLabel: string | undefined
-    let relation: string | undefined
+    let timeDifference = ''
 
     if (!isSameTzAsBrasilia) {
       const absDiff = Math.abs(diffMinutes)
       const diffH = Math.floor(absDiff / 60)
       const diffM = absDiff % 60
-      diffLabel = diffM ? `${diffH}h${diffM}min` : `${diffH}h`
-      relation = diffMinutes > 0 ? 'à frente de' : 'atrás de'
+      const diffLabel = diffM ? `${diffH}h${diffM}min` : `${diffH}h`
+      const relation = diffMinutes > 0 ? 'à frente de' : 'atrás de'
+      timeDifference = `${diffLabel} ${relation} Brasília`
     }
 
-    await ctx.reply(systemMessages.timeResult({ clock, formattedTime, shortName, gmtLabel, diffLabel, relation }))
+    await ctx.reply(
+      timeDifference
+        ? systemMessages.timeResultWithDifference(clock, formattedTime, shortName, gmtLabel, timeDifference)
+        : systemMessages.timeResult(clock, formattedTime, shortName, gmtLabel)
+    )
   }
 })

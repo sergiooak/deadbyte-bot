@@ -29,6 +29,23 @@ function applyModifier(total: number, op: string, mod: number): number {
   }
 }
 
+function formatDiceTotal(finalTotal: number, rawTotal: number, op: string | undefined, modifier: number): string {
+  return op ? `${finalTotal} _(${rawTotal} ${op} ${modifier})_` : String(finalTotal)
+}
+
+function formatDiceDetails(diceCount: number, faces: number, rolls: Array<{ result: number; note: string }>): string {
+  if (diceCount > 1) {
+    const rollLines = rolls
+      .map((roll, index) => `• ${index + 1}º {dado|rolagem}: \`${roll.result}\`${roll.note ? ` ${roll.note}` : ''}`)
+      .join('\n')
+
+    return `\n_${diceCount} {dados|rolagens} de ${faces} lados, porque uma rolagem só seria simples demais:_\n${rollLines}`
+  }
+
+  const note = rolls[0]?.note
+  return note ? `\n_${note}_` : ''
+}
+
 function resolveExpression(isNamedAlias: boolean, rawName: string, argsText: string): string | null {
   if (DICE_REGEX.test(rawName)) return rawName
 
@@ -82,6 +99,8 @@ export const diceCommand = defineCommand({
     const rawTotal = rolls.reduce((acc, item) => acc + item.result, 0)
     const finalTotal = hasModifier ? applyModifier(rawTotal, op, modifier) : rawTotal
 
-    await ctx.reply(funMessages.diceRoll(finalTotal, rawTotal, op, modifier, diceCount, faces, rolls))
+    const total = formatDiceTotal(finalTotal, rawTotal, op, modifier)
+    const details = formatDiceDetails(diceCount, faces, rolls)
+    await ctx.reply(funMessages.diceRoll(total, details))
   }
 })

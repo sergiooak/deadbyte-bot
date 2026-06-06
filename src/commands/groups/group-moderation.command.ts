@@ -90,6 +90,10 @@ function participantDisplay(id: string): string {
   return `@${participantUser(id)}`
 }
 
+function adminChangedMessage(mode: 'promote' | 'demote', targets: string): string {
+  return mode === 'promote' ? groupMessages.adminPromoted(targets) : groupMessages.adminDemoted(targets)
+}
+
 function requireMethod<T extends keyof WhatsappChatLike>(chat: WhatsappChatLike, method: T): WhatsappChatLike[T] | undefined {
   return typeof chat[method] === 'function' ? chat[method] : undefined
 }
@@ -140,7 +144,7 @@ async function changeAdmin(ctx: CommandContext, mode: 'promote' | 'demote'): Pro
   }
 
   await action.call(access.chat, ids)
-  await sendWithMentions(ctx, access.chat, groupMessages.adminChanged(mode, ids.map(participantDisplay).join(', ')), ids)
+  await sendWithMentions(ctx, access.chat, adminChangedMessage(mode, ids.map(participantDisplay).join(', ')), ids)
 }
 
 function randomItem<T>(items: T[]): T | undefined {
@@ -175,6 +179,20 @@ function requestId(value: unknown): string {
 
 function membershipRequestIds(requests: Array<{ id?: unknown; requesterId?: unknown; participantId?: unknown }>): string[] {
   return unique(requests.map((request) => requestId(request.requesterId) || requestId(request.participantId) || requestId(request.id)))
+}
+
+function membershipRequestsMessage(count: number, ids: string[]): string {
+  const preview = ids.slice(0, 10).map(participantDisplay).join(', ')
+  const suffix = ids.length > 10 ? '...' : ''
+  return preview ? groupMessages.membershipRequestsPreview(count, `${preview}${suffix}`) : groupMessages.membershipRequestsCount(count)
+}
+
+function noGiveawayTargetsMessage(adminsOnly: boolean): string {
+  return adminsOnly ? groupMessages.noGiveawayAdmins : groupMessages.noGiveawayParticipants
+}
+
+function giveawayWinnerMessage(winner: string, prize: string): string {
+  return prize ? groupMessages.giveawayPrizeWinner(winner, prize) : groupMessages.giveawayWinner(winner)
 }
 
 async function showRules(ctx: CommandContext): Promise<void> {
@@ -235,11 +253,10 @@ async function handleMembershipRequests(ctx: CommandContext): Promise<void> {
   }
 
   const ids = membershipRequestIds(requests)
-  const preview = ids.slice(0, 10).map(participantDisplay).join(', ')
   await sendWithMentions(
     ctx,
     access.chat,
-    groupMessages.membershipRequestsPreview(count, preview, ids.length > 10),
+    membershipRequestsMessage(count, ids),
     ids
   )
 }
@@ -256,12 +273,12 @@ async function giveaway(ctx: CommandContext, adminsOnly: boolean): Promise<void>
   const winner = randomItem(participants)
   const winnerId = idOf(winner)
   if (!winnerId) {
-    await ctx.reply(groupMessages.noGiveawayTargets(adminsOnly))
+    await ctx.reply(noGiveawayTargetsMessage(adminsOnly))
     return
   }
 
   const prize = argsText(ctx)
-  await sendWithMentions(ctx, access.chat, groupMessages.giveawayWinner(participantDisplay(winnerId), prize), [winnerId])
+  await sendWithMentions(ctx, access.chat, giveawayWinnerMessage(participantDisplay(winnerId), prize), [winnerId])
   await ctx.react(randomItem(groupMessages.giveawayReactions) ?? '🎉')
 }
 

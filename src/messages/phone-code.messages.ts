@@ -1,12 +1,6 @@
-type DdiCountryDisplay = {
-  name: string
-  flag: string
-}
-
 export const phoneCodeMessages = {
-  dddResult(ddd: string, stateName: string, state: string, cities: string[]): string {
-    const cityList = cities.join(', ')
-    return `{📍|☎️|📞} *{DDD|Código|Discagem Direta a Distância} ${ddd}* — ${stateName} (${state})\n\n{🏙️|🌆|🌃} *{Cidades|Municípios|Localidades|Regiões} ({${cities.length}|total de ${cities.length}|${cities.length} no total}):* ${cityList}`
+  dddResult(ddd: string, stateName: string, state: string, cityCount: number, cityList: string): string {
+    return `{📍|☎️|📞} *{DDD|Código|Discagem Direta a Distância} ${ddd}* — ${stateName} (${state})\n\n{🏙️|🌆|🌃} *{Cidades|Municípios|Localidades|Regiões} ({${cityCount}|total de ${cityCount}|${cityCount} no total}):* ${cityList}`
   },
   dddMissingInput:
     '{Manda|Informa|Joga aí|Solta} um DDD, responda {a mensagem de }alguém ou marque a pessoa. {Ex:|Exemplo, já que aparentemente precisa:|Tipo assim:} *!ddd 34*',
@@ -21,14 +15,11 @@ export const phoneCodeMessages = {
   },
   ddiMissingInput:
     '{Manda|Informa|Joga aí|Solta} um DDI, responda {a mensagem de alguém|alguém} ou marque {a pessoa|o gringo}. {Ex:|Exemplo, já que aparentemente precisa:|Tipo assim:} *!ddi 52*',
-  ddiResult(ddi: string, countries: DdiCountryDisplay[]): string {
-    if (countries.length === 1) {
-      const country = countries[0]
-      return `{🌍|☎️|🌐} *{DDI|Código|Discagem} +${ddi}* {—|➜|-} ${country.flag} ${country.name}`
-    }
-
-    const list = countries.map((country) => `• ${country.flag} ${country.name}`).join('\n')
-    return `{🌍|☎️|🌐} *{DDI|Código|Discagem} +${ddi}* {é compartilhado por|pertence a|está associado a} ${countries.length} {países/territórios|lugares|regiões}:\n\n${list}`
+  ddiSingleResult(ddi: string, country: string): string {
+    return `{🌍|☎️|🌐} *{DDI|Código|Discagem} +${ddi}* {—|➜|-} ${country}`
+  },
+  ddiSharedResult(ddi: string, countryCount: number, countryList: string): string {
+    return `{🌍|☎️|🌐} *{DDI|Código|Discagem} +${ddi}* {é compartilhado por|pertence a|está associado a} ${countryCount} {países/territórios|lugares|regiões}:\n\n${countryList}`
   },
   ddiNotFound(ddi: string): string {
     return `{DDI *+${ddi}* não foi encontrado na base|Procurei o DDI *+${ddi}* e nada|Esse DDI *+${ddi}* não apareceu no radar internacional}. {Ou é inválido|Ou o mapa tirou folga|Ou a geografia resolveu complicar}.`

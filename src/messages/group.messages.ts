@@ -1,5 +1,3 @@
-import { GROUP_CONFIG_BOOLEAN_KEYS, GROUP_CONFIG_STRING_KEYS, type GroupConfig } from '../groups/group-config.types.js'
-
 export const groupMessages = {
   configUnavailable:
     '{Configuração de grupos indisponível|Não achei o serviço de configuração de grupos} neste runtime. {Hoje o painel veio sem botão|A infraestrutura resolveu ser minimalista}.',
@@ -9,26 +7,14 @@ export const groupMessages = {
     '{Preciso ser admin do grupo|Me dá admin primeiro} para atualizar a descrição e salvar a configuração. {Sem cargo eu sou só palpiteiro|Sem crachá, sem milagre}.',
   configUpdated:
     '{Configuração do grupo atualizada|Salvei a configuração na descrição}. {Pronto, pode fingir que foi fácil|A ata da bagunça está em dia}.',
-  booleanOptionInvalid(keys = GROUP_CONFIG_BOOLEAN_KEYS): string {
-    return `{Opção booleana inválida|Essa opção liga/desliga não existe}. Use: ${keys.join(', ')}. {Sim, tem lista por um motivo|Escolhe uma dessas, ajuda o bot}.`
+  booleanOptionInvalid(keys: string): string {
+    return `{Opção booleana inválida|Essa opção liga/desliga não existe}. Use: ${keys}. {Sim, tem lista por um motivo|Escolhe uma dessas, ajuda o bot}.`
   },
-  stringOptionInvalid(keys = GROUP_CONFIG_STRING_KEYS): string {
-    return `{Opção textual inválida|Esse campo de texto não existe}. Use: ${keys.join(', ')}. {Criatividade é linda, mas config tem limite|Vamos seguir o cardápio}.`
+  stringOptionInvalid(keys: string): string {
+    return `{Opção textual inválida|Esse campo de texto não existe}. Use: ${keys}. {Criatividade é linda, mas config tem limite|Vamos seguir o cardápio}.`
   },
-  describeConfig(config: GroupConfig): string {
-    const enabled = GROUP_CONFIG_BOOLEAN_KEYS.filter((key) => config[key])
-    const disabled = GROUP_CONFIG_BOOLEAN_KEYS.filter((key) => !config[key])
-    const strings = GROUP_CONFIG_STRING_KEYS.map((key) => `*${key}:* ${config[key] ?? '(padrão global)'}`)
-
-    return [
-      '*{Configuração do grupo|Raio-X da configuração do grupo}*',
-      '',
-      `Ativos: ${enabled.length ? enabled.map((key) => `*${key}*`).join(', ') : '{nenhum|nadinha, emocionante}'}`,
-      `Desligados: ${disabled.map((key) => `*${key}*`).join(', ')}`,
-      ...strings,
-      '',
-      '{Use|Exemplo, já que config não é adivinhação}: !on welcome, !off welcome, !set autor Sergio ou !set pacote DeadByte.'
-    ].join('\n')
+  configSummary(enabled: string, disabled: string, textOptions: string): string {
+    return `*{Configuração do grupo|Raio-X da configuração do grupo}*\n\nAtivos: ${enabled}\nDesligados: ${disabled}\n${textOptions}\n\n{Use|Exemplo, já que config não é adivinhação}: !on welcome, !off welcome, !set autor Sergio ou !set pacote DeadByte.`
   },
   whatsappClientUnavailable:
     '{Cliente do WhatsApp indisponível|O WhatsApp sumiu deste runtime} agora. {Difícil moderar grupo por telepatia|Sem cliente, sem show}.',
@@ -48,10 +34,11 @@ export const groupMessages = {
     '{Grupo aberto|Abri o grupo}. Todos podem enviar mensagens. {Boa sorte para quem vai moderar isso|A porteira voltou a existir}.',
   adminChangeUnavailable:
     '{Este runtime não expõe|Não tenho acesso a} alteração de admins do grupo. {Sem o botão, sem o teatro|A API não deixou brincar de RH}.',
-  adminChanged(mode: 'promote' | 'demote', targets: string): string {
-    return mode === 'promote'
-      ? `{Admin concedido|Subiu de cargo, olha só}: ${targets}`
-      : `{Admin removido|Desceu do trono}: ${targets}`
+  adminPromoted(targets: string): string {
+    return `{Admin concedido|Subiu de cargo, olha só}: ${targets}`
+  },
+  adminDemoted(targets: string): string {
+    return `{Admin removido|Desceu do trono}: ${targets}`
   },
   noRules:
     '{Este grupo ainda não tem regras na descrição|Não achei regras na descrição do grupo}. {Coragem viver assim|A anarquia está documentada pela ausência}.',
@@ -72,20 +59,21 @@ export const groupMessages = {
   rejectedRequests(count: number): string {
     return `{Rejeitei|Barrei} ${count} solicitação(ões) de entrada. {Portaria sem dó|Hoje a peneira veio fina}.`
   },
-  membershipRequestsPreview(count: number, preview: string, hasMore: boolean): string {
-    return preview
-      ? `{Há|Tem} ${count} solicitação(ões) de entrada: ${preview}${hasMore ? '...' : ''}\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*, {sem drama|com carinho administrativo}.`
-      : `{Há|Tem} ${count} solicitação(ões) de entrada.\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*, {porque a fila não anda sozinha|por incrível que pareça}.`
+  membershipRequestsPreview(count: number, preview: string): string {
+    return `{Há|Tem} ${count} solicitação(ões) de entrada: ${preview}\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*, {sem drama|com carinho administrativo}.`
   },
-  noGiveawayTargets(adminsOnly: boolean): string {
-    return adminsOnly
-      ? '{Não encontrei admins para sortear|Sem admins elegíveis pro sorteio}. {Ou esconderam bem|Ou o organograma está triste}.'
-      : '{Não encontrei participantes para sortear|Não achei ninguém elegível pro sorteio}. {Sorteio com plateia invisível é complicado|A lista veio mais vazia que reunião sexta à tarde}.'
+  membershipRequestsCount(count: number): string {
+    return `{Há|Tem} ${count} solicitação(ões) de entrada.\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*, {porque a fila não anda sozinha|por incrível que pareça}.`
   },
-  giveawayWinner(winner: string, prize: string): string {
-    return prize
-      ? `${winner} {parabéns|olha só, ganhou}! Você ganhou o sorteio de *${prize}*! {Favor fingir surpresa|A aleatoriedade decidiu e eu só obedeço}.`
-      : `${winner} {parabéns|olha só, ganhou}! Você ganhou o sorteio! {Favor fingir surpresa|A sorte trabalhou por você hoje}.`
+  noGiveawayAdmins:
+    '{Não encontrei admins para sortear|Sem admins elegíveis pro sorteio}. {Ou esconderam bem|Ou o organograma está triste}.',
+  noGiveawayParticipants:
+    '{Não encontrei participantes para sortear|Não achei ninguém elegível pro sorteio}. {Sorteio com plateia invisível é complicado|A lista veio mais vazia que reunião sexta à tarde}.',
+  giveawayWinner(winner: string): string {
+    return `${winner} {parabéns|olha só, ganhou}! Você ganhou o sorteio! {Favor fingir surpresa|A sorte trabalhou por você hoje}.`
+  },
+  giveawayPrizeWinner(winner: string, prize: string): string {
+    return `${winner} {parabéns|olha só, ganhou}! Você ganhou o sorteio de *${prize}*! {Favor fingir surpresa|A aleatoriedade decidiu e eu só obedeço}.`
   },
   noRouletteCandidate:
     '{Não encontrei participante comum para a roleta|Sem alvo elegível para a roleta}. {Os admins escaparam por burocracia|A roleta girou no vazio}.',

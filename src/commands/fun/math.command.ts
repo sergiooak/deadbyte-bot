@@ -11,6 +11,12 @@ function getExpressionText(ctx: { parsedCommand?: { explicit?: boolean; argsText
     : ctx.message.body.trim()
 }
 
+function formatMathResult(explanation: string): string {
+  return /^[✅❌]/.test(explanation)
+    ? funMessages.mathCheckedResult(explanation)
+    : funMessages.mathResult(explanation)
+}
+
 export const mathCommand = defineCommand({
   id: 'fun.math',
   group: 'fun',
@@ -43,6 +49,6 @@ export const mathCommand = defineCommand({
       return
     }
 
-    await ctx.reply(funMessages.mathResult(result.explanation))
+    await ctx.reply(formatMathResult(result.explanation))
   },
 })

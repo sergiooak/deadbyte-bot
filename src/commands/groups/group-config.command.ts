@@ -14,6 +14,8 @@ type GroupConfigCommandServices = {
 
 const BOOLEAN_SET = new Set<string>(GROUP_CONFIG_BOOLEAN_KEYS)
 const STRING_SET = new Set<string>(GROUP_CONFIG_STRING_KEYS)
+const BOOLEAN_OPTIONS = GROUP_CONFIG_BOOLEAN_KEYS.join(', ')
+const STRING_OPTIONS = GROUP_CONFIG_STRING_KEYS.join(', ')
 
 function servicesOf(ctx: CommandContext): GroupConfigCommandServices {
   return ctx.services as GroupConfigCommandServices
@@ -46,6 +48,20 @@ async function requireGroupAdmin(ctx: CommandContext): Promise<{ ok: boolean; se
 
 function splitArgs(ctx: CommandContext): string[] {
   return ctx.parsedCommand?.argsText.trim().split(/\s+/).filter(Boolean) ?? []
+}
+
+function formatGroupConfig(config: GroupConfig): string {
+  const enabled = GROUP_CONFIG_BOOLEAN_KEYS.filter((key) => config[key])
+  const disabled = GROUP_CONFIG_BOOLEAN_KEYS.filter((key) => !config[key])
+  const textOptions = GROUP_CONFIG_STRING_KEYS
+    .map((key) => `*${key}:* ${config[key] ?? '(padrão global)'}`)
+    .join('\n')
+
+  return groupMessages.configSummary(
+    enabled.length ? enabled.map((key) => `*${key}*`).join(', ') : '{nenhum|nadinha, emocionante}',
+    disabled.map((key) => `*${key}*`).join(', '),
+    textOptions
+  )
 }
 
 async function updateConfig(ctx: CommandContext, mutate: (config: GroupConfig) => GroupConfig | undefined): Promise<void> {
@@ -86,7 +102,7 @@ export const showGroupConfigCommand = defineCommand({
     }
 
     const config = await services.groupConfigs.ensureLoaded(chat)
-    await ctx.reply(groupMessages.describeConfig(config))
+    await ctx.reply(formatGroupConfig(config))
   }
 })
 
@@ -110,7 +126,7 @@ export const enableGroupConfigCommand = defineCommand({
   async run(ctx) {
     const key = splitArgs(ctx)[0] as GroupConfigBooleanKey | undefined
     if (!key || !BOOLEAN_SET.has(key)) {
-      await ctx.reply(groupMessages.booleanOptionInvalid())
+      await ctx.reply(groupMessages.booleanOptionInvalid(BOOLEAN_OPTIONS))
       return
     }
 
@@ -141,7 +157,7 @@ export const disableGroupConfigCommand = defineCommand({
   async run(ctx) {
     const key = splitArgs(ctx)[0] as GroupConfigBooleanKey | undefined
     if (!key || !BOOLEAN_SET.has(key)) {
-      await ctx.reply(groupMessages.booleanOptionInvalid())
+      await ctx.reply(groupMessages.booleanOptionInvalid(BOOLEAN_OPTIONS))
       return
     }
 
@@ -173,7 +189,7 @@ export const setGroupConfigCommand = defineCommand({
     const [rawKey, ...valueParts] = splitArgs(ctx)
     const key = rawKey as GroupConfigStringKey | undefined
     if (!key || !STRING_SET.has(key)) {
-      await ctx.reply(groupMessages.stringOptionInvalid())
+      await ctx.reply(groupMessages.stringOptionInvalid(STRING_OPTIONS))
       return
     }
 

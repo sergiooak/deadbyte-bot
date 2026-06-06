@@ -35,6 +35,6 @@ export const emojiCommand = defineCommand({
     }
 
     const emoji = data.htmlCode.map(decodeHtmlEntity).join('')
-    await ctx.reply(funMessages.emojiResult(emoji, data))
+    await ctx.reply(funMessages.emojiResult(emoji, data.name, data.category, data.group))
   }
 })

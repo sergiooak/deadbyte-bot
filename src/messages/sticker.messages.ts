@@ -26,10 +26,10 @@ const optionalSuffixJoke =
 
 export const stickerMessages = {
   mediaDownloadFailed:
-    `{Putz|Vixe|Eita porra}, {deu ruim ao|não rolou de|deu certo não,|deu {merda|xablau} ao}{| tentar} {baixar {essa mídia|esse arquivo}|fazer download {dessa mídia|desse arquivo}}. ${tryAgain}{|que eu finjo que foi {culpa da|a} {internet|net}{| kk}|ou tenta com {outro arquivo|outra mídia}{| uai| kk}}{|...|!| 🫠| 😁| 😇}`,
+    `{Putz|Vixe|Eita porra}, {deu ruim ao|não rolou de|deu certo não,|deu {merda|xablau} ao}{| tentar} baixar a mídia. ${tryAgain}{|que eu finjo que foi {culpa da|a} {internet|net}{| kk}|ou tenta com {outro arquivo|outra mídia}{| uai| kk}}{|...|!| 🫠| 😁| 😇}`,
 
   missingCreationMedia:
-    `${casualPrefix}{Manda|Envia|Me manda|Me envia} uma {foto|imagem}, vídeo, gif ou {sticker|figurinha}{| aí}, ou {respond{a|e} |marca }{|{a|uma} mensagem {com |que seja }}{{alguma|uma} mídia|{algum|um} arquivo} {pra|para} eu {transformar em|criar uma} figurinha{.|!}${optionalSuffixJoke}`,
+    `${casualPrefix}{Manda|Envia|Me manda|Me envia} uma imagem/vídeo/sticker{| ou gif}{| aí}, ou {respond{a|e} |marca }{|{a|uma} mensagem {com |que seja }}{{alguma|uma} mídia|{algum|um} arquivo} {pra|para} eu {transformar em|criar uma} figurinha{.|!}${optionalSuffixJoke}`,
 
   creationFailed:
     `${errorPrefix}{Não consegui|Deu ruim{| ao}{| tentar}|Falhei{| bonito| miseravelmente}{| tentando}} criar a figurinha{.|!|!!|!!!}\n{Tenta de novo|Tente novamente|Joga outra aí|Manda {novamente|de novo}}, vai que{| agora} {{|o {bagulho|esse trem}} resolve funcionar|dá certo?}{| kk| uai| né?}`,

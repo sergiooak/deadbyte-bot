@@ -1,6 +1,6 @@
 import { defineCommand, type DeadByteCommand } from '@deadbyte/runtime'
-import { systemMessages } from '../../messages/system.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { createSystemMenu } from './menu.helper.js'
 
 type MenuServices = {
   commands?: DeadByteCommand[]
@@ -29,6 +29,6 @@ export const menuCommand = defineCommand({
     const services = ctx.services as MenuServices
     const allCommands = services.commands ?? []
     const prefix = ctx.config.prefixes[0] ?? '.'
-    await ctx.reply(systemMessages.menu(allCommands, prefix, ctx.config.commands as CommandConfig))
+    await ctx.reply(createSystemMenu(allCommands, prefix, ctx.config.commands as CommandConfig))
   }
 })

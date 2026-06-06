@@ -28,10 +28,15 @@ function formatDdiResult(ddiStr: string): string | undefined {
     return undefined
   }
 
-  return phoneCodeMessages.ddiResult(
-    ddiStr,
-    countries.map((country) => ({ name: country.name, flag: flagEmoji(country.iso) }))
-  )
+  if (countries.length === 1) {
+    const country = countries[0]
+    if (!country) return undefined
+
+    return phoneCodeMessages.ddiSingleResult(ddiStr, `${flagEmoji(country.iso)} ${country.name}`)
+  }
+
+  const countryList = countries.map((country) => `• ${flagEmoji(country.iso)} ${country.name}`).join('\n')
+  return phoneCodeMessages.ddiSharedResult(ddiStr, countries.length, countryList)
 }
 
 export const ddiCommand = defineCommand({

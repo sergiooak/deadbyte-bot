@@ -18,6 +18,10 @@ function flipCoin(): 'cara' | 'coroa' {
   return Math.random() < 0.5 ? 'cara' : 'coroa'
 }
 
+function formatCoinDetails(flips: Array<'cara' | 'coroa'>): string {
+  return flips.map((result, index) => `• ${index + 1}º: *${result}*`).join('\n')
+}
+
 export const coinCommand = defineCommand({
   id: 'fun.coin',
   group: 'fun',
@@ -47,6 +51,6 @@ export const coinCommand = defineCommand({
       return
     }
 
-    await ctx.reply(funMessages.coinMany(coinCount, heads, tails, flips))
+    await ctx.reply(funMessages.coinMany(coinCount, heads, tails, formatCoinDetails(flips)))
   }
 })

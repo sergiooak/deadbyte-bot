@@ -77,7 +77,7 @@ async function lookupDdd(dddStr: string): Promise<string | undefined> {
 
   const stateName = STATE_NAMES[data.state] ?? data.state
   const cities = sortCitiesByRelevance(data.cities.map(normalizeCityName), data.state)
-  return phoneCodeMessages.dddResult(dddStr, stateName, data.state, cities)
+  return phoneCodeMessages.dddResult(dddStr, stateName, data.state, cities.length, cities.join(', '))
 }
 
 export const dddCommand = defineCommand({
