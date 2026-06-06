@@ -74,8 +74,11 @@ export const diceCommand = defineCommand({
   async match(ctx) {
     const rawName = ctx.parsedCommand?.rawName ?? ''
     const argsText = ctx.parsedCommand?.argsText ?? ''
+    const isNamedAlias = matchesCommandAlias(ctx, 'fun.dice', diceCommand.aliases)
 
-    return resolveExpression(matchesCommandAlias(ctx, 'fun.dice', diceCommand.aliases), rawName, argsText) !== null
+    if (isNamedAlias) return true
+
+    return resolveExpression(false, rawName, argsText) !== null
   },
   async run(ctx) {
     const rawName = ctx.parsedCommand?.rawName ?? ''
