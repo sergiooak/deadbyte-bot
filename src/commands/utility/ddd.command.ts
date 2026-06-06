@@ -1,6 +1,6 @@
 import { defineCommand } from '@deadbyte/runtime'
 import { ofetch } from 'ofetch'
-import { phoneCodeMessages } from '../../messages/phone-code.messages.js'
+import { utilityMessages } from '../../messages/utility.messages.js'
 import { getNormalizedCommandAliases, matchesCommandAliasWithSuffix } from '../../utils/commands.js'
 import { sortCitiesByRelevance } from './ddd-data.helper.js'
 import { collectPhoneTargets, parsePhoneNumber } from './phone-code.helper.js'
@@ -77,7 +77,7 @@ async function lookupDdd(dddStr: string): Promise<string | undefined> {
 
   const stateName = STATE_NAMES[data.state] ?? data.state
   const cities = sortCitiesByRelevance(data.cities.map(normalizeCityName), data.state)
-  return phoneCodeMessages.dddResult(dddStr, stateName, data.state, cities.length, cities.join(', '))
+  return utilityMessages.dddResult(dddStr, stateName, data.state, cities.length, cities.join(', '))
 }
 
 export const dddCommand = defineCommand({
@@ -105,7 +105,7 @@ export const dddCommand = defineCommand({
     const targets = await collectPhoneTargets(ctx, argValue)
 
     if (targets.length === 0) {
-      await ctx.reply(phoneCodeMessages.dddMissingInput)
+      await ctx.reply(utilityMessages.dddMissingInput)
       return
     }
 
@@ -116,19 +116,20 @@ export const dddCommand = defineCommand({
       const ddd = parsed.kind === 'brazil' || parsed.kind === 'local' ? parsed.ddd : undefined
 
       if (parsed.kind === 'international') {
-        replies.push(phoneCodeMessages.dddInternational(target.label, parsed.ddi))
+        replies.push(utilityMessages.dddInternational(target.label, parsed.ddi))
         continue
       }
 
       if (!ddd || !/^\d{2}$/.test(ddd)) {
-        replies.push(phoneCodeMessages.dddInvalid(target.label))
+        replies.push(utilityMessages.dddInvalid(target.label))
         continue
       }
 
       const result = await lookupDdd(ddd)
-      replies.push(result ?? phoneCodeMessages.dddNotFound(target.label, ddd))
+      replies.push(result ?? utilityMessages.dddNotFound(target.label, ddd))
     }
 
     await ctx.reply(replies.join('\n\n'))
   }
 })
+

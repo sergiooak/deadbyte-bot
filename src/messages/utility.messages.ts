@@ -1,4 +1,7 @@
-export const phoneCodeMessages = {
+const errorPrefix =
+  '{|{Opa|Oops|Eita|Putz|Vixe|Vish|Uai|Porra{| caralho}|Caralho}{!|!!|!!!} }'
+
+export const utilityMessages = {
   dddResult(ddd: string, stateName: string, state: string, cityCount: number, cityList: string): string {
     return `{📍|☎️|📞} *{DDD|Código|Discagem Direta a Distância} ${ddd}* — ${stateName} (${state})\n\n{🏙️|🌆|🌃} *{Cidades|Municípios|Localidades|Regiões} ({${cityCount}|total de ${cityCount}|${cityCount} no total}):* ${cityList}`
   },
@@ -32,5 +35,17 @@ export const phoneCodeMessages = {
   },
   ddiInvalid(label: string): string {
     return `*${label}*: {me entrega um DDI válido de 1 a 4 dígitos|manda um DDI com 1 a 4 dígitos|preciso de um DDI minimamente real}. {Do jeito que veio, até a antena pediu demissão|Assim não rola, o mapa fica ofendido}.`
+  },
+  mathInvalid:
+    `${errorPrefix}{Não {reconheci|entendi} essa {expressão|formula}{|.| aí{ não{|!| ein?}}}|Não entendi o que{|vc|você|ocê} quis dizer{|.| aí{ não{|!| ein?}}}|{Tendi|Entendi} foi nada{.|!| kk}\n} {Tenta um desses:|Exemplos que funcionam:|Tenta algo{|tipo:} assim:}\n\n` +
+    '• `1 + 2 * 3`\n' +
+    '• `(4 + 6) / 2`\n' +
+    '• `2 ^ 3`\n' +
+    '• `40% de 250` · `raiz cúbica de 27` · `6³`',
+  mathCheckedResult(explanation: string): string {
+    return `{Conferi duas vezes pra ter certeza:|Fiz com calma, pode confiar...|Calculei, recalculei, e:|Precisei usar a calculadora kk}\n\n${explanation}`
+  },
+  mathResult(explanation: string): string {
+    return `{🧮|📐|🔢} {Saiu:|Resultado:|Aqui:|A reposta é:|O resultado é:|Deu:} ${explanation}`
   }
 }

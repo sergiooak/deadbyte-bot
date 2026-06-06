@@ -1,5 +1,5 @@
 import { defineCommand } from '@deadbyte/runtime'
-import { phoneCodeMessages } from '../../messages/phone-code.messages.js'
+import { utilityMessages } from '../../messages/utility.messages.js'
 import { getNormalizedCommandAliases, matchesCommandAliasWithSuffix } from '../../utils/commands.js'
 import { flagEmoji, lookupDdi } from './ddi-data.helper.js'
 import { collectPhoneTargets, parsePhoneNumber } from './phone-code.helper.js'
@@ -32,11 +32,11 @@ function formatDdiResult(ddiStr: string): string | undefined {
     const country = countries[0]
     if (!country) return undefined
 
-    return phoneCodeMessages.ddiSingleResult(ddiStr, `${flagEmoji(country.iso)} ${country.name}`)
+    return utilityMessages.ddiSingleResult(ddiStr, `${flagEmoji(country.iso)} ${country.name}`)
   }
 
   const countryList = countries.map((country) => `• ${flagEmoji(country.iso)} ${country.name}`).join('\n')
-  return phoneCodeMessages.ddiSharedResult(ddiStr, countries.length, countryList)
+  return utilityMessages.ddiSharedResult(ddiStr, countries.length, countryList)
 }
 
 export const ddiCommand = defineCommand({
@@ -64,7 +64,7 @@ export const ddiCommand = defineCommand({
     const targets = await collectPhoneTargets(ctx, argValue)
 
     if (targets.length === 0) {
-      await ctx.reply(phoneCodeMessages.ddiMissingInput)
+      await ctx.reply(utilityMessages.ddiMissingInput)
       return
     }
 
@@ -76,30 +76,31 @@ export const ddiCommand = defineCommand({
 
       if (isShortDdiArg) {
         const result = formatDdiResult(target.digits)
-        replies.push(result ?? phoneCodeMessages.ddiNotFound(target.digits))
+        replies.push(result ?? utilityMessages.ddiNotFound(target.digits))
         continue
       }
 
       if (parsed.kind === 'brazil') {
-        replies.push(phoneCodeMessages.ddiBrazilian(target.label, parsed.ddd))
+        replies.push(utilityMessages.ddiBrazilian(target.label, parsed.ddd))
         continue
       }
 
       if (parsed.kind === 'local' && !target.hasExplicitPlus) {
-        replies.push(phoneCodeMessages.ddiLocalWithoutCountry(target.label))
+        replies.push(utilityMessages.ddiLocalWithoutCountry(target.label))
         continue
       }
 
       const ddi = parsed.kind === 'international' ? parsed.ddi : target.digits
       if (!/^\d{1,4}$/.test(ddi)) {
-        replies.push(phoneCodeMessages.ddiInvalid(target.label))
+        replies.push(utilityMessages.ddiInvalid(target.label))
         continue
       }
 
       const result = formatDdiResult(ddi)
-      replies.push(result ?? phoneCodeMessages.ddiNotFound(ddi))
+      replies.push(result ?? utilityMessages.ddiNotFound(ddi))
     }
 
     await ctx.reply(replies.join('\n\n'))
   }
 })
+

@@ -1,5 +1,5 @@
 import { defineCommand } from '@deadbyte/runtime'
-import { funMessages } from '../../messages/fun.messages.js'
+import { utilityMessages } from '../../messages/utility.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { parseMathExpression } from '../../utils/math'
 
@@ -13,8 +13,8 @@ function getExpressionText(ctx: { parsedCommand?: { explicit?: boolean; argsText
 
 function formatMathResult(explanation: string): string {
   return /^[✅❌]/.test(explanation)
-    ? funMessages.mathCheckedResult(explanation)
-    : funMessages.mathResult(explanation)
+    ? utilityMessages.mathCheckedResult(explanation)
+    : utilityMessages.mathResult(explanation)
 }
 
 export const mathCommand = defineCommand({
@@ -45,10 +45,11 @@ export const mathCommand = defineCommand({
     const result = parseMathExpression(getExpressionText(ctx))
 
     if (!result) {
-      await ctx.reply(funMessages.mathInvalid)
+      await ctx.reply(utilityMessages.mathInvalid)
       return
     }
 
     await ctx.reply(formatMathResult(result.explanation))
   },
 })
+
