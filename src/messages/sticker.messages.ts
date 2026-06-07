@@ -25,25 +25,29 @@ const optionalSuffixJoke =
 // 
 
 export const stickerMessages = {
-  mediaDownloadFailed:
-    `{Putz|Vixe|Eita porra}, {deu ruim ao|não rolou de|deu certo não,|deu {merda|xablau} ao}{| tentar} baixar a mídia. ${tryAgain}{|que eu finjo que foi {culpa da|a} {internet|net}{| kk}|ou tenta com {outro arquivo|outra mídia}{| uai| kk}}{|...|!| 🫠| 😁| 😇}`,
+  // ── Erros internos ────────────────────────────────────────────────────────
 
-  missingCreationMedia:
-    `${casualPrefix}{Manda|Envia|Me manda|Me envia} uma imagem/vídeo/sticker{| ou gif}{| aí}, ou {respond{a|e} |marca }{|{a|uma} mensagem {com |que seja }}{{alguma|uma} mídia|{algum|um} arquivo} {pra|para} eu {transformar em|criar uma} figurinha{.|!}${optionalSuffixJoke}`,
+  mediaDownloadFailed:
+    `${errorPrefix}📥 {Deu ruim ao|Falhei ao|Não consegui} baixar a mídia. ${tryAgain}{|, que eu finjo que foi {culpa da|a} {internet|net}{| kk}|, ou tenta com {outro arquivo|outra mídia}{| uai| kk}}{|...|!| 🫠| 😁| 😇}`,
 
   creationFailed:
-    `${errorPrefix}{Não consegui|Deu ruim{| ao}{| tentar}|Falhei{| bonito| miseravelmente}{| tentando}} criar a figurinha{.|!|!!|!!!}\n{Tenta de novo|Tente novamente|Joga outra aí|Manda {novamente|de novo}}, vai que{| agora} {{|o {bagulho|esse trem}} resolve funcionar|dá certo?}{| kk| uai| né?}`,
-
-  stealMissingMedia:
-    `${casualPrefix}${respondOrMarkSticker} {pra eu {|conseguir }{trocar o autor/pacote|roubar|trocar os metadados|roubar {pra vc|ela}}{.|!}}${optionalSuffixJoke}`,
-
-  toMediaMissing:
-    `${casualPrefix}${respondOrMarkSticker} {pra|para} eu {|conseguir }converter em {{imagem|foto} ou vídeo|arquivo}{.|!}${optionalSuffixJoke}`,
-
-  toMediaInvalid(mimeType: string): string {
-    return `${casualPrefix}{Isso aí não é|Esse trem|Essa mensagem|Olha, isso não parece} uma figurinha não.\n{Tipo detectado|O mimetype disso aí é}: *${mimeType}*. {Preciso de WebP de verdade{| meu consagrado| manin| caralho}|Me ajuda a te ajudar|Me manda uma figurinha de verdade{|, faz favor}}${sentenceEnd}`
-  },
+    `${errorPrefix}🎨 {Não consegui|Deu ruim{| ao}{| tentar}|Falhei{| bonito| miseravelmente}{| tentando}} criar a figurinha{.|!|!!|!!!}\n{Tenta de novo|Tente novamente|Joga outra aí|Manda {novamente|de novo}}, vai que{| agora} {{|o {bagulho|esse trem}} resolve funcionar|dá certo?}{| kk| uai| né?}`,
 
   conversionFailed:
-    `${errorPrefix}{Não consegui|Deu ruim ao|Falhei ao|Deu xablau tentando} {converter|criar|fazer} a figurinha. ${tryAgain}{| aí| ai}${sentenceEnd}`
+    `${errorPrefix}🔄 {Não consegui|Deu ruim ao|Falhei ao|Deu xablau tentando} {converter|criar|fazer} a figurinha. ${tryAgain}{| aí| ai}${sentenceEnd}`,
+
+  // ── Erros do usuário ──────────────────────────────────────────────────────
+
+  missingCreationMedia:
+    `${casualPrefix}🖼️ {Manda|Envia|Me manda|Me envia} uma imagem/vídeo/sticker{| ou gif}{| aí}, ou {respond{a|e} |marca }{|{a|uma} mensagem {com |que seja }}{{alguma|uma} mídia|{algum|um} arquivo} {pra|para} eu {transformar em|criar uma} figurinha{.|!}${optionalSuffixJoke}`,
+
+  stealMissingMedia:
+    `${casualPrefix}🎭 ${respondOrMarkSticker} {pra eu {|conseguir }{trocar o autor/pacote|roubar|trocar os metadados|roubar {pra vc|ela}}{.|!}}${optionalSuffixJoke}`,
+
+  toMediaMissing:
+    `${casualPrefix}📸 ${respondOrMarkSticker} {pra|para} eu {|conseguir }converter em {{imagem|foto} ou vídeo|arquivo}{.|!}${optionalSuffixJoke}`,
+
+  toMediaInvalid(mimeType: string): string {
+    return `${casualPrefix}🤔 {Isso aí não é|Esse trem|Essa mensagem|Olha, isso não parece} uma figurinha não.\n{Tipo detectado|O mimetype disso aí é}: *${mimeType}*. {Preciso de WebP de verdade{| meu consagrado| manin| caralho}|Me ajuda a te ajudar|Me manda uma figurinha de verdade{|, faz favor}}${sentenceEnd}`
+  },
 }
