@@ -1,107 +1,189 @@
+// 
+// ===== Constants =====================================================================================================
+// 
+
+const casualPrefix =
+  '{|{Pô|Poxa|Porra|Se liga|Uai} {véi|mano|bro|brother|bixo|bicho}{| kk}{||!|}\n\n}'
+
+const errorPrefix =
+  '{|{Opa|Oops|Eita|Putz|Vixe|Vish|Uai|Porra{| caralho}|Caralho}{!|!!|!!!} }'
+
+const sentenceEnd =
+  '{|.|!|!!|!!!| uai| kk}'
+
+// 
+// ===== Main export ==================================================================================================
+// 
 export const groupMessages = {
+  // ── Config ────────────────────────────────────────────────────────────────
+
   configUnavailable:
-    '{Configuração de grupos indisponível|Não achei o serviço de configuração de grupos} neste runtime. {Hoje o painel veio sem botão|A infraestrutura resolveu ser minimalista}.',
+    `${errorPrefix}⚙️ {Configuração de grupos indisponível|Não encontrei o serviço de configuração} neste runtime. {Deve ter saído pra almoço|Tenta de novo em breve}${sentenceEnd}`,
+
   groupOnly:
-    '{Este comando só funciona em grupos|Isso aqui é coisa de grupo, não de conversa solo}. {Burocracia básica|Regras são regras, infelizmente}.',
+    `${casualPrefix}🏘️ {Este comando só funciona em grupos|Isso aqui é exclusivo de grupo}. {Conversa privada não conta|Aqui no {pv|privado|dm} não funciona}${sentenceEnd}`,
+
   configBotAdminRequired:
-    '{Preciso ser admin do grupo|Me dá admin primeiro} para atualizar a descrição e salvar a configuração. {Sem cargo eu sou só palpiteiro|Sem crachá, sem milagre}.',
-  configUpdated:
-    '{Configuração do grupo atualizada|Salvei a configuração na descrição}. {Pronto, pode fingir que foi fácil|A ata da bagunça está em dia}.',
+    `${casualPrefix}🔐 {Preciso ser admin do grupo|Me dá permissão de admin} para salvar a configuração na descrição. {Sem isso eu não consigo persistir nada|Sem permissão, sem config}${sentenceEnd}`,
+
   booleanOptionInvalid(keys: string): string {
-    return `{Opção booleana inválida|Essa opção liga/desliga não existe}. Use: ${keys}. {Sim, tem lista por um motivo|Escolhe uma dessas, ajuda o bot}.`
+    return `${casualPrefix}❓ {Opção inválida|Não reconheci essa opção}. As disponíveis são: ${keys}. {Escolhe uma da lista|Segue o cardápio}${sentenceEnd}`
   },
+
   stringOptionInvalid(keys: string): string {
-    return `{Opção textual inválida|Esse campo de texto não existe}. Use: ${keys}. {Criatividade é linda, mas config tem limite|Vamos seguir o cardápio}.`
+    return `${casualPrefix}❓ {Campo inválido|Não reconheci esse campo}. Os disponíveis são: ${keys}. {Segue a lista.|Só tem esses mesmo.}${sentenceEnd}`
   },
+
   configSummary(enabled: string, disabled: string, textOptions: string): string {
-    return `*{Configuração do grupo|Raio-X da configuração do grupo}*\n\nAtivos: ${enabled}\nDesligados: ${disabled}\n${textOptions}\n\n{Use|Exemplo, já que config não é adivinhação}: !on welcome, !off welcome, !set autor Sergio ou !set pacote DeadByte.`
+    return `⚙️ *Configuração do grupo*\n\nAtivos: ${enabled}\nDesligados: ${disabled}\n${textOptions}\n\n{Exemplos:|Como usar:} \`!on welcome\`, \`!off welcome\`, \`!set pacote DeadByte.com.br\` ou \`!set autor bot de figurinhas\`.`
   },
+
+  configUpdated:
+    `✅ {Configuração atualizada|Salvei as configurações na descrição}. {Pronto|Tá valendo|Feito}${sentenceEnd}`,
+
+  // ── Moderação — guards compartilhados ─────────────────────────────────────
+
   whatsappClientUnavailable:
-    '{Cliente do WhatsApp indisponível|O WhatsApp sumiu deste runtime} agora. {Difícil moderar grupo por telepatia|Sem cliente, sem show}.',
-  senderAdminRequired:
-    '{Apenas admins do grupo podem usar este comando|Esse botão é para admin, meu nobre}. {Sem martelinho, sem julgamento|A democracia acabou nesta função}.',
-  botAdminRequired:
-    '{Preciso ser admin do grupo para executar esta ação|Me torna admin antes de pedir milagre}. {Sem permissão eu só passo vergonha|O bot também tem limite hierárquico}.',
+    `${errorPrefix}📵 {Cliente do WhatsApp indisponível|Não consegui acessar o cliente do WhatsApp} agora. {Tenta em instantes|Algo no runtime não colaborou}${sentenceEnd}`,
+
   groupLoadFailed:
-    '{Não consegui carregar os dados do grupo|O grupo não quis abrir os dados pra mim}. {Muito maduro da parte dele|Tenta de novo, vai que ele colabora}.',
+    `${errorPrefix}💾 {Não consegui carregar os dados do grupo|Falha ao carregar o grupo}. {Tenta de novo|Algo não respondeu como esperado}${sentenceEnd}`,
+
+  senderAdminRequired:
+    `${casualPrefix}🛡️ {Apenas admins podem usar este comando|Este comando é restrito a admins}. {Sem permissão, sem ação|Não depende de mim}${sentenceEnd}`,
+
+  botAdminRequired:
+    `${casualPrefix}🔐 {Preciso ser admin para executar esta ação|Me torna admin antes de pedir isso}. {Sem permissão eu não consigo fazer nada aqui|Hierarquia é hierarquia}${sentenceEnd}`,
+
   noTargets:
-    '{Marca alguém|Responde uma mensagem|Informa o número com DDI} para eu saber quem é o alvo. {Adivinhação está em manutenção|Sem alvo eu vou bater em vento}.',
+    `${casualPrefix}🎯 {Marca alguém|Responde uma mensagem|Informa o número com DDI} para eu saber o alvo. {Sem alvo não tem como continuar|Preciso saber quem é}${sentenceEnd}`,
+
+  // ── Fechar / abrir grupo ──────────────────────────────────────────────────
+
   messagesAdminsOnlyUnavailable:
-    '{Este runtime não expõe|Não tenho acesso a} alteração de mensagens apenas para admins. {O botão existe em outro universo|A API guardou essa chave no cofre}.',
+    `${errorPrefix}🚫 {Este runtime não suporta|Não tenho acesso a} bloqueio de mensagens para não-admins. {Limitação do ambiente|A API não disponibiliza isso aqui}${sentenceEnd}`,
+
   groupClosed:
-    '{Grupo fechado|Fechei o grupo}. Agora apenas admins podem enviar mensagens. {Silêncio administrativo instalado|A paz foi terceirizada para os admins}.',
+    `🔒 {Grupo fechado|Fechei o grupo 🙃|Tá fechado 🔐|Calem a boca! 🤐|Calados! 🙊}\n\n{Agora só {admins|adms} podem {enviar mensagens|falar}}${sentenceEnd}`,
+
   groupOpened:
-    '{Grupo aberto|Abri o grupo}. Todos podem enviar mensagens. {Boa sorte para quem vai moderar isso|A porteira voltou a existir}.',
+    `🔓 {Grupo aberto. De nada 🙃|Abri o grupo, podem comemorar 🎉|Ok, o grupo tá aberto de novo 😮‍💨}\n\n{Todos podem {enviar mensagens|falar|conversar}|Porteira liberada, não me decepcionem 😌|Tá liberado, mas eu tô de olho 👁️}${sentenceEnd}`,
+
+  // ── Admins ────────────────────────────────────────────────────────────────
+
   adminChangeUnavailable:
-    '{Este runtime não expõe|Não tenho acesso a} alteração de admins do grupo. {Sem o botão, sem o teatro|A API não deixou brincar de RH}.',
+    `${errorPrefix}🚫 {Este runtime não suporta|Não tenho acesso a} alteração de admins. {Limitação do ambiente|A API não deixa fazer isso aqui}${sentenceEnd}`,
+
   adminPromoted(targets: string): string {
-    return `{Admin concedido|Subiu de cargo, olha só}: ${targets}`
+    return `👑 {Tem adm novo na area|Admin concedido|Promovido a admin|Parabéns, novo admin|Mais um com o crachá de admin}: ${targets}{|.|!|!!|!!!}\n\n{Use bem esse poder, por favor 🙏|Espero que a responsabilidade venha junto 😌|Não me arrependa disso 👁️|Confio em você. Mais ou menos 😇}`
   },
+
   adminDemoted(targets: string): string {
-    return `{Admin removido|Desceu do trono}: ${targets}`
+    return `📛 {Admin removido|Rebaixado com todo carinho|O crachá foi recolhido|Voltou pra fila do povo}: ${targets}{|.|!|!!|!!!}\n\n{Foi bom enquanto durou 😌|Tudo tem seu tempo, né 😇|Decisões foram tomadas 😌|Não é pessoal. Bom, talvez um pouco 🤏}`
   },
+
+  // ── Regras ────────────────────────────────────────────────────────────────
+
   noRules:
-    '{Este grupo ainda não tem regras na descrição|Não achei regras na descrição do grupo}. {Coragem viver assim|A anarquia está documentada pela ausência}.',
+    '📋 {Este grupo não tem regras na descrição|Não encontrei regras na descrição}. {Nada registrado por enquanto.|Descrição vazia nessa parte.}',
+
   rules(rules: string): string {
-    return `*{Regras do grupo|Manual de sobrevivência do grupo}*\n\n${rules}`
+    return `📋 *Regras do grupo*\n\n${rules}`
   },
+
+  // ── Solicitações de entrada ───────────────────────────────────────────────
+
   membershipRequestsUnavailable:
-    '{Este runtime não expõe|Não tenho acesso às} solicitações de entrada do grupo. {A portaria está sem janela|A API fechou a recepção}.',
-  noMembershipRequests:
-    '{Não há solicitações de entrada no grupo|A fila de entrada está vazia}. {Milagre administrativo|Ninguém pedindo pra entrar, que paz suspeita}.',
+    `${errorPrefix}🚫 {Este runtime não expõe|Não tenho acesso às} solicitações de entrada. {Limitação do ambiente|A API não disponibiliza isso aqui}${sentenceEnd}`,
+
   approveRequestsUnavailable:
-    '{Este runtime não expõe|Não tenho acesso à} aprovação de solicitações. {A caneta de aprovado sumiu|A portaria me ignorou}.',
+    `${errorPrefix}🚫 {Este runtime não suporta|Não tenho acesso à} aprovação de solicitações. {Limitação do ambiente|A API não deixa fazer isso aqui}${sentenceEnd}`,
+
   rejectRequestsUnavailable:
-    '{Este runtime não expõe|Não tenho acesso à} rejeição de solicitações. {Nem para negar me deram botão|A portaria está seletiva}.',
+    `${errorPrefix}🚫 {Este runtime não suporta|Não tenho acesso à} rejeição de solicitações. {Limitação do ambiente|A API não deixa fazer isso aqui}${sentenceEnd}`,
+
+  noMembershipRequests:
+    `✅ {Não há solicitações de entrada|A fila de entrada está vazia}. {Tudo tranquilo por aqui.|Ninguém esperando.}${sentenceEnd}`,
+
   approvedRequests(count: number): string {
-    return `{Aprovei|Liberei} ${count} solicitação(ões) de entrada. {Portaria trabalhando|Todo mundo pra dentro, que Deus ajude os admins}.`
+    return `✅ {Aprovei|Liberei|Deixei entrar} ${count} solicitação(ões). {Pronto, podem vir 🙃|Portaria em dia 📋|Feito com todo amor 😌|Espero que valha a pena 🙏}`
   },
+
   rejectedRequests(count: number): string {
-    return `{Rejeitei|Barrei} ${count} solicitação(ões) de entrada. {Portaria sem dó|Hoje a peneira veio fina}.`
+    return `🚫 {Rejeitei|Recusei|Dispensei} ${count} solicitação(ões). {Peneira passou 🫸|Feito.|Nem todo mundo entra, né 😌|Critérios foram aplicados 📋|A seleção natural fez seu trabalho 🙃}`
   },
+
   membershipRequestsPreview(count: number, preview: string): string {
-    return `{Há|Tem} ${count} solicitação(ões) de entrada: ${preview}\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*, {sem drama|com carinho administrativo}.`
+    return `📋 {Tem|Há|Chegaram} ${count} solicitação(ões) esperando uma decisão sua 👀: ${preview}\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar* pra resolver isso. {Eles tão esperando 🙃|Não deixa acumulando 😌}`
   },
+
   membershipRequestsCount(count: number): string {
-    return `{Há|Tem} ${count} solicitação(ões) de entrada.\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar*, {porque a fila não anda sozinha|por incrível que pareça}.`
+    return `📋 {Tem|Há} ${count} solicitação(ões) de entrada acumulando na fila\n\nUse *solicitacoes aceitar* ou *solicitacoes rejeitar* quando {se animar|tiver coragem|puder} 🙃`
   },
+
+  // ── Sorteio ───────────────────────────────────────────────────────────────
+
   noGiveawayAdmins:
-    '{Não encontrei admins para sortear|Sem admins elegíveis pro sorteio}. {Ou esconderam bem|Ou o organograma está triste}.',
+    '🔍 {Não encontrei admins elegíveis|Sem admins para sortear, curioso isso 🤔|A lista de admins elegíveis veio vazia}. {Verifica se há admins no grupo 😌|Ninguém elegível no momento — coincidência, com certeza 🙃|Tá difícil achar alguém qualificado por aqui 😇}',
+
   noGiveawayParticipants:
-    '{Não encontrei participantes para sortear|Não achei ninguém elegível pro sorteio}. {Sorteio com plateia invisível é complicado|A lista veio mais vazia que reunião sexta à tarde}.',
+    '🔍 {Não encontrei participantes elegíveis|Ninguém elegível para o sorteio — surpresa 🙃|Lista de participantes: vazia}. {Verifica os critérios 📋|Lista vazia, o que dizer 😌|Talvez os critérios sejam altos demais, ou as pessoas baixas demais 😇}',
+
   giveawayWinner(winner: string): string {
-    return `${winner} {parabéns|olha só, ganhou}! Você ganhou o sorteio! {Favor fingir surpresa|A sorte trabalhou por você hoje}.`
+    return `🎉 ${winner} ganhou! 🎉\n\n{Parabéns, a sorte te escolheu 🍀|Foi você dessa vez 😌|O algoritmo decidiu — quem sou eu pra questionar 🙃|Aproveita, que sorte assim não é sempre 😇}`
   },
+
   giveawayPrizeWinner(winner: string, prize: string): string {
-    return `${winner} {parabéns|olha só, ganhou}! Você ganhou o sorteio de *${prize}*! {Favor fingir surpresa|A aleatoriedade decidiu e eu só obedeço}.`
+    return `🎉 ${winner} ganhou *${prize}*! 🎉\n\n{Parabéns, a sorte sabe o que faz 🍀|A sorte decidiu e eu respeito 😌|Tava escrito nas estrelas — ou no Math.random() kk|Que sorte ein?}`
   },
-  noRouletteCandidate:
-    '{Não encontrei participante comum para a roleta|Sem alvo elegível para a roleta}. {Os admins escaparam por burocracia|A roleta girou no vazio}.',
+
+  giveawayReactions: ['🎉', '🥳', '✨'],
+
+  // ── Roleta ────────────────────────────────────────────────────────────────
+
   participantRemovalUnavailable:
-    '{Este runtime não expõe|Não tenho acesso à} remoção de participantes. {Sem martelo, sem ban|A API tirou meu chinelo}.',
+    '🚫 {Este runtime não suporta|Não tenho acesso à} remoção de participantes. {Limitação do ambiente, não é falta de vontade 😌|A API não deixa fazer isso aqui 🙃|Tecnicamente impossível, infelizmente 😇}',
+
+  noRouletteCandidate:
+    '🎯 {Não encontrei participante elegível|Sem alvo para a roleta 🫠|A roleta ficou sem vítima}. {Sem participantes comuns no grupo — que conveniente 🙃|Ninguém elegível no momento, salvos por ora 😌|Grupo blindado aparentemente 😇}',
+
   rouletteLoser(target: string): string {
-    return `{Roleta russa|A roleta girou}: ${target} perdeu. {Foi estatística, não pessoal|A matemática foi cruel hoje}.`
+    return `🎰 {Roleta:|Resultado da roleta:|A sorte falou:} ${target} perdeu. {Pura estatística, juro 😇|Não foi pessoal — foi matemática 🙃|O algoritmo decidiu, eu só executei 😌|Que pena. Ou não. 😌}`
   },
+
+  // ── Apagar mensagens ──────────────────────────────────────────────────────
+
   deleteReplyRequired:
-    '{Responde a mensagem que devo apagar|Marca a mensagem respondendo ela, por favor}. {Apagar por intuição ainda não chegou|Sem reply eu não sei qual foi a obra-prima}.',
+    '📌 {Responde a mensagem que devo apagar|Usa reply na mensagem alvo, por favor}. {Sem isso não sei qual apagar — não sou adivinho 🙃|Preciso da referência, senão apago a errada e aí é culpa minha 😌}',
+
   deletedMessages(count: number): string {
-    return `{Pronto|Feito}. Apaguei ${count} mensagem(ns), incluindo replies recentes quando foi possível. {Limpeza concluída|A vassoura digital passou}.`
+    return `🧹 {Pronto|Feito.|Limpeza concluída ✨} Apaguei ${count} mensagem(ns){, incluindo replies recentes quando possível|}. {Tá limpo 😌|Que bom ar fresco 🌬️|Como se nunca tivesse existido 🙃}`
   },
-  removedParticipants(targets: string): string {
-    return `{Removido(s)|Tirei da sala}: ${targets}. {Porta fechada com sucesso|O grupo ficou alguns bytes mais leve}.`
-  },
+
+  // ── Remover / adicionar participantes ─────────────────────────────────────
+
   participantAddUnavailable:
-    '{Este runtime não expõe|Não tenho acesso à} adição de participantes. {Sem convite, sem festa|A API trancou a porta}.',
-  addAttempted(targets: string): string {
-    return `{Tentei adicionar|Mandei o convite para}: ${targets}. {Se o WhatsApp deixar, ótimo|Agora é com a burocracia do zap}.`
+    '🚫 {Este runtime não suporta|Não tenho acesso à} adição de participantes. {Limitação do ambiente, não pergunta por quê 😌|A API não deixa fazer isso aqui 🙃|Queria ajudar, mas as circunstâncias não cooperam 😇}',
+
+  removedParticipants(targets: string): string {
+    return `👋 {Removido(s) com sucesso|Saíram da conversa|Dispensado(s)}: ${targets}. {Tchau 😌|Foi um prazer — pra alguém 🙃|A porteira fechou atrás 😇}`
   },
+
+  addAttempted(targets: string): string {
+    return `📨 {Tentei adicionar|Convite enviado para}: ${targets}. {Depende do WhatsApp aceitar — agora é com eles 🙃|Fiz minha parte, o resto é com o universo 😌|Bola tá no campo deles agora 🏐}`
+  },
+
+  // ── Chamar admins / todos ─────────────────────────────────────────────────
+
   noAdmins:
-    '{Não encontrei admins na lista de participantes|A lista de admins veio vazia}. {Ou estão invisíveis|Ou a hierarquia foi de férias}.',
+    '🔍 {Não encontrei admins no grupo|A lista de admins veio vazia — interessante}. {Ninguém com permissão no momento, boa sorte 🙃|Verifica o grupo, porque assim não dá 😌|Grupo selvagem, sem liderança aparente 😇}',
+
   callAdminsDefault:
-    '{Chamando admins|Admins, apareçam}. {A reunião que ninguém pediu começou|Favor fingir disponibilidade}.',
+    '📢 {Chamando admins|Atenção, admins — alguém lembra que vocês existem?}. {Alguém precisou de vocês, apareçam 🙃|Dá uma olhada aqui quando puder, sem pressa 😌|O grupo chamou. Atendam, por favor 😇}',
+
   noParticipantsToMention:
-    '{Não encontrei participantes para marcar|A lista de participantes veio vazia}. {Marcar o vazio é poesia, mas não resolve|Sem gente, sem @}.',
+    '🔍 {Não encontrei participantes para marcar|Lista de participantes vazia — curioso}. {Sem ninguém para notificar, gritei no vazio 🙃|Grupo vazio? Ou invisíveis? 😌|Mandei o aviso pro nada 😇}',
+
   everyoneDefault:
-    '{@todos|Atenção, turma|Todo mundo olhando aqui}. {Chamado geral, porque aparentemente precisava|Notificação coletiva com carinho questionável}.',
-  giveawayReactions: ['🎉', '🥳', '✨']
+    '📢 {Atenção ☝️|Ei, pessoal|@todos}. {Alguém pediu para avisar todo mundo — aqui estou 🙃|Chamado geral, apareçam 😌|Presenças, por favor 😇}',
 }
