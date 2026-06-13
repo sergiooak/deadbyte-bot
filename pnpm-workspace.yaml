@@ -1,2 +1,8 @@
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  ffmpeg-static: true
+  puppeteer: true
+  sharp: true
 minimumReleaseAgeExclude:
   - '@deadbyte/runtime@4.0.0'

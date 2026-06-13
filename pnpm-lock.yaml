@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@deadbyte/runtime':
-        specifier: ^4.0.0
-        version: 4.0.0
+        specifier: ^4.0.1
+        version: 4.0.1
       c12:
         specifier: ^2.0.1
         version: 2.0.4
@@ -113,8 +113,8 @@ packages:
   '@colordx/core@5.4.3':
     resolution: {integrity: sha512-kIxYSfA5T8HXjav55UaaH/o/cKivF6jCCGIb8eqtcsfI46wsvlSiT8jMDyrl779qLec3c2c2oHBZo4oAhvbjrQ==}
 
-  '@deadbyte/runtime@4.0.0':
-    resolution: {integrity: sha512-lb2SUL3/z5y7w04/DrWGlAZVjRNGc7MT1SJXFPNJMrz/BfN/DlQ7CXHdZ8rzSgL2ParUxP4DeKYoVeAdycK1vA==}
+  '@deadbyte/runtime@4.0.1':
+    resolution: {integrity: sha512-jgfPFXBL/Aj2GKbnI5lD8DT8YDe6jPIs5JGnDNR+hrRN6vyy0WW4xjKmLH+WRbysttCepq1zE/eJgG+oBPgAwQ==}
 
   '@derhuerst/http-basic@8.2.4':
     resolution: {integrity: sha512-F9rL9k9Xjf5blCz8HsJRO4diy111cayL2vkY2XE4r4t3n0yPXVYy3KD3nJ1qbrSn9743UWSXH4IwuCa/HWlGFw==}
@@ -3071,7 +3071,7 @@ snapshots:
 
   '@colordx/core@5.4.3': {}
 
-  '@deadbyte/runtime@4.0.0':
+  '@deadbyte/runtime@4.0.1':
     dependencies:
       defu: 6.1.7
       destr: 2.0.5
