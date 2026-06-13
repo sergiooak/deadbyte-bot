@@ -84,6 +84,7 @@ export const showGroupConfigCommand = defineCommand({
   aliases: ['config'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 1,
   supports: {
     private: false,
     groups: true,
@@ -111,9 +112,10 @@ export const enableGroupConfigCommand = defineCommand({
   group: 'group',
   name: 'Ligar configuração do grupo',
   description: 'Liga uma opção booleana da configuração do grupo.',
-  aliases: ['on'],
+  aliases: ['ativar', 'ligar', 'on'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 2,
   supports: {
     private: false,
     groups: true,
@@ -142,9 +144,10 @@ export const disableGroupConfigCommand = defineCommand({
   group: 'group',
   name: 'Desligar configuração do grupo',
   description: 'Desliga uma opção booleana da configuração do grupo.',
-  aliases: ['off'],
+  aliases: ['desativar', 'desligar', 'off'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 3,
   supports: {
     private: false,
     groups: true,
@@ -173,9 +176,10 @@ export const setGroupConfigCommand = defineCommand({
   group: 'group',
   name: 'Definir configuração do grupo',
   description: 'Define uma opção textual da configuração do grupo.',
-  aliases: ['set'],
+  aliases: ['definir', 'setar', 'set'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 4,
   supports: {
     private: false,
     groups: true,

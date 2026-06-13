@@ -352,6 +352,7 @@ export const closeGroupCommand = defineCommand({
   aliases: ['fechar', 'close'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 6,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -370,6 +371,7 @@ export const openGroupCommand = defineCommand({
   aliases: ['abrir', 'open'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 5,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -388,6 +390,7 @@ export const promoteCommand = defineCommand({
   aliases: ['promover', 'promote', 'promove'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 7,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -406,6 +409,7 @@ export const demoteCommand = defineCommand({
   aliases: ['rebaixar', 'demote', 'rebaixa'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 8,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -421,9 +425,10 @@ export const banCommand = defineCommand({
   group: 'group',
   name: 'Banir participante',
   description: 'Remove pessoas do grupo por reply, mencao ou numero.',
-  aliases: ['ban', 'banir', 'kick', 'remover'],
+  aliases: ['banir', 'ban', 'kick', 'remover'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 9,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -458,6 +463,7 @@ export const addParticipantCommand = defineCommand({
   aliases: ['adicionar', 'add'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 10,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -489,9 +495,10 @@ export const deleteGroupMessageCommand = defineCommand({
   group: 'group',
   name: 'Deletar mensagem',
   description: 'Apaga a mensagem respondida e replies recentes quando possivel.',
-  aliases: ['deletar', 'delete', 'apagar'],
+  aliases: ['apagar', 'deletar', 'delete'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 11,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -507,9 +514,10 @@ export const callAdminsCommand = defineCommand({
   group: 'group',
   name: 'Chamar admins',
   description: 'Marca todos os admins do grupo.',
-  aliases: ['adm', 'admins', 'adms'],
+  aliases: ['admins', 'adm', 'adms'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 12,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -541,6 +549,7 @@ export const giveawayCommand = defineCommand({
   aliases: ['sorteio', 'sortear'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 13,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -556,9 +565,10 @@ export const giveawayAdminsCommand = defineCommand({
   group: 'group',
   name: 'Sorteio de admins',
   description: 'Sorteia um admin do grupo.',
-  aliases: ['sorteioadm', 'sortearadm'],
+  aliases: ['sorteio-adm', 'sorteioadm', 'sortearadm'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 14,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -577,6 +587,7 @@ export const russianRouletteCommand = defineCommand({
   aliases: ['roleta', 'roletarussa', 'russianroulette'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 15,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -595,6 +606,7 @@ export const rulesCommand = defineCommand({
   aliases: ['regras', 'rules'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 16,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -610,9 +622,10 @@ export const membershipRequestsCommand = defineCommand({
   group: 'group',
   name: 'Solicitacoes',
   description: 'Lista, aprova ou rejeita solicitacoes de entrada do grupo.',
-  aliases: ['solicitacoes', 'solicitacao', 'pedidos', 'requests'],
+  aliases: ['solicitacoes', 'pedidos', 'requests'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 17,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {
@@ -631,6 +644,7 @@ export const everyoneCommand = defineCommand({
   aliases: ['todos', 'all'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 18,
   supports: { private: false, groups: true, implicit: false },
   configFields: [],
   match(ctx) {

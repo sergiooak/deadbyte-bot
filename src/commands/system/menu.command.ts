@@ -1,4 +1,5 @@
 import { defineCommand, type DeadByteCommand } from '@deadbyte/runtime'
+import { commandGroups } from '../command-groups.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { createSystemMenu } from './menu.helper.js'
 
@@ -16,6 +17,7 @@ export const menuCommand = defineCommand({
   aliases: ['menu', 'ajuda', 'help', 'comandos'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 1,
   supports: {
     private: true,
     groups: true,
@@ -29,6 +31,6 @@ export const menuCommand = defineCommand({
     const services = ctx.services as MenuServices
     const allCommands = services.commands ?? []
     const prefix = ctx.config.prefixes[0] ?? '.'
-    await ctx.reply(createSystemMenu(allCommands, prefix, ctx.config.commands as CommandConfig))
+    await ctx.reply(createSystemMenu(allCommands, prefix, ctx.config.commands as CommandConfig, commandGroups))
   }
 })

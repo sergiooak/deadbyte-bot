@@ -22,6 +22,7 @@ export const bootCorrectionCommand = defineCommand({
   aliases: ['boot'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  hiddenFromMenu: true,
   supports: {
     private: true,
     groups: true,

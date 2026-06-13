@@ -37,10 +37,28 @@ export class FfmpegService {
     }
   }
 
+  async extractFirstFrame(input: Buffer): Promise<Buffer> {
+    const dir = await mkdtemp(join(tmpdir(), 'deadbyte-frame-'))
+    const inputPath = join(dir, 'input')
+    const outputPath = join(dir, 'frame.png')
+    await writeFile(inputPath, input)
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(inputPath)
+          .outputOptions(['-frames:v', '1', '-f', 'image2'])
+          .save(outputPath)
+          .on('end', () => resolve())
+          .on('error', (error: Error) => reject(error))
+      })
+      return await readFile(outputPath)
+    } finally {
+      await rm(dir, { force: true, recursive: true })
+    }
+  }
+
   async webpToMp4(input: Buffer): Promise<Buffer> {
     const dir = await mkdtemp(join(tmpdir(), 'deadbyte-to-mp4-'))
-    // O ffmpeg não consegue decodar WebP animado diretamente; converte para GIF
-    // via sharp primeiro (suporte nativo a múltiplos frames) e então GIF → MP4.
     const gifPath = join(dir, 'input.gif')
     const outputPath = join(dir, 'output.mp4')
 
@@ -58,6 +76,52 @@ export class FfmpegService {
           .save(outputPath)
           .on('end', () => resolve())
           .on('error', (error: Error) => reject(error))
+      })
+      return await readFile(outputPath)
+    } finally {
+      await rm(dir, { force: true, recursive: true })
+    }
+  }
+
+  /**
+   * Sobrepoem uma imagem de legenda no rodape de um sticker WebP 512x512.
+   *
+   * A legenda e escalonada para 512px de largura via ffmpeg antes de ser
+   * composited, garantindo proporcao correta independente das dimensoes
+   * originais da imagem (horizontal, vertical ou quadrada).
+   *
+   * Funciona com WebP estatico e animado.
+   */
+  async overlaySubtitleOnSticker(stickerBuffer: Buffer, subtitleBuffer: Buffer): Promise<Buffer> {
+    const dir = await mkdtemp(join(tmpdir(), 'deadbyte-subtitle-'))
+    const stickerPath = join(dir, 'sticker.webp')
+    const subtitlePath = join(dir, 'subtitle.png')
+    const outputPath = join(dir, 'output.webp')
+
+    await writeFile(stickerPath, stickerBuffer)
+    await writeFile(subtitlePath, subtitleBuffer)
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(stickerPath)
+          .input(subtitlePath)
+          .complexFilter([
+            // Escala a legenda para 512px de largura, mantendo proporcao
+            '[1:v]scale=512:-1[sub]',
+            // Sobrepoem a legenda no rodape do sticker
+            '[0:v][sub]overlay=0:H-h:format=auto[out]'
+          ], 'out')
+          .outputOptions([
+            '-vcodec', 'libwebp',
+            '-lossless', '0',
+            '-q:v', '90',
+            '-loop', '0',
+            '-an',
+            '-vsync', '0'
+          ])
+          .save(outputPath)
+          .on('end', () => resolve())
+          .on('error', (err: Error) => reject(err))
       })
       return await readFile(outputPath)
     } finally {
@@ -83,17 +147,12 @@ export class FfmpegService {
         ffmpeg(inputPath)
           .duration(options.maxSeconds)
           .outputOptions([
-            '-vcodec',
-            'libwebp',
-            '-lossless',
-            '0',
-            '-q:v',
-            String(options.quality),
-            '-loop',
-            '0',
+            '-vcodec', 'libwebp',
+            '-lossless', '0',
+            '-q:v', String(options.quality),
+            '-loop', '0',
             '-an',
-            '-vsync',
-            '0'
+            '-vsync', '0'
           ])
           .videoFilters(filter)
           .save(outputPath)

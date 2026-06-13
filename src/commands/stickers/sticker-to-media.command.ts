@@ -16,9 +16,10 @@ export const stickerToMediaCommand = defineCommand({
   group: 'sticker',
   name: 'Figurinha para mídia',
   description: 'Converte figurinha estática em imagem (PNG) ou animada em vídeo (MP4).',
-  aliases: ['arquivo', 'desfig', 'unsticker', 'toimg'],
+  aliases: ['arquivo', 'desfig', 'toimg', 'togif', 'tofile', 'file', 'jpg', 'mp4', 'video', 'unsticker'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 6,
   supports: {
     private: true,
     groups: true,

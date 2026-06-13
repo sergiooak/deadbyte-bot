@@ -8,9 +8,10 @@ export const reactCommand = defineCommand({
   group: 'fun',
   name: 'React',
   description: 'Reage à mensagem com um emoji aleatório.',
-  aliases: ['react', 'reacao', 'reagir'],
+  aliases: ['reacao', 'reagir', 'react'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 4,
   supports: {
     private: true,
     groups: true,

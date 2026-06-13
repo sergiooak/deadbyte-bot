@@ -1,8 +1,9 @@
-import { defineCommand } from '@deadbyte/runtime'
+import { defineCommand, type CommandContext } from '@deadbyte/runtime'
 import sharp from 'sharp'
 import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { FfmpegService } from '../../services/media/ffmpeg.service.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
+import { overlaySubtitle } from '../../services/stickers/ttp.service.js'
 import { StickerCommandConfigSchema, type StickerMetadata, type StickerRenderOptions } from '../../services/stickers/sticker.types.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
@@ -25,7 +26,7 @@ export function resolveStickerOptions(rawConfig: unknown): {
     metadata: {
       packName: config.defaultPackName,
       packPublisher: config.defaultPackPublisher,
-      emojis: ['🤖']
+      emojis: ['\u{1F916}']
     },
     options: {
       fit: config.defaultFit,
@@ -39,14 +40,26 @@ export function resolveStickerOptions(rawConfig: unknown): {
   }
 }
 
-// Verifica se a mídia é quadrada o suficiente para não precisar de uma segunda figurinha crop.
-// WebP já é sticker quadrado — sempre quadrado.
-// Imagens: usa sharp para ler dimensões.
-// Vídeos/GIFs: usa ffprobe para ler dimensões.
-async function isSquareEnough(media: BufferMedia, squareThreshold: number, ffmpeg?: FfmpegService): Promise<boolean> {
-  if (media.mimeType === 'image/webp') {
-    return true
+/**
+ * Aplica as configuracoes de autor/pacote do grupo sobre os metadados base do sticker.
+ * Todos os comandos de sticker devem chamar isso para seguir o config do grupo.
+ */
+export function applyGroupMetadata(
+  metadata: StickerMetadata,
+  chat: { isGroup: boolean; id: string },
+  groupConfigs?: GroupConfigService
+): StickerMetadata {
+  if (!chat.isGroup || !groupConfigs) return metadata
+  const groupConfig = groupConfigs.get(chat.id)
+  return {
+    ...metadata,
+    packName: groupConfig?.pacote ?? metadata.packName,
+    packPublisher: groupConfig?.autor ?? metadata.packPublisher
   }
+}
+
+async function isSquareEnough(media: BufferMedia, squareThreshold: number, ffmpeg?: FfmpegService): Promise<boolean> {
+  if (media.mimeType === 'image/webp') return true
 
   let width = 1
   let height = 1
@@ -65,32 +78,40 @@ async function isSquareEnough(media: BufferMedia, squareThreshold: number, ffmpe
   return ratio >= squareThreshold
 }
 
+function resolveCaptionText(ctx: CommandContext): string | undefined {
+  // Modo explicito: argsText ja tem o texto sem o alias (!figurinha bom dia -> "bom dia")
+  if (ctx.parsedCommand?.explicit) {
+    return ctx.parsedCommand.argsText?.trim() || undefined
+  }
+  // Modo implicito: usa o body inteiro -- nao pode descartar a primeira palavra
+  const body = ctx.message.body?.trim()
+  if (body && !/^\S+\.\w{2,5}$/.test(body)) return body || undefined
+  return undefined
+}
+
+const DOCUMENT_TYPES = ['document']
+const MEDIA_TYPES = ['image', 'video', 'gif', ...DOCUMENT_TYPES]
+
 export const createStickerCommand = defineCommand({
   id: 'sticker.create',
   group: 'sticker',
   name: 'Criar sticker',
-  description: 'Converte imagem, vídeo, sticker ou documento em sticker webp.',
-  aliases: ['s', 'sticker', 'f', 'fig', 'figurinha'],
+  description: 'Converte imagem, video, sticker, gif ou documento em sticker webp.',
+  aliases: ['figurinha', 'fig', 'f', 's', 'sticker'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
-  supports: {
-    private: true,
-    groups: true,
-    implicit: true
-  },
+  order: 1,
+  supports: { private: true, groups: true, implicit: true },
   configFields: [
     { key: 'defaultPackName', label: 'Nome do pacote', type: 'string', defaultValue: 'DeadByte.com.br' },
     { key: 'defaultPackPublisher', label: 'Publicador', type: 'string', defaultValue: 'bot de figurinhas' },
     { key: 'defaultFit', label: 'Fit', type: 'select', defaultValue: 'contain', options: ['contain', 'cover'] }
   ],
   async match(ctx) {
-    if (matchesExplicitAlias(ctx, 'sticker.create', createStickerCommand.aliases)) {
-      return true
-    }
+    if (matchesExplicitAlias(ctx, 'sticker.create', createStickerCommand.aliases)) return true
     const isPrivate = !ctx.chat.isGroup
-    const isMedia = ctx.message.hasMedia && ['image', 'video', 'gif'].includes(ctx.message.type ?? '')
+    const isMedia = ctx.message.hasMedia && MEDIA_TYPES.includes(ctx.message.type ?? '')
     if (isPrivate) return isMedia
-
     const services = ctx.services as StickerCommandServices
     return isMedia && services.groupConfigs?.get(ctx.chat.id).sticker === true
   },
@@ -110,24 +131,34 @@ export const createStickerCommand = defineCommand({
 
     try {
       const { metadata, options, squareThreshold } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
-      const groupConfig = ctx.chat.isGroup ? services.groupConfigs?.get(ctx.chat.id) : undefined
-      const groupMetadata = {
-        ...metadata,
-        packName: groupConfig?.pacote ?? metadata.packName,
-        packPublisher: groupConfig?.autor ?? metadata.packPublisher
-      }
+      const groupMetadata = applyGroupMetadata(metadata, ctx.chat, services.groupConfigs)
 
-      // Sempre envia a figurinha com contain (fit)
+      const caption = resolveCaptionText(ctx)
+      const isDocument = DOCUMENT_TYPES.includes(ctx.targetMessage?.type ?? '')
+      const isWebp = media.mimeType === 'image/webp'
+
       const fitSticker = await services.stickers?.createSticker(media, groupMetadata, { ...options, fit: 'contain' })
       if (!fitSticker) throw new Error('Sticker service is not available.')
-      await ctx.replyWithSticker(fitSticker.buffer, fitSticker.mimeType)
 
-      // Se não for quadrada o suficiente, também envia a versão crop (cover)
-      const square = await isSquareEnough(media, squareThreshold, services.ffmpeg)
-      if (!square) {
-        const cropSticker = await services.stickers?.createSticker(media, groupMetadata, { ...options, fit: 'cover' })
-        if (cropSticker) {
-          await ctx.replyWithSticker(cropSticker.buffer, cropSticker.mimeType)
+      const fitBuffer = caption
+        ? await overlaySubtitle(caption, fitSticker.buffer)
+            .then(buf => services.stickers!.reapplyMetadata(buf, groupMetadata))
+            .catch(() => fitSticker.buffer)
+        : fitSticker.buffer
+      await ctx.replyWithSticker(fitBuffer, fitSticker.mimeType)
+
+      if (!isDocument && !isWebp) {
+        const square = await isSquareEnough(media, squareThreshold, services.ffmpeg)
+        if (!square) {
+          const cropSticker = await services.stickers?.createSticker(media, groupMetadata, { ...options, fit: 'cover' })
+          if (cropSticker) {
+            const cropBuffer = caption
+              ? await overlaySubtitle(caption, cropSticker.buffer)
+                  .then(buf => services.stickers!.reapplyMetadata(buf, groupMetadata))
+                  .catch(() => cropSticker.buffer)
+              : cropSticker.buffer
+            await ctx.replyWithSticker(cropBuffer, cropSticker.mimeType)
+          }
         }
       }
     } catch {

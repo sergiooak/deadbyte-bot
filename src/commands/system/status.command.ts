@@ -11,6 +11,7 @@ export const statusCommand = defineCommand({
   aliases: ['status', 'stat'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 3,
   supports: {
     private: true,
     groups: true,

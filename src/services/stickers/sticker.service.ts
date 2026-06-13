@@ -13,6 +13,11 @@ export class StickerService {
     private readonly events?: DeadByteEventLogger
   ) { }
 
+  /** Re-aplica os metadados EXIF num WebP que ja foi processado (ex: apos overlay de legenda via ffmpeg). */
+  async reapplyMetadata(webp: Buffer, metadata: StickerMetadata): Promise<Buffer> {
+    return this.exif.applyMetadata(webp, metadata)
+  }
+
   async createSticker(media: BufferMedia, metadata: StickerMetadata, options: StickerRenderOptions): Promise<RenderedSticker> {
     await this.events?.emit({
       id: crypto.randomUUID(),

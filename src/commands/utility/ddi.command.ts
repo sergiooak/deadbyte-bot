@@ -47,6 +47,7 @@ export const ddiCommand = defineCommand({
   aliases: ['ddi'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 2,
   supports: {
     private: true,
     groups: true,

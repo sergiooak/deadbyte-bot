@@ -3,7 +3,7 @@ import { funMessages } from '../../messages/fun.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 
 const DICE_REGEX = /^(?<dice>\d*)d(?<faces>\d+)((?<op>[+\-*/])(?<mod>\d+))?$/i
-const NAMED_ALIASES = ['dado', 'dice', 'rolar', 'rola', 'd']
+const NAMED_ALIASES = ['dado', 'rolar', 'rola', 'd', 'dice']
 
 function parseDiceCount(raw: string): number {
   return Math.min(Math.max(parseInt(raw || '1') || 1, 1), 100)
@@ -65,6 +65,7 @@ export const diceCommand = defineCommand({
   aliases: NAMED_ALIASES,
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 2,
   supports: {
     private: true,
     groups: true,

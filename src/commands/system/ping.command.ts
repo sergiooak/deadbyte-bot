@@ -10,6 +10,7 @@ export const pingCommand = defineCommand({
   aliases: ['ping'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 2,
   supports: {
     private: true,
     groups: true,

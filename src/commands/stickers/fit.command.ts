@@ -2,8 +2,9 @@ import { defineStickerFitCommand } from './sticker-fit-command.factory.js'
 
 export const fitStickerCommand = defineStickerFitCommand({
   id: 'sticker.fit',
-  name: 'Sticker fit',
-  description: 'Converte mídia em sticker com fit "contain" (preserva proporção, fundo transparente).',
-  aliases: ['ff', 'fit', 'sf', 'inteira', 'inteiro', 'fi'],
-  fit: 'contain'
+  name: 'Sticker inteiro',
+  description: 'Converte mídia em sticker preservando proporção (fundo transparente).',
+  aliases: ['inteira', 'inteiro', 'ff', 'fit', 'sf', 'fi'],
+  fit: 'contain',
+  order: 2,
 })

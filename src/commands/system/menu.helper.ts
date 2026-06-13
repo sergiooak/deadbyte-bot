@@ -1,11 +1,16 @@
-import type { DeadByteCommand } from '@deadbyte/runtime'
-import { systemMenuGroupLabels, systemMessages } from '../../messages/system.messages.js'
+import type { DeadByteCommand, DeadByteCommandGroupDefinition } from '@deadbyte/runtime'
+import { systemMessages } from '../../messages/system.messages.js'
 import { getCommandAliases } from '../../utils/commands.js'
 
 type CommandConfig = Record<string, { aliases?: string[]; enabled?: boolean } | undefined>
 
 function getVisibleMenuCommands(commands: DeadByteCommand[], commandConfig: CommandConfig): DeadByteCommand[] {
-  return commands.filter((command) => command.id !== 'system.menu' && commandConfig[command.id]?.enabled !== false)
+  return commands.filter(
+    (command) =>
+      command.id !== 'system.menu' &&
+      !command.hiddenFromMenu &&
+      commandConfig[command.id]?.enabled !== false,
+  )
 }
 
 function groupCommandsByGroup(commands: DeadByteCommand[]): Map<string, DeadByteCommand[]> {
@@ -20,6 +25,14 @@ function groupCommandsByGroup(commands: DeadByteCommand[]): Map<string, DeadByte
   return grouped
 }
 
+function sortedCommands(commands: DeadByteCommand[]): DeadByteCommand[] {
+  return [...commands].sort((a, b) => {
+    const ao = a.order ?? Infinity
+    const bo = b.order ?? Infinity
+    return ao - bo
+  })
+}
+
 function formatCommandAliases(command: DeadByteCommand, prefix: string, commandConfig: CommandConfig) {
   const aliases = getCommandAliases({ commands: commandConfig }, command.id, command.aliases)
   const primary = `${prefix}${(aliases[0] ?? command.name).toLowerCase()}`
@@ -29,19 +42,31 @@ function formatCommandAliases(command: DeadByteCommand, prefix: string, commandC
   return { primary, aliasHint }
 }
 
-function menuGroupLabel(group: string): string {
-  return group in systemMenuGroupLabels
-    ? systemMenuGroupLabels[group as keyof typeof systemMenuGroupLabels]
-    : systemMessages.menuUnknownGroup(group)
-}
-
-export function createSystemMenu(commands: DeadByteCommand[], prefix: string, commandConfig: CommandConfig): string {
+export function createSystemMenu(
+  commands: DeadByteCommand[],
+  prefix: string,
+  commandConfig: CommandConfig,
+  groups: DeadByteCommandGroupDefinition[],
+): string {
   const lines: string[] = [systemMessages.menuHeader, '']
   const visibleCommands = getVisibleMenuCommands(commands, commandConfig)
   const groupedCommands = groupCommandsByGroup(visibleCommands)
 
-  for (const [group, commandsInGroup] of groupedCommands) {
-    const label = menuGroupLabel(group)
+  const visibleGroups = groups
+    .filter((g) => !g.hidden && groupedCommands.has(g.id))
+    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+
+  // grupos sem definição formal (fallback)
+  const definedIds = new Set(groups.map((g) => g.id))
+  for (const id of groupedCommands.keys()) {
+    if (!definedIds.has(id)) {
+      visibleGroups.push({ id, title: id })
+    }
+  }
+
+  for (const group of visibleGroups) {
+    const commandsInGroup = sortedCommands(groupedCommands.get(group.id) ?? [])
+    const label = group.emoji ? `${group.emoji} ${group.title}` : group.title
     lines.push(`*${label}*`)
 
     for (const command of commandsInGroup) {
@@ -52,6 +77,5 @@ export function createSystemMenu(commands: DeadByteCommand[], prefix: string, co
     lines.push('')
   }
 
-  lines.push(systemMessages.menuFooter)
   return lines.join('\n').trimEnd()
 }

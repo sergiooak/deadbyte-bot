@@ -3,7 +3,7 @@ import { funMessages } from '../../messages/fun.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 
 const MAX_COINS = 100
-const NAMED_ALIASES = ['moeda', 'coin', 'caraoucoroa', 'cara-coroa']
+const NAMED_ALIASES = ['moeda', 'caraoucoroa', 'cara-coroa', 'coin']
 
 function parseCoinCount(argsText: string): number {
   const rawCount = argsText.trim().split(/\s+/)[0] ?? ''
@@ -30,6 +30,7 @@ export const coinCommand = defineCommand({
   aliases: NAMED_ALIASES,
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 1,
   supports: {
     private: true,
     groups: true,

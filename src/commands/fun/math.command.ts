@@ -3,7 +3,7 @@ import { utilityMessages } from '../../messages/utility.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { parseMathExpression } from '../../utils/math'
 
-const NAMED_ALIASES = ['calc', 'calcular', 'math', 'conta']
+const NAMED_ALIASES = ['calcular', 'calc', 'conta', 'math']
 
 function getExpressionText(ctx: { parsedCommand?: { explicit?: boolean; argsText: string }; message: { body: string } }): string {
   return ctx.parsedCommand?.explicit
@@ -26,6 +26,7 @@ export const mathCommand = defineCommand({
   aliases: NAMED_ALIASES,
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 3,
   supports: {
     private: true,
     groups: true,

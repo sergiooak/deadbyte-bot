@@ -88,6 +88,7 @@ export const dddCommand = defineCommand({
   aliases: ['ddd'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 1,
   supports: {
     private: true,
     groups: true,

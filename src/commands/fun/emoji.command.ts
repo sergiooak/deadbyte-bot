@@ -11,6 +11,7 @@ export const emojiCommand = defineCommand({
   aliases: ['emoji', 'em'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 5,
   supports: {
     private: true,
     groups: true,

@@ -12,13 +12,6 @@ const errorPrefix =
 // ===== Main export ==================================================================================================
 // 
 
-export const systemMenuGroupLabels = {
-  system: '{🔧 Sistema}',
-  sticker: '{🎨 Figurinhas}',
-  fun: '{😄 Diversão}',
-  group: '{👥 Grupo}'
-}
-
 export const systemMessages = {
   // ── Sistema ────────────────────────────────────────────────────────────────
 
@@ -47,21 +40,13 @@ export const systemMessages = {
 
   // ── Menu ───────────────────────────────────────────────────────────────────
 
-  menuHeader:
-    '{🤖|📋|🧭} *DeadByte — {Menu de Comandos|Comandos disponíveis}*',
-
-  menuUnknownGroup(group: string): string {
-    return `{📦 ${group}|📦 ${group}, seja lá quem batizou isso 🙃|📦 ${group}, nome criativo, reconheço}`
-  },
+  menuHeader: '*DeadByte — Comandos*',
 
   menuAliasHint(aliases: string): string {
-    return ` _({ou|também funciona|se quiser variar} ${aliases})_`
+    return ` _(ou: ${aliases})_`
   },
 
   menuCommandLine(primary: string, aliasHint: string, description: string): string {
     return `• *${primary}*${aliasHint} — ${description}`
   },
-
-  menuFooter:
-    '{Use com moderação 🙏|Pronto, agora não tem desculpa 😌|Se der errado, pelo menos o menu estava correto 🙃|Boa sorte, vai precisar 😇}',
 }

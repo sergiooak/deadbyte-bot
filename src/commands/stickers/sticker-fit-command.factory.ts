@@ -1,13 +1,16 @@
 import { defineCommand, type CommandContext } from '@deadbyte/runtime'
 import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
+import type { GroupConfigService } from '../../groups/group-config.service.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import type { StickerFit } from '../../services/stickers/sticker.types.js'
+import { overlaySubtitle } from '../../services/stickers/ttp.service.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
-import { resolveStickerOptions } from './create-sticker.command.js'
+import { applyGroupMetadata, resolveStickerOptions } from './create-sticker.command.js'
 
 type StickerCommandServices = {
   stickers?: StickerService
+  groupConfigs?: GroupConfigService
   resolveTargetMedia?: () => Promise<BufferMedia | undefined>
 }
 
@@ -17,6 +20,8 @@ type StickerFitCommandOptions = {
   description: string
   aliases: string[]
   fit: StickerFit
+  order?: number
+  hiddenFromMenu?: boolean
 }
 
 type MediaResolution =
@@ -24,7 +29,10 @@ type MediaResolution =
   | { status: 'missing' }
   | { status: 'failed' }
 
-async function resolveStickerMedia(ctx: CommandContext, services: StickerCommandServices): Promise<MediaResolution> {
+export async function resolveStickerMedia(
+  ctx: CommandContext,
+  services: { resolveTargetMedia?: () => Promise<BufferMedia | undefined> }
+): Promise<MediaResolution> {
   try {
     const media = await services.resolveTargetMedia?.()
     return media ? { status: 'found', media } : { status: 'missing' }
@@ -34,15 +42,30 @@ async function resolveStickerMedia(ctx: CommandContext, services: StickerCommand
   }
 }
 
-async function createAndReplyWithSticker(ctx: CommandContext, services: StickerCommandServices, media: BufferMedia, fit: StickerFit): Promise<void> {
+export async function createAndReplyWithSticker(
+  ctx: CommandContext,
+  services: StickerCommandServices,
+  media: BufferMedia,
+  fit: StickerFit
+): Promise<void> {
   const { metadata, options } = resolveStickerOptions(ctx.config.commands['sticker.create']?.config)
-  const sticker = await services.stickers?.createSticker(media, metadata, { ...options, fit })
+  const groupMetadata = applyGroupMetadata(metadata, ctx.chat, services.groupConfigs)
+  const sticker = await services.stickers?.createSticker(media, groupMetadata, { ...options, fit })
 
   if (!sticker) {
     throw new Error('Sticker service is not available.')
   }
 
-  await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
+  // Se o usuario mandou texto junto com o comando, sobrepoe como legenda.
+  // Apos o overlay via ffmpeg o EXIF e perdido, entao re-aplicamos os metadados.
+  const caption = ctx.parsedCommand?.argsText?.trim()
+  const finalBuffer = caption
+    ? await overlaySubtitle(caption, sticker.buffer)
+        .then(buf => services.stickers!.reapplyMetadata(buf, groupMetadata))
+        .catch(() => sticker.buffer)
+    : sticker.buffer
+
+  await ctx.replyWithSticker(finalBuffer, sticker.mimeType)
 }
 
 export function defineStickerFitCommand(options: StickerFitCommandOptions) {
@@ -54,6 +77,8 @@ export function defineStickerFitCommand(options: StickerFitCommandOptions) {
     aliases: options.aliases,
     enabledByDefault: true,
     ownerOnlyByDefault: false,
+    order: options.order,
+    hiddenFromMenu: options.hiddenFromMenu,
     supports: {
       private: true,
       groups: true,

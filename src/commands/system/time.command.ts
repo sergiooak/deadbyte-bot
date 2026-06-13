@@ -11,9 +11,10 @@ export const timeCommand = defineCommand({
   group: 'system',
   name: 'Hora',
   description: 'Mostra a hora atual em uma cidade, estado ou país. Padrão: Brasília.',
-  aliases: ['hora', 'time', 'horas', 'horario'],
+  aliases: ['hora', 'horario', 'horas', 'time'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
+  order: 4,
   supports: {
     private: true,
     groups: true,
