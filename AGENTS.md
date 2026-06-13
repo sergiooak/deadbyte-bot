@@ -108,3 +108,7 @@ Skills live in [.agents/](.agents/) and are invocable as slash commands in chat.
 - **WhatsApp**: `whatsapp-web.js` with Puppeteer/Chromium
 - **HTTP**: `h3` + `listhen`
 - **Config**: `c12` + `defu` + Zod schemas
+
+## Imported Claude Cowork project instructions
+
+ALWAYS read AGENTS.md
