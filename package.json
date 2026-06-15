@@ -37,7 +37,7 @@
     "qrcode-terminal": "^0.12.0",
     "sharp": "^0.33.5",
     "unstorage": "^1.15.0",
-    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#main",
+    "whatsapp-web.js": "github:sergiooak/whatsapp-web.js#feat/sticker-pack",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -4,5 +4,6 @@ allowBuilds:
   ffmpeg-static: true
   puppeteer: true
   sharp: true
+  whatsapp-web.js: true
 minimumReleaseAgeExclude:
   - '@deadbyte/runtime@4.0.0'
