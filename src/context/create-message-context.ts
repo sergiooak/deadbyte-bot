@@ -136,6 +136,20 @@ export async function createMessageContext(
       replyWithMedia: async (bufMedia: { buffer: Buffer; mimeType: string; filename?: string }) => {
         const media = bufferMediaToWhatsappMedia(bufMedia)
         await options.client.sendMessage(chat.id, media)
+      },
+      // Envia varias midias como um unico pacote de figurinhas nativo do WhatsApp.
+      // Requer o fork sergiooak/whatsapp-web.js#feat/sticker-pack (opcao sendMediaAsStickerPack).
+      replyWithStickerPack: async (
+        items: Array<{ buffer: Buffer; mimeType: string; filename?: string }>,
+        pack: { name: string; publisher: string; id?: string }
+      ) => {
+        const medias = items.map(bufferMediaToWhatsappMedia)
+        await options.client.sendMessage(chat.id, medias, {
+          sendMediaAsStickerPack: true,
+          stickerPackName: pack.name,
+          stickerPackPublisher: pack.publisher,
+          ...(pack.id ? { stickerPackId: pack.id } : {})
+        })
       }
     },
     reply: async (text, replyOptions?: WhatsappMessageSendOptionsLike) => {

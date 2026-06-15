@@ -141,6 +141,24 @@ export default defineDeadByteConfig({
       enabled: true,
       aliases: ['arquivo', 'desfig', 'unsticker', 'toimg']
     },
+    'sticker.ly-search': {
+      enabled: true,
+      aliases: ['ly', 'stickerly', 'lu'],
+      config: {
+        pageSize: 24
+      }
+    },
+    'sticker.ly-pack': {
+      enabled: true,
+      aliases: ['pack', 'packly', 'lypack', 'ply']
+    },
+    'sticker.ly-trending': {
+      enabled: true,
+      aliases: ['trend', 'trending', 'lytrend', 'emalta'],
+      config: {
+        limit: 16
+      }
+    },
     'fun.emoji': {
       enabled: true,
       aliases: ['emoji']

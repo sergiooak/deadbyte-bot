@@ -59,4 +59,49 @@ export const stickerMessages = {
 
   bgVideoWarning:
     `[aviso] {Video detectado|Isso e um video}{.|!} {Vou usar|Usando} so o primeiro frame pra remover o fundo{.|, ok?}`,
+
+  // sticker.ly -- busca, pacote e em alta
+
+  lyMissingTerm:
+    `${casualPrefix}[ly] {Manda|Me manda|Digita} um termo {pra|para} eu {buscar|procurar} no sticker.ly{.|!}\nEx: *!ly gato{| de oculos}*${sentenceEnd}`,
+
+  lyNoResults(term: string): string {
+    return `${errorPrefix}[ly] O sticker.ly nao {retornou|trouxe|me deu} {nenhuma figurinha|nada} {pra|para} *"${term}"*. {Tenta {outro termo|outra palavra}|Procura {outra coisa|por outra}}{| ai}${sentenceEnd}`
+  },
+
+  lyNoResultsOnPage(term: string, totalPages: number): string {
+    return `${errorPrefix}[ly] {Acabaram as figurinhas|Nao tem mais figurinhas} {pra|para} *"${term}"* nessa pagina. So {existem|tem} ${totalPages} {paginas|paginas no total}{.|!}`
+  },
+
+  lyFound(term: string, count: number): string {
+    return `🤖 - {Achei|Encontrei|Olha o que eu achei:} ${count} figurinha${count > 1 ? 's' : ''} {pra|para} *"${term}"* no sticker.ly{.|!} {To|Tô|Estou} {mandando|enviando}...`
+  },
+
+  lyMorePages(prefix: string, term: string): string {
+    return `\n\n{Quer mais?|Tem mais!} {Manda|Envia} *${prefix}ly2 ${term}*, *${prefix}ly3 ${term}*... {pra ver|pra pegar} as proximas{.|!}`
+  },
+
+  packMissingId:
+    `${casualPrefix}[pack] {Manda|Me manda} o {codigo|id} de um pacote do sticker.ly{.|!}\nEx: *!pack 2RY2AQ* {ou|tambem aceito} o link *https://sticker.ly/s/CODIGO*${sentenceEnd}`,
+
+  packInvalidId:
+    `${errorPrefix}[pack] {Isso nao parece|Esse nao e} um codigo de pacote valido{.|!} {O codigo tem|Tem que ter} 6 {letras/numeros|caracteres}, tipo *2RY2AQ*${sentenceEnd}`,
+
+  packNotFound(packId: string): string {
+    return `${errorPrefix}[pack] {Nao achei|Nao encontrei} {nenhum pacote|o pacote} *"${packId}"* no sticker.ly. {Confere|Verifica} o codigo {e tenta de novo|ai}${sentenceEnd}`
+  },
+
+  trendingNone:
+    `${errorPrefix}[trend] O sticker.ly nao {me deu|retornou} {nenhuma figurinha em alta|nada em alta} agora. {Tenta de novo daqui a pouco|Tenta mais tarde}${sentenceEnd}`,
+
+  trendingFound(count: number): string {
+    return `🤖 - {Olha as figurinhas em alta|Toma ${count} figurinhas aleatorias|Separei ${count} em alta} do sticker.ly{.|!} {To|Tô|Estou} {mandando|enviando}...`
+  },
+
+  packFound(name: string, count: number): string {
+    return `🤖 - {Achei|Encontrei|Olha o que eu achei:} o pacote *"${name}"* com ${count} figurinha${count > 1 ? 's' : ''}{.|!} {To|Tô|Estou} {mandando|enviando}...`
+  },
+
+  lyPackSendFailed:
+    `${errorPrefix}[ly] {Deu ruim|Falhei|Nao consegui} {ao mandar|enviar} o pacote de figurinhas. ${tryAgain}{| ai}${sentenceEnd}`,
 }

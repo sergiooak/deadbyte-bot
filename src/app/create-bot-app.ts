@@ -16,6 +16,7 @@ import { StickerCompressorService } from '../services/stickers/sticker-compresso
 import { StickerExifService } from '../services/stickers/sticker-exif.service.js'
 import { StickerRendererService } from '../services/stickers/sticker-renderer.service.js'
 import { StickerService } from '../services/stickers/sticker.service.js'
+import { StickerLyService } from '../services/stickers/sticker-ly.service.js'
 import { SpintaxService } from '../services/text/spintax.service.js'
 import { GroupConfigService } from '../groups/group-config.service.js'
 import { readBotEnv } from '../utils/env.js'
@@ -67,8 +68,10 @@ export function createBotApp(options: {
   )
   const spintax = new SpintaxService()
   const groupConfigs = new GroupConfigService()
+  const stickerLy = new StickerLyService()
   const services: Record<string, unknown> = {
     stickers,
+    stickerLy,
     ffmpeg,
     spintax,
     groupConfigs,
