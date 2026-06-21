@@ -46,6 +46,10 @@ export const systemMessages = {
     return ` _(ou: ${aliases})_`
   },
 
+  menuGroupNotFound(groupName: string, availableGroups: string): string {
+    return `${errorPrefix}{Não achei|Não encontrei} o grupo de comandos *${groupName}*. {Tenta um destes|Escolhe um destes aqui, sem inventar moda}: ${availableGroups}`
+  },
+
   menuCommandLine(primary: string, aliasHint: string, description: string): string {
     return `• *${primary}*${aliasHint} — ${description}`
   },

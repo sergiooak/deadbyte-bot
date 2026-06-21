@@ -31,6 +31,7 @@ export const menuCommand = defineCommand({
     const services = ctx.services as MenuServices
     const allCommands = services.commands ?? []
     const prefix = ctx.config.prefixes[0] ?? '.'
-    await ctx.reply(createSystemMenu(allCommands, prefix, ctx.config.commands as CommandConfig, commandGroups))
+    const groupQuery = ctx.parsedCommand?.argsText ?? ''
+    await ctx.reply(createSystemMenu(allCommands, prefix, ctx.config.commands as CommandConfig, commandGroups, groupQuery))
   }
 })
