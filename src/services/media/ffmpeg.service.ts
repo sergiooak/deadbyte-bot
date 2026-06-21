@@ -129,6 +129,94 @@ export class FfmpegService {
     }
   }
 
+  async grayscale(input: Buffer, inputExt: string, outputExt: string): Promise<Buffer> {
+    const dir = await mkdtemp(join(tmpdir(), 'deadbyte-gray-'))
+    const inputPath = join(dir, `input.${inputExt}`)
+    const outputPath = join(dir, `output.${outputExt}`)
+    await writeFile(inputPath, input)
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const filter =
+          outputExt === 'mp4'
+            ? 'hue=s=0,scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p'
+            : 'hue=s=0'
+        const cmd = ffmpeg(inputPath).videoFilter(filter)
+        if (outputExt === 'mp4') cmd.outputOptions(['-c:v', 'libx264', '-movflags', '+faststart'])
+        if (outputExt === 'webp') cmd.outputOptions(['-vcodec', 'libwebp', '-lossless', '0', '-q:v', '90', '-loop', '0', '-an', '-vsync', '0'])
+        cmd.save(outputPath)
+          .on('end', () => resolve())
+          .on('error', (err: Error) => reject(err))
+      })
+      return await readFile(outputPath)
+    } finally {
+      await rm(dir, { force: true, recursive: true })
+    }
+  }
+
+  async overlayFull(input: Buffer, inputExt: string, outputExt: string, overlay: Buffer, opacity: number): Promise<Buffer> {
+    const dir = await mkdtemp(join(tmpdir(), 'deadbyte-overlay-'))
+    const inputPath = join(dir, `input.${inputExt}`)
+    const overlayPath = join(dir, 'overlay.png')
+    const outputPath = join(dir, `output.${outputExt}`)
+    await writeFile(inputPath, input)
+    await writeFile(overlayPath, overlay)
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const finalFilter = outputExt === 'mp4'
+          ? ',scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p'
+          : ''
+        const cmd = ffmpeg(inputPath)
+          .input(overlayPath)
+          .complexFilter([
+            `[1:v]format=rgba,colorchannelmixer=aa=${opacity}[ov]`,
+            `[0:v][ov]overlay=0:0:format=auto${finalFilter}[out]`,
+          ], 'out')
+        if (outputExt === 'mp4') cmd.outputOptions(['-c:v', 'libx264', '-movflags', '+faststart'])
+        if (outputExt === 'webp') cmd.outputOptions(['-vcodec', 'libwebp', '-lossless', '0', '-q:v', '90', '-loop', '0', '-an', '-vsync', '0'])
+        cmd.save(outputPath)
+          .on('end', () => resolve())
+          .on('error', (err: Error) => reject(err))
+      })
+      return await readFile(outputPath)
+    } finally {
+      await rm(dir, { force: true, recursive: true })
+    }
+  }
+
+  async overlayTopRight(input: Buffer, inputExt: string, outputExt: string, overlay: Buffer): Promise<Buffer> {
+    const { width, height } = await this.probeAspectRatio(input)
+    // 65% do lado menor, mas nunca mais que 55% do lado maior — evita dominar em aspect ratios extremos
+    const overlayW = Math.round(Math.min(Math.min(width, height) * 0.65, Math.max(width, height) * 0.55))
+
+    const dir = await mkdtemp(join(tmpdir(), 'deadbyte-craque-'))
+    const inputPath = join(dir, `input.${inputExt}`)
+    const overlayPath = join(dir, 'overlay.png')
+    const outputPath = join(dir, `output.${outputExt}`)
+    await writeFile(inputPath, input)
+    await writeFile(overlayPath, overlay)
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const finalFilter = outputExt === 'mp4'
+          ? ',scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p'
+          : ''
+        const cmd = ffmpeg(inputPath)
+          .input(overlayPath)
+          .complexFilter([
+            `[1:v]scale=${overlayW}:-1,format=rgba[ov]`,
+            `[0:v][ov]overlay=W-w:0:format=auto${finalFilter}[out]`,
+          ], 'out')
+        if (outputExt === 'mp4') cmd.outputOptions(['-c:v', 'libx264', '-movflags', '+faststart'])
+        if (outputExt === 'webp') cmd.outputOptions(['-vcodec', 'libwebp', '-lossless', '0', '-q:v', '90', '-loop', '0', '-an', '-vsync', '0'])
+        cmd.save(outputPath)
+          .on('end', () => resolve())
+          .on('error', (err: Error) => reject(err))
+      })
+      return await readFile(outputPath)
+    } finally {
+      await rm(dir, { force: true, recursive: true })
+    }
+  }
+
   async renderVideoToWebp(input: Buffer, options: RenderVideoOptions): Promise<Buffer> {
     const dir = await mkdtemp(join(tmpdir(), 'deadbyte-sticker-'))
     const inputPath = join(dir, 'input')
