@@ -159,6 +159,10 @@ export default defineDeadByteConfig({
         limit: 16
       }
     },
+    'sticker.attp': {
+      enabled: true,
+      aliases: ['attp']
+    },
     'fun.emoji': {
       enabled: true,
       aliases: ['emoji']
