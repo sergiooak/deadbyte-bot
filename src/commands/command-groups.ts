@@ -35,4 +35,18 @@ export const systemGroup = defineCommandGroup({
   order: 5,
 })
 
-export const commandGroups = [stickerGroup, funGroup, utilityGroup, groupGroup, systemGroup]
+export const mediaGroup = defineCommandGroup({
+  id: 'media',
+  emoji: '🎬',
+  title: 'Editor de mídia',
+  order: 6,
+})
+
+export const bibleGroup = defineCommandGroup({
+  id: 'bible',
+  emoji: '📖',
+  title: 'Bíblia Sagrada',
+  order: 7,
+})
+
+export const commandGroups = [stickerGroup, funGroup, utilityGroup, groupGroup, systemGroup, mediaGroup, bibleGroup]
