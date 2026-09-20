@@ -49,4 +49,11 @@ export const bibleGroup = defineCommandGroup({
   order: 7,
 })
 
-export const commandGroups = [stickerGroup, funGroup, utilityGroup, groupGroup, systemGroup, mediaGroup, bibleGroup]
+export const musicGroup = defineCommandGroup({
+  id: 'music',
+  emoji: '🎵',
+  title: 'Música',
+  order: 8,
+})
+
+export const commandGroups = [stickerGroup, funGroup, utilityGroup, groupGroup, systemGroup, mediaGroup, bibleGroup, musicGroup]
