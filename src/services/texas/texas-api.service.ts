@@ -83,6 +83,146 @@ export function fetchTexasAttp(text: string): Promise<{ buffer: Buffer; mimeType
   })
 }
 
+export type CepResult = {
+  cep: string
+  state: string
+  city: string
+  neighborhood: string
+  street: string
+  service: string
+}
+
+type CepApiResponse = {
+  status: number
+  message: string
+  result: CepResult
+}
+
+export async function fetchTexasCep(cep: string): Promise<CepResult> {
+  const url = buildTexasApiUrl('cep', { name: cep })
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Texas API error: ${response.status} ${response.statusText}`)
+
+  const payload = await response.json() as CepApiResponse
+  if (payload.status !== 200) throw new Error(payload.message ?? `Texas API status: ${payload.status}`)
+
+  return payload.result
+}
+
+export type YtPlayResult = {
+  info: {
+    title: string
+    url?: string
+    image?: string
+    thumbnail?: string
+    seconds?: number
+    timestamp?: string
+    duration?: { seconds?: number; timestamp?: string }
+    ago?: string
+    views?: number
+    author?: { name?: string; url?: string }
+  }
+  downLoad: {
+    status: boolean
+    result: string
+    name: string
+  }
+}
+
+export async function fetchYtPlay(name: string, type: 'mp3' | 'mp4' = 'mp3'): Promise<YtPlayResult> {
+  const url = buildTexasApiUrl('ytplay', { name, type })
+  const response = await fetch(url, { signal: AbortSignal.timeout(180_000) })
+  if (!response.ok) throw new Error(`Texas API error: ${response.status} ${response.statusText}`)
+
+  const payload = await response.json() as { status: number; message: string; result: YtPlayResult }
+  if (payload.status !== 200) throw new Error(payload.message ?? `Texas API status: ${payload.status}`)
+  if (!payload.result?.downLoad?.status || !payload.result.downLoad.result) {
+    throw new Error('Texas API did not return a downloadable result.')
+  }
+
+  return payload.result
+}
+
+export async function fetchLyrics(name: string): Promise<string> {
+  const url = buildTexasApiUrl('letra', { name })
+  const response = await fetch(url, { signal: AbortSignal.timeout(60_000) })
+  if (!response.ok) throw new Error(`Texas API error: ${response.status} ${response.statusText}`)
+
+  const payload = await response.json() as { status: number; message: string; result: string }
+  if (payload.status !== 200) throw new Error(payload.message ?? `Texas API status: ${payload.status}`)
+  if (!payload.result?.trim()) throw new Error('Texas API returned empty lyrics.')
+
+  return payload.result
+}
+
+export async function downloadMediaUrl(url: string, fallbackMime: string): Promise<{ buffer: Buffer; mimeType: string }> {
+  const response = await fetch(url, { signal: AbortSignal.timeout(180_000) })
+  if (!response.ok) throw new Error(`Download error: ${response.status} ${response.statusText}`)
+  const contentType = response.headers.get('content-type')?.split(';')[0]?.trim()
+  const arrayBuffer = await response.arrayBuffer()
+  return {
+    buffer: Buffer.from(arrayBuffer),
+    mimeType: contentType && contentType !== 'application/octet-stream' ? contentType : fallbackMime
+  }
+}
+
+export async function fetchTexasScremoji(emoji: string): Promise<Record<string, string>> {
+  const url = buildTexasApiUrl('scremoji', { txt: emoji })
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Texas API error: ${response.status} ${response.statusText}`)
+
+  const payload = await response.json() as { status: number; message: string; result: Record<string, string> }
+  if (payload.status !== 200) throw new Error(payload.message ?? `Texas API status: ${payload.status}`)
+
+  return payload.result
+}
+
+export async function fetchTexasFontes(text: string): Promise<string> {
+  const commandUrl = buildTexasApiUrl('morefonts', { url: text })
+  const response = await fetch(commandUrl)
+  if (!response.ok) throw new Error(`Texas API error: ${response.status} ${response.statusText}`)
+
+  const payload = await response.json() as TexasApiResponse
+  if (payload.status && payload.status !== 200) throw new Error(payload.message ?? `Texas API status: ${payload.status}`)
+  if (!payload.result) throw new Error('Texas API response does not include a result.')
+
+  return payload.result
+}
+
+export function fetchTexasDog(): Promise<{ buffer: Buffer; mimeType: string }> {
+  return fetchTexasImage('cachorrinho', {})
+}
+
+export function fetchTexasCat(): Promise<{ buffer: Buffer; mimeType: string }> {
+  return fetchTexasImage('gatinho', { type: 'cat1' })
+}
+
+async function resolveMediaMimeType(headers: Headers, url: string): Promise<string> {
+  const contentType = headers.get('content-type')?.split(';')[0]?.trim()
+  if (contentType?.startsWith('image/') || contentType?.startsWith('video/')) return contentType
+  if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return 'video/mp4'
+  return 'image/jpeg'
+}
+
+export async function fetchTexasMeme(): Promise<{ buffer: Buffer; mimeType: string }> {
+  const commandUrl = buildTexasApiUrl('meme', {})
+  const commandResponse = await fetch(commandUrl)
+  if (!commandResponse.ok) throw new Error(`Texas API error: ${commandResponse.status} ${commandResponse.statusText}`)
+
+  const payload = await commandResponse.json() as TexasApiResponse
+  if (payload.status && payload.status !== 200) throw new Error(payload.message ?? `Texas API status: ${payload.status}`)
+
+  const mediaUrl = extractResultUrl(payload.result)
+  const mediaResponse = await fetch(mediaUrl)
+  if (!mediaResponse.ok) throw new Error(`Texas media download error: ${mediaResponse.status} ${mediaResponse.statusText}`)
+
+  const arrayBuffer = await mediaResponse.arrayBuffer()
+  return {
+    buffer: Buffer.from(arrayBuffer),
+    mimeType: await resolveMediaMimeType(mediaResponse.headers, mediaUrl)
+  }
+}
+
 async function fetchBiblia(params: Record<string, string>): Promise<BibleApiResponse['result']> {
   const apiKey = process.env.DEADBYTE_TEXAS_API_KEY?.trim()
   if (!apiKey) throw new Error('DEADBYTE_TEXAS_API_KEY is required to call Texas API.')
