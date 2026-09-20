@@ -5,7 +5,5 @@ allowBuilds:
   puppeteer: true
   sharp: true
   whatsapp-web.js: true
-onlyBuiltDependencies:
-  - 'whatsapp-web.js@https://codeload.github.com/sergiooak/whatsapp-web.js/tar.gz/55a1c086351c5ba48a39e7dafaaa4689d36e112a'
 minimumReleaseAgeExclude:
   - '@deadbyte/runtime@4.0.0'
