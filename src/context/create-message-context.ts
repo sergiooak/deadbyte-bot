@@ -6,6 +6,7 @@ import type { WhatsappClientLike, WhatsappMessageLike, WhatsappMessageSendOption
 import { parseCommand } from './parse-command.js'
 import { resolvePermissions } from './resolve-permissions.js'
 import { resolveTargetMessage } from './resolve-target-message.js'
+import type { ReplyableService } from '../services/replyable/replyable.service.js'
 
 export type CreateMessageContextOptions = {
   client: WhatsappClientLike
@@ -133,9 +134,30 @@ export async function createMessageContext(
 
         return (message.mentionedIds ?? []).map((id) => mapWhatsappContact({ id: { _serialized: id } }, id))
       },
-      replyWithMedia: async (bufMedia: { buffer: Buffer; mimeType: string; filename?: string }) => {
+      replyWithMedia: async (
+        bufMedia: { buffer: Buffer; mimeType: string; filename?: string },
+        mediaOptions?: { caption?: string }
+      ) => {
         const media = bufferMediaToWhatsappMedia(bufMedia)
-        await options.client.sendMessage(chat.id, media)
+        const caption = mediaOptions?.caption
+        const renderedCaption = caption ? (spintax?.render(caption) ?? caption) : undefined
+        await options.client.sendMessage(chat.id, media, renderedCaption ? { caption: renderedCaption } : undefined)
+      },
+      // Envia uma mensagem de texto "respondivel": ela fica registrada para que,
+      // quando o usuario responde-la, o handler do `type` seja chamado com o `payload`.
+      sendReplyable: async (
+        text: string,
+        meta: { type: string; payload: unknown }
+      ) => {
+        const replyables = options.services.replyables as ReplyableService | undefined
+        const renderedText = spintax?.render(text) ?? text
+        const sent = rawMessage.reply
+          ? await rawMessage.reply(renderedText)
+          : await options.client.sendMessage(chat.id, renderedText)
+        const sentId = (sent as WhatsappMessageLike | undefined)?.id?._serialized
+        if (sentId && replyables) {
+          replyables.register(sentId, meta.type, meta.payload, chat.id)
+        }
       },
       // Envia varias midias como um unico pacote de figurinhas nativo do WhatsApp.
       // Requer o fork sergiooak/whatsapp-web.js#feat/sticker-pack (opcao sendMediaAsStickerPack).

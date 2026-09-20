@@ -17,6 +17,8 @@ import { StickerExifService } from '../services/stickers/sticker-exif.service.js
 import { StickerRendererService } from '../services/stickers/sticker-renderer.service.js'
 import { StickerService } from '../services/stickers/sticker.service.js'
 import { StickerLyService } from '../services/stickers/sticker-ly.service.js'
+import { ReplyableService } from '../services/replyable/replyable.service.js'
+import { registerReplyableHandlers } from '../services/replyable/register-handlers.js'
 import { SpintaxService } from '../services/text/spintax.service.js'
 import { GroupConfigService } from '../groups/group-config.service.js'
 import { readBotEnv } from '../utils/env.js'
@@ -69,12 +71,15 @@ export function createBotApp(options: {
   const spintax = new SpintaxService()
   const groupConfigs = new GroupConfigService()
   const stickerLy = new StickerLyService()
+  const replyables = new ReplyableService()
+  registerReplyableHandlers(replyables)
   const services: Record<string, unknown> = {
     stickers,
     stickerLy,
     ffmpeg,
     spintax,
     groupConfigs,
+    replyables,
     whatsappClient: options.client,
     runtime: state,
     commands: options.bot.commands
