@@ -12,11 +12,12 @@ export type TargetMessageResult = {
 export async function resolveTargetMessage(message: WhatsappMessageLike): Promise<TargetMessageResult> {
   if (message.hasQuotedMsg && message.getQuotedMessage) {
     const quoted = await message.getQuotedMessage()
+    const rawTargetMessage = message.hasMedia ? message : quoted
     return {
       rawQuotedMessage: quoted,
-      rawTargetMessage: quoted,
+      rawTargetMessage,
       quotedMessage: mapWhatsappMessage(quoted),
-      targetMessage: mapWhatsappMessage(quoted)
+      targetMessage: mapWhatsappMessage(rawTargetMessage)
     }
   }
 
