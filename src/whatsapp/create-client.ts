@@ -20,7 +20,8 @@ export function createWhatsappClient(config: ResolvedDeadByteConfig): WhatsappCl
     puppeteer: {
       headless: config.whatsapp.headless,
       executablePath: config.whatsapp.chromePath || undefined,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      // /dev/shm é pequeno em containers; sem essa flag o Chromium trava em páginas pesadas.
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     }
   })
 
