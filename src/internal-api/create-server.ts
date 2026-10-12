@@ -1,5 +1,6 @@
 import { createApp, createRouter, toNodeListener } from 'h3'
-import { listen } from 'listhen'
+import { createServer } from 'node:http'
+import { createError } from 'evlog'
 import type { BotApp } from '../app/create-bot-app.js'
 import { healthRoute } from './routes/health.js'
 import { controlRoutes } from './routes/control.js'
@@ -40,11 +41,26 @@ export async function createInternalApiServer(app: BotApp): Promise<void> {
   router.post('/shutdown', shutdownRoute(app))
   h3App.use(router)
 
-  const listener = await listen(toNodeListener(h3App), {
-    hostname: app.config.internalApi.host,
-    port: app.config.internalApi.port,
-    showURL: app.config.mode === 'standalone'
+  const { hostname, port } = { hostname: app.config.internalApi.host, port: app.config.internalApi.port }
+  // Porta exata: o spawner conversa com o bot nesta porta. Sem fallback silencioso para outra porta.
+  const server = createServer(toNodeListener(h3App))
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', (error: NodeJS.ErrnoException) => {
+      reject(
+        error.code === 'EADDRINUSE'
+          ? createError({
+              message: `A porta interna ${hostname}:${port} já está em uso`,
+              why: 'Outro processo (provavelmente um bot antigo desta instância) ainda está escutando nela.',
+              fix: 'Pare a instância pelo painel e inicie de novo: o spawner encerra bots órfãos antes de subir.'
+            })
+          : error
+      )
+    })
+    server.listen(port, hostname, () => resolve())
   })
+  if (app.config.mode === 'standalone') {
+    console.info(`API interna em http://${hostname}:${port}`)
+  }
 
-  app.services.internalApi = listener
+  app.services.internalApi = { close: () => new Promise<void>((resolve) => server.close(() => resolve())) }
 }
