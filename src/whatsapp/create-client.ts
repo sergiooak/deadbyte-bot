@@ -8,7 +8,7 @@ const { Client } = whatsappWebJs as unknown as {
   Client: new (options: Record<string, unknown>) => unknown
 }
 
-export function createWhatsappClient(config: ResolvedDeadByteConfig): WhatsappClientLike {
+export function createWhatsappClient(config: ResolvedDeadByteConfig, options: { pairPhone?: string } = {}): WhatsappClientLike {
   const env = readBotEnv()
 
   const client = new Client({
@@ -17,6 +17,8 @@ export function createWhatsappClient(config: ResolvedDeadByteConfig): WhatsappCl
       dataPath: config.sessionPath
     }),
     ffmpegPath: env.FFMPEG_PATH || undefined,
+    // Com número informado, o WhatsApp gera código de pareamento em vez de QR.
+    ...(options.pairPhone ? { pairWithPhoneNumber: { phoneNumber: options.pairPhone, showNotification: true } } : {}),
     puppeteer: {
       headless: config.whatsapp.headless,
       executablePath: config.whatsapp.chromePath || undefined,

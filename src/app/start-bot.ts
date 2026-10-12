@@ -6,9 +6,9 @@ import { createWhatsappClient } from '../whatsapp/create-client.js'
 import { registerWhatsappEvents } from '../whatsapp/whatsapp-events.js'
 import { createBotApp, type BotApp } from './create-bot-app.js'
 
-export async function startBot(config: ResolvedDeadByteConfig): Promise<BotApp> {
+export async function startBot(config: ResolvedDeadByteConfig, options: { pairPhone?: string } = {}): Promise<BotApp> {
   const events = createEventLogger(config)
-  const client = createWhatsappClient(config)
+  const client = createWhatsappClient(config, { pairPhone: options.pairPhone })
   const app = createBotApp({
     bot: deadbyteBot,
     config,
@@ -16,6 +16,9 @@ export async function startBot(config: ResolvedDeadByteConfig): Promise<BotApp> 
     events
   })
 
+  if (options.pairPhone) {
+    app.state.pairing = { phoneNumber: options.pairPhone, code: '', updatedAt: new Date().toISOString() }
+  }
   registerWhatsappEvents(app)
   app.state.status = 'starting'
 

@@ -28,6 +28,12 @@ export type BotState = {
   status: 'created' | 'starting' | 'waiting_qr' | 'authenticated' | 'ready' | 'disconnected' | 'stopping' | 'stopped' | 'error'
   startedAt: number
   lastQr?: string
+  /** Pareamento por número em andamento. Fica só em memória: o número não é persistido. */
+  pairing?: {
+    phoneNumber: string
+    code: string
+    updatedAt: string
+  }
 }
 
 export type BotApp = {

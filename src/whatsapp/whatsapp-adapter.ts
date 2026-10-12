@@ -92,6 +92,8 @@ export type WhatsappClientLike = {
   sendMessage: (chatId: string, content: unknown, options?: WhatsappMessageSendOptionsLike) => Promise<unknown>
   on: (event: string, listener: (...args: unknown[]) => void) => WhatsappClientLike
   getState?: () => Promise<string>
+  requestPairingCode?: (phoneNumber: string, showNotification?: boolean, intervalMs?: number) => Promise<string>
+  cancelPairingCode?: () => Promise<void>
   getContactLidAndPhone?: (userIds: string[]) => Promise<WhatsappLidPhoneLike[]>
   getChatById?: (chatId: string) => Promise<WhatsappChatLike>
 }

@@ -3,6 +3,7 @@ import { listen } from 'listhen'
 import type { BotApp } from '../app/create-bot-app.js'
 import { healthRoute } from './routes/health.js'
 import { logoutRoute } from './routes/logout.js'
+import { cancelPairingCodeRoute, getPairingCodeRoute, requestPairingCodeRoute } from './routes/pairing-code.js'
 import { reloadConfigRoute } from './routes/reload-config.js'
 import { sendMessageRoute } from './routes/send-message.js'
 import { shutdownRoute } from './routes/shutdown.js'
@@ -17,6 +18,9 @@ export async function createInternalApiServer(app: BotApp): Promise<void> {
   router.post('/send-message', sendMessageRoute(app))
   router.post('/reload-config', reloadConfigRoute(app))
   router.post('/logout', logoutRoute(app))
+  router.get('/pairing-code', getPairingCodeRoute(app))
+  router.post('/pairing-code', requestPairingCodeRoute(app))
+  router.delete('/pairing-code', cancelPairingCodeRoute(app))
   router.post('/shutdown', shutdownRoute(app))
   h3App.use(router)
 

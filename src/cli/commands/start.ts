@@ -2,6 +2,7 @@ import type { RuntimeMode } from '@deadbyte/runtime'
 import { defineCommand } from 'citty'
 import { loadBotConfig } from '../../config/load-config.js'
 import { startBot } from '../../app/start-bot.js'
+import { normalizePairingPhone } from '../../whatsapp/pairing.js'
 
 export const startCommand = defineCommand({
   meta: {
@@ -18,7 +19,8 @@ export const startCommand = defineCommand({
     internalHost: { type: 'string', description: 'Internal API host.' },
     internalPort: { type: 'string', description: 'Internal API port.' },
     showBrowser: { type: 'boolean', description: 'Show Chromium window.' },
-    headless: { type: 'boolean', description: 'Run Chromium headless.' }
+    headless: { type: 'boolean', description: 'Run Chromium headless.' },
+    pairPhone: { type: 'string', description: 'Pair by phone number (DDI + DDD + number) instead of QR.' }
   },
   async run({ args }) {
     const config = await loadBotConfig({
@@ -34,7 +36,12 @@ export const startCommand = defineCommand({
       headless: args.headless
     })
 
-    const app = await startBot(config)
+    const pairPhone = args.pairPhone ? normalizePairingPhone(args.pairPhone) : undefined
+    if (args.pairPhone && !pairPhone) {
+      throw new Error('--pair-phone precisa ter DDI + DDD + número, só dígitos (ex.: 5534999999999).')
+    }
+
+    const app = await startBot(config, { pairPhone })
     const shutdown = async () => {
       await app.shutdown()
       process.exit(0)

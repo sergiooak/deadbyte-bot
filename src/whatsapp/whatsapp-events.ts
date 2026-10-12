@@ -2,7 +2,11 @@ import { DeadByteEventNames } from '@deadbyte/runtime'
 import qrcode from 'qrcode-terminal'
 import type { BotApp } from '../app/create-bot-app.js'
 import type { GroupConfigService } from '../groups/group-config.service.js'
+import { maskPhone } from './pairing.js'
 import type { WhatsappGroupNotificationLike, WhatsappMessageLike } from './whatsapp-adapter.js'
+
+// Ainda não existe no DeadByteEventNames do runtime; o schema aceita qualquer nome.
+const WhatsappPairingCodeGenerated = 'whatsapp.pairing_code.generated'
 
 function groupConfigService(app: BotApp): GroupConfigService | undefined {
   return app.services.groupConfigs as GroupConfigService | undefined
@@ -66,8 +70,32 @@ export function registerWhatsappEvents(app: BotApp): void {
     })
   })
 
+  // O WhatsApp renova o código de pareamento a cada ~3 minutos.
+  app.client.on('code', (code) => {
+    if (typeof code !== 'string' || !app.state.pairing) {
+      return
+    }
+
+    app.state.pairing = { ...app.state.pairing, code, updatedAt: new Date().toISOString() }
+    app.state.status = 'waiting_qr'
+    if (app.config.mode === 'standalone') {
+      console.log(`Código de pareamento: ${code}`)
+    }
+
+    // O código não vai para o evento: ele é uma credencial temporária e os eventos ficam salvos no banco.
+    void app.events.emit({
+      id: crypto.randomUUID(),
+      name: WhatsappPairingCodeGenerated,
+      level: 'info',
+      instanceId: app.config.instanceId,
+      payload: { phoneNumber: maskPhone(app.state.pairing.phoneNumber) },
+      timestamp: new Date().toISOString()
+    })
+  })
+
   app.client.on('authenticated', () => {
     app.state.status = 'authenticated'
+    app.state.pairing = undefined
     void app.events.emit({
       id: crypto.randomUUID(),
       name: DeadByteEventNames.WhatsappAuthenticated,
