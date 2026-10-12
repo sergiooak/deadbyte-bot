@@ -174,7 +174,7 @@ describe('phone code commands', () => {
     expect(ctx.reply).toHaveBeenCalledOnce()
     const reply = vi.mocked(ctx.reply).mock.calls[0]?.[0] ?? ''
     expect(reply).toContain('um DDD')
-    expect(reply).toContain('marque a pessoa')
+    expect(reply).toContain('marca a pessoa')
     expect(reply).toContain('!ddd 34')
     expect(reply).not.toContain('!ddi +47')
     expect(ofetch).not.toHaveBeenCalled()

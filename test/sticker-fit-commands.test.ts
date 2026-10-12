@@ -92,7 +92,7 @@ describe('sticker fit commands', () => {
     await fitStickerCommand.run(ctx)
 
     expect(ctx.reply).toHaveBeenCalledOnce()
-    expect(vi.mocked(ctx.reply).mock.calls[0]?.[0]).toContain('imagem/vídeo/sticker')
+    expect(vi.mocked(ctx.reply).mock.calls[0]?.[0]).toContain('imagem/video/sticker')
   })
 
   it('replies once when target media download fails', async () => {
@@ -104,7 +104,7 @@ describe('sticker fit commands', () => {
     await fitStickerCommand.run(ctx)
 
     expect(ctx.reply).toHaveBeenCalledOnce()
-    expect(vi.mocked(ctx.reply).mock.calls[0]?.[0]).toContain('baixar a mídia')
+    expect(vi.mocked(ctx.reply).mock.calls[0]?.[0]).toContain('baixar a midia')
   })
 
   it('replies when the sticker service is unavailable', async () => {
