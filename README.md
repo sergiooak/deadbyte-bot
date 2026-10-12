@@ -36,7 +36,7 @@ Principais variáveis:
 - `DEADBYTE_HEADLESS`: controla o Chromium.
 - `DEADBYTE_RUNTIME_CONFIG`: JSON gerado pelo spawner no modo managed.
 - `DEADBYTE_REMBG_URL`: servidor rembg do comando de remover fundo (padrão `http://localhost:7000`).
-- `DEADBYTE_TEXAS_API_KEY`, `DEADBYTE_TYPESAFE_API_KEY`, `DEADBYTE_OPENAI_API_KEY`: chaves opcionais dos comandos de música, Jev e parser.
+- `DEADBYTE_TEXAS_API_KEY`, `DEADBYTE_TTP_API_KEY`, `DEADBYTE_TYPESAFE_API_KEY`, `DEADBYTE_OPENAI_API_KEY`: chaves opcionais dos comandos de música, figurinha de texto (ttp), Jev e parser.
 
 Em modo managed o bot herda essas variáveis do spawner: configure-as no ambiente do spawner.
 

@@ -1,12 +1,13 @@
 import { FfmpegService } from '../media/ffmpeg.service.js'
 
-// API key hardcoded - sera recriada com novas chaves no futuro
-const TTP_API_KEY = 'DEAD'
 const TTP_BASE_URL = 'https://v1.deadbyte.com.br'
 
 function buildTtpUrl(text: string, style: 1 | 2 | 3 = 1, subtitle = false): string {
+  const apiKey = process.env.DEADBYTE_TTP_API_KEY?.trim()
+  if (!apiKey) throw new Error('DEADBYTE_TTP_API_KEY is required to call the TTP API.')
+
   const url = new URL(`${TTP_BASE_URL}/image-creator/ttp/${style}`)
-  url.searchParams.set('key', TTP_API_KEY)
+  url.searchParams.set('key', apiKey)
   url.searchParams.set('message', text)
   if (subtitle) url.searchParams.set('subtitle', 'true')
   return url.toString()
