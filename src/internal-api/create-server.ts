@@ -38,6 +38,8 @@ export async function createInternalApiServer(app: BotApp): Promise<void> {
   router.post('/chats/:chatId/actions', control.chatAction)
   router.patch('/chats/:chatId/group', control.updateGroup)
   router.get('/chats/:chatId/invite-link', control.inviteLink)
+  router.get('/catch-up', control.catchUpStatus)
+  router.post('/catch-up', control.startCatchUp)
   router.post('/shutdown', shutdownRoute(app))
   h3App.use(router)
 

@@ -25,6 +25,9 @@ import { readBotEnv } from '../utils/env.js'
 import type { WhatsappChatLike, WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
 import { createMessageLogger } from '../logging/evlog.js'
 import { currentTraceState, runWithTrace, setCommandErrorReporter, setTraceCommand, type MessageTrace } from '../logging/trace.js'
+import { join } from 'pathe'
+import type { CatchUpResult } from '../whatsapp/catch-up.js'
+import { CheckpointStore } from '../whatsapp/checkpoint.js'
 
 export type BotState = {
   status: 'created' | 'starting' | 'waiting_qr' | 'authenticated' | 'ready' | 'disconnected' | 'stopping' | 'stopped' | 'error'
@@ -36,6 +39,8 @@ export type BotState = {
     code: string
     updatedAt: string
   }
+  /** Último reprocessamento de mensagens pendentes (whatsapp/catch-up.ts). */
+  lastCatchUp?: CatchUpResult
 }
 
 export type BotApp = {
@@ -80,6 +85,9 @@ export function createBotApp(options: {
   const groupConfigs = new GroupConfigService()
   const stickerLy = new StickerLyService()
   const replyables = new ReplyableService()
+  const checkpoints = new CheckpointStore(join(options.config.sessionPath, 'deadbyte-checkpoint.json'))
+  // Ids recentes: evita processar duas vezes a mesma mensagem (evento ao vivo + reprocessamento).
+  const recentMessageIds = new Set<string>()
   registerReplyableHandlers(replyables)
   const services: Record<string, unknown> = {
     stickers,
@@ -88,6 +96,7 @@ export function createBotApp(options: {
     spintax,
     groupConfigs,
     replyables,
+    checkpoints,
     whatsappClient: options.client,
     runtime: state,
     commands: options.bot.commands
@@ -179,6 +188,12 @@ export function createBotApp(options: {
     state,
     services,
     async handleMessage(rawMessage) {
+      const messageId = rawMessage.id?._serialized
+      if (messageId) {
+        if (recentMessageIds.has(messageId)) return
+        recentMessageIds.add(messageId)
+        if (recentMessageIds.size > 2000) recentMessageIds.delete(recentMessageIds.values().next().value as string)
+      }
       await queue.enqueue(async () => {
         const previewContext = await createMessageContext(rawMessage, {
           client: options.client,
@@ -257,6 +272,7 @@ export function createBotApp(options: {
           throw error
         } finally {
           finishMessageLog(wide, startedAt)
+          checkpoints.record(rawMessage, previewContext.chat.name)
         }
         })
       })
@@ -266,6 +282,7 @@ export function createBotApp(options: {
     },
     async shutdown() {
       state.status = 'stopping'
+      await checkpoints.flush().catch(() => undefined)
       await options.client.destroy()
       state.status = 'stopped'
       await options.events.emit({

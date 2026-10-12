@@ -15,6 +15,7 @@ import {
   updateGroup,
   updateProfile
 } from '../../whatsapp/whatsapp-control.js'
+import { catchUpStatus, startCatchUp } from '../../whatsapp/catch-up.js'
 
 // Imagens chegam em base64; ~10 MB de arquivo.
 const MAX_BASE64_LENGTH = 14_000_000
@@ -48,6 +49,10 @@ const SendSchema = z
   })
   .refine((value) => value.text || value.media, 'Informe um texto ou um arquivo.')
   .refine((value) => !value.ttpStyle || value.text?.trim(), 'Escreva o texto da figurinha TTP.')
+
+const CatchUpSchema = z.object({
+  mode: z.enum(['checkpoint', 'unread', 'today'])
+})
 
 const ActionSchema = z.object({
   action: z.enum(['markRead', 'markUnread', 'archive', 'unarchive', 'pin', 'unpin', 'mute', 'unmute', 'clear', 'delete', 'leave'])
@@ -91,6 +96,13 @@ export function controlRoutes(app: BotApp) {
     sendToChat: guarded(async (event) => sendToChat(app, chatId(event), await readValidatedBody(event, (value) => SendSchema.parse(value)))),
     chatAction: guarded(async (event) => runChatAction(app, chatId(event), (await readValidatedBody(event, (value) => ActionSchema.parse(value))).action)),
     updateGroup: guarded(async (event) => updateGroup(app, chatId(event), await readValidatedBody(event, (value) => GroupSchema.parse(value)))),
-    inviteLink: guarded((event) => getGroupInviteLink(app, chatId(event)))
+    inviteLink: guarded((event) => getGroupInviteLink(app, chatId(event))),
+    catchUpStatus: guarded(() => catchUpStatus(app)),
+    startCatchUp: guarded(async (event) => {
+      const { mode } = await readValidatedBody(event, (value) => CatchUpSchema.parse(value))
+      const result = startCatchUp(app, mode)
+      if (!result.started) throw createError({ statusCode: 409, statusMessage: result.reason })
+      return result
+    })
   }
 }
