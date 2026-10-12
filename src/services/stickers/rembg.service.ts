@@ -1,9 +1,9 @@
-const REMBG_BASE_URL = 'http://localhost:7000'
+const REMBG_BASE_URL = (process.env.DEADBYTE_REMBG_URL?.trim() || 'http://localhost:7000').replace(/\/+$/, '')
 const REMBG_MODEL = 'silueta'
 
 export class RembgNotAvailableError extends Error {
   constructor() {
-    super('rembg não está rodando na porta 7000')
+    super(`rembg não está acessível em ${REMBG_BASE_URL}`)
     this.name = 'RembgNotAvailableError'
   }
 }

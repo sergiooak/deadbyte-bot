@@ -49,7 +49,7 @@ export const stickerMessages = {
     `${casualPrefix}[foto] {Manda|Envia|Me manda} uma foto{| ai} {pra|para} eu {remover o fundo|tirar o fundo}{.|!}${optionalSuffixJoke}`,
 
   bgNotAvailable:
-    `${errorPrefix}[rembg] O rembg nao ta rodando na porta 7000. {Sobe o servidor|Liga o rembg}{| primeiro}{| la|, brother|, mano}{.|!} {Sem ele eu nao consigo remover o fundo|Preciso dele pra funcionar}{| kk| uai}${sentenceEnd}`,
+    `${errorPrefix}[rembg] O rembg nao ta respondendo. {Sobe o servidor|Liga o rembg}{| primeiro}{| la|, brother|, mano}{.|!} {Sem ele eu nao consigo remover o fundo|Preciso dele pra funcionar}{| kk| uai}${sentenceEnd}`,
 
   bgRemovalFailed:
     `${errorPrefix}[fundo] {Deu ruim|Falhei} ao remover o fundo. ${tryAgain}{| ai| ai}${sentenceEnd}`,
