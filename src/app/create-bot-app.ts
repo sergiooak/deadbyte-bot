@@ -23,6 +23,8 @@ import { SpintaxService } from '../services/text/spintax.service.js'
 import { GroupConfigService } from '../groups/group-config.service.js'
 import { readBotEnv } from '../utils/env.js'
 import type { WhatsappChatLike, WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
+import { runWithTrace, setCommandErrorReporter, setTraceCommand, type MessageTrace } from '../logging/trace.js'
+import { maskPhone } from '../whatsapp/pairing.js'
 
 export type BotState = {
   status: 'created' | 'starting' | 'waiting_qr' | 'authenticated' | 'ready' | 'disconnected' | 'stopping' | 'stopped' | 'error'
@@ -92,6 +94,22 @@ export function createBotApp(options: {
   }
   const registry = createCommandRegistry(options.bot.commands, options.config)
 
+  setCommandErrorReporter((error) => {
+    void options.events.emit({
+      id: crypto.randomUUID(),
+      name: 'command.error',
+      level: 'error',
+      instanceId: options.config.instanceId,
+      message: error instanceof Error ? error.message : String(error),
+      error: {
+        name: error instanceof Error ? error.name : 'Error',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      },
+      timestamp: new Date().toISOString()
+    })
+  })
+
   async function executeCommand(command: DeadByteCommand, rawMessage: WhatsappMessageLike): Promise<void> {
     const ctx = await createMessageContext(rawMessage, {
       client: options.client,
@@ -128,6 +146,7 @@ export function createBotApp(options: {
       return
     }
 
+    setTraceCommand({ id: command.id, alias: ctx.parsedCommand?.rawName, group: command.group })
     await options.events.emit({
       id: crypto.randomUUID(),
       name: DeadByteEventNames.CommandMatched,
@@ -156,6 +175,18 @@ export function createBotApp(options: {
           spintax
         })
 
+        const senderNumber = previewContext.sender.number?.replace(/\D/g, '')
+        const trace: MessageTrace = {
+          traceId: previewContext.message.id || crypto.randomUUID(),
+          chat: { name: previewContext.chat.name, type: previewContext.chat.isGroup ? 'group' : 'private' },
+          sender: {
+            name: previewContext.sender.pushname || previewContext.sender.name,
+            number: senderNumber ? maskPhone(senderNumber) : undefined
+          },
+          messageType: (rawMessage as { type?: string }).type
+        }
+
+        await runWithTrace(trace, async () => {
         await options.events.emit({
           id: crypto.randomUUID(),
           name: DeadByteEventNames.MessageReceived,
@@ -196,6 +227,7 @@ export function createBotApp(options: {
           instanceId: options.config.instanceId,
           payload: { reason: 'no_command_match' },
           timestamp: new Date().toISOString()
+        })
         })
       })
     },

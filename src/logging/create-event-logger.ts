@@ -2,6 +2,7 @@ import type { DeadByteEventLogger, DeadByteRuntimeEvent, ResolvedDeadByteConfig 
 import { RuntimeEventSchema } from '@deadbyte/runtime'
 import { createConsoleLogger } from './create-console-logger.js'
 import { reportEventToStdout } from './stdout-event-reporter.js'
+import { currentTrace } from './trace.js'
 
 type EvlogCandidate = {
   emit?: (event: DeadByteRuntimeEvent) => void | Promise<void>
@@ -23,7 +24,8 @@ export function createEventLogger(config: ResolvedDeadByteConfig): DeadByteEvent
 
   return {
     async emit(event) {
-      const parsed = RuntimeEventSchema.parse(event)
+      const trace = currentTrace()
+      const parsed = RuntimeEventSchema.parse(trace ? { ...event, payload: { ...event.payload, trace: { ...trace } } } : event)
       if (config.mode === 'managed' || config.logging.eventsToStdout) {
         reportEventToStdout(parsed)
       } else {
