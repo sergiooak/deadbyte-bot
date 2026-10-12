@@ -23,7 +23,8 @@ import { SpintaxService } from '../services/text/spintax.service.js'
 import { GroupConfigService } from '../groups/group-config.service.js'
 import { readBotEnv } from '../utils/env.js'
 import type { WhatsappChatLike, WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
-import { runWithTrace, setCommandErrorReporter, setTraceCommand, type MessageTrace } from '../logging/trace.js'
+import { createMessageLogger } from '../logging/evlog.js'
+import { currentTraceState, runWithTrace, setCommandErrorReporter, setTraceCommand, type MessageTrace } from '../logging/trace.js'
 import { maskPhone } from '../whatsapp/pairing.js'
 
 export type BotState = {
@@ -93,6 +94,18 @@ export function createBotApp(options: {
     commands: options.bot.commands
   }
   const registry = createCommandRegistry(options.bot.commands, options.config)
+
+  // Fecha o wide event da mensagem com o resultado, o comando e os passos.
+  function finishMessageLog(wide: ReturnType<typeof createMessageLogger>, startedAt: number) {
+    const context = wide.getContext() as { error?: unknown }
+    const state = currentTraceState()
+    const steps = state?.steps ?? []
+    const outcome = context.error ? 'error' : steps.includes('command.executed') ? 'ok' : steps.includes('command.permission_denied') ? 'denied' : steps.includes('command.disabled') ? 'disabled' : steps.includes('command.matched') ? 'incomplete' : 'ignored'
+    wide.set({ outcome, command: state?.command, steps, durationMs: Date.now() - startedAt })
+    // Mensagem sem comando é ruído: só guarda se deu erro.
+    if (outcome === 'ignored') wide.setLevel('debug')
+    wide.emit()
+  }
 
   setCommandErrorReporter((error) => {
     void options.events.emit({
@@ -186,7 +199,19 @@ export function createBotApp(options: {
           messageType: (rawMessage as { type?: string }).type
         }
 
-        await runWithTrace(trace, async () => {
+        const wide = createMessageLogger(trace.traceId)
+        wide.set({
+          operation: 'message',
+          instanceId: options.config.instanceId,
+          chat: trace.chat,
+          sender: trace.sender,
+          messageType: trace.messageType,
+          hasMedia: previewContext.message.hasMedia
+        })
+        const startedAt = Date.now()
+
+        await runWithTrace(trace, wide, async () => {
+        try {
         await options.events.emit({
           id: crypto.randomUUID(),
           name: DeadByteEventNames.MessageReceived,
@@ -228,6 +253,12 @@ export function createBotApp(options: {
           payload: { reason: 'no_command_match' },
           timestamp: new Date().toISOString()
         })
+        } catch (error) {
+          wide.error(error instanceof Error ? error : String(error), { step: 'handleMessage' })
+          throw error
+        } finally {
+          finishMessageLog(wide, startedAt)
+        }
         })
       })
     },

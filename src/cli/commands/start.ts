@@ -2,6 +2,7 @@ import type { RuntimeMode } from '@deadbyte/runtime'
 import { defineCommand } from 'citty'
 import { loadBotConfig } from '../../config/load-config.js'
 import { startBot } from '../../app/start-bot.js'
+import { flushBotLogs } from '../../logging/evlog.js'
 import { normalizePairingPhone } from '../../whatsapp/pairing.js'
 
 export const startCommand = defineCommand({
@@ -44,6 +45,7 @@ export const startCommand = defineCommand({
     const app = await startBot(config, { pairPhone })
     const shutdown = async () => {
       await app.shutdown()
+      await flushBotLogs()
       process.exit(0)
     }
     process.once('SIGINT', () => void shutdown())

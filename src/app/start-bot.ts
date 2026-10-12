@@ -5,8 +5,10 @@ import { createInternalApiServer } from '../internal-api/create-server.js'
 import { createWhatsappClient } from '../whatsapp/create-client.js'
 import { registerWhatsappEvents } from '../whatsapp/whatsapp-events.js'
 import { createBotApp, type BotApp } from './create-bot-app.js'
+import { initBotLogger } from '../logging/evlog.js'
 
 export async function startBot(config: ResolvedDeadByteConfig, options: { pairPhone?: string } = {}): Promise<BotApp> {
+  initBotLogger(config, deadbyteBot.version)
   const events = createEventLogger(config)
   const client = createWhatsappClient(config, { pairPhone: options.pairPhone })
   const app = createBotApp({
