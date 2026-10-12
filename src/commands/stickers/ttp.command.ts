@@ -5,6 +5,7 @@ import { matchesCommandAlias } from '../../utils/commands.js'
 import { applyGroupMetadata, resolveStickerOptions } from './create-sticker.command.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import type { GroupConfigService } from '../../groups/group-config.service.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type TtpServices = {
   stickers?: StickerService
@@ -98,7 +99,8 @@ export const ttpCommand = defineCommand({
       if (!sticker) throw new Error('StickerService nao disponivel')
 
       await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
     }
   }

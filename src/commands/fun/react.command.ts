@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { funMessages } from '../../messages/fun.messages.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
 import { decodeHtmlEntity, fetchRandomEmoji } from './emoji-hub.helper.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export const reactCommand = defineCommand({
   id: 'fun.react',
@@ -26,7 +27,8 @@ export const reactCommand = defineCommand({
     let data
     try {
       data = await fetchRandomEmoji()
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(funMessages.emojiUnavailable)
       return
     }

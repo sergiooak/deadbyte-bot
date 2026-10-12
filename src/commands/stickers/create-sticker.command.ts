@@ -8,6 +8,7 @@ import { StickerCommandConfigSchema, type StickerMetadata, type StickerRenderOpt
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
 import type { GroupConfigService } from '../../groups/group-config.service.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type StickerCommandServices = {
   stickers?: StickerService
@@ -120,7 +121,8 @@ export const createStickerCommand = defineCommand({
     let media: BufferMedia | undefined
     try {
       media = await services.resolveTargetMedia?.()
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.mediaDownloadFailed)
       return
     }
@@ -161,7 +163,8 @@ export const createStickerCommand = defineCommand({
           }
         }
       }
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
     }
   }

@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { bibleMessages } from '../../messages/bible.messages.js'
 import { fetchBibleSearchWord, fetchBibleSearchWordAll } from '../../services/texas/texas-api.service.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export const searchBibleCommand = defineCommand({
   id: 'bible.search',
@@ -35,7 +36,8 @@ export const searchBibleCommand = defineCommand({
         return
       }
       await ctx.reply(bibleMessages.searchResult(result.nome, result.capitulo, result.versiculo!, result.escrita as string))
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(bibleMessages.fetchError)
     }
   },
@@ -73,7 +75,8 @@ export const searchBibleAllCommand = defineCommand({
         return
       }
       await ctx.reply(bibleMessages.searchAllResults(palavra, results))
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(bibleMessages.fetchError)
     }
   },

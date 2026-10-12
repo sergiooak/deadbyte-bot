@@ -4,6 +4,7 @@ import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { FfmpegService } from '../../services/media/ffmpeg.service.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type StickerToMediaServices = {
   ffmpeg?: FfmpegService
@@ -35,7 +36,8 @@ export const stickerToMediaCommand = defineCommand({
     let media: BufferMedia | undefined
     try {
       media = await services.resolveTargetMedia?.()
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.mediaDownloadFailed)
       return
     }
@@ -66,7 +68,8 @@ export const stickerToMediaCommand = defineCommand({
         const pngBuffer = await sharp(media.buffer).png().toBuffer()
         await services.replyWithMedia?.({ buffer: pngBuffer, mimeType: 'image/png', filename: 'sticker.png' })
       }
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.conversionFailed)
     }
   }

@@ -7,6 +7,7 @@ import type { StickerFit } from '../../services/stickers/sticker.types.js'
 import { overlaySubtitle } from '../../services/stickers/ttp.service.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { applyGroupMetadata, resolveStickerOptions } from './create-sticker.command.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type StickerCommandServices = {
   stickers?: StickerService
@@ -36,7 +37,8 @@ export async function resolveStickerMedia(
   try {
     const media = await services.resolveTargetMedia?.()
     return media ? { status: 'found', media } : { status: 'missing' }
-  } catch {
+  } catch (error) {
+    reportCommandError(error)
     await ctx.reply(stickerMessages.mediaDownloadFailed)
     return { status: 'failed' }
   }
@@ -103,7 +105,8 @@ export function defineStickerFitCommand(options: StickerFitCommandOptions) {
 
       try {
         await createAndReplyWithSticker(ctx, services, resolution.media, options.fit)
-      } catch {
+      } catch (error) {
+        reportCommandError(error)
         await ctx.reply(stickerMessages.creationFailed)
       }
     }

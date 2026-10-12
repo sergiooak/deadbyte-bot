@@ -2,6 +2,7 @@ import type { CommandContext } from '@deadbyte/runtime'
 import { stickerMessages } from '../../messages/sticker.messages.js'
 import type { GroupConfigService } from '../../groups/group-config.service.js'
 import type { StickerLyService } from '../../services/stickers/sticker-ly.service.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export const DEFAULT_PACK_PUBLISHER = 'DeadByte.com.br'
 
@@ -67,7 +68,8 @@ export async function sendStickerLyPack(
       id: pack.id
     })
     return true
-  } catch {
+  } catch (error) {
+    reportCommandError(error)
     await ctx.reply(stickerMessages.lyPackSendFailed)
     return false
   }

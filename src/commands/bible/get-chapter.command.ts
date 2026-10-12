@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { bibleMessages } from '../../messages/bible.messages.js'
 import { fetchBibleChapter } from '../../services/texas/texas-api.service.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 function parseChapterArgs(argsText: string): { livro: string; capitulo: string } | null {
   const trimmed = argsText.trim()
@@ -45,7 +46,8 @@ export const getChapterCommand = defineCommand({
         ? result.escrita.map((v, i) => `*${i + 1}:* ${v}`).join('\n')
         : result.escrita as string
       await ctx.reply(bibleMessages.chapter(result.nome, result.capitulo, escrita))
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(bibleMessages.fetchError)
     }
   },

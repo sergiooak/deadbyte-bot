@@ -1,6 +1,7 @@
 import { defineCommand } from '@deadbyte/runtime'
 import { fetchTexasMeme } from '../../services/texas/texas-api.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type MemeServices = {
   replyWithMedia?: (media: { buffer: Buffer; mimeType: string; filename?: string }) => Promise<void>
@@ -30,7 +31,8 @@ export const memeCommand = defineCommand({
       const isVideo = media.mimeType.startsWith('video/')
       const ext = media.mimeType.split('/')[1] ?? 'jpg'
       await services.replyWithMedia?.({ ...media, filename: `meme.${isVideo ? 'mp4' : ext}` })
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply('Não foi possível buscar o meme. Tente novamente.')
     }
   }

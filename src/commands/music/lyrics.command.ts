@@ -1,6 +1,7 @@
 import { defineCommand, type CommandContext } from '@deadbyte/runtime'
 import { fetchLyrics } from '../../services/texas/texas-api.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 function resolveTerm(ctx: CommandContext): string | null {
   const argsText = ctx.parsedCommand?.argsText?.trim()
@@ -37,7 +38,8 @@ export const lyricsCommand = defineCommand({
     try {
       const lyrics = await fetchLyrics(term)
       await ctx.reply(lyrics)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply('Não consegui encontrar a letra dessa música. Verifica o nome e tenta de novo.')
     }
   }

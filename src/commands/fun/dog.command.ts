@@ -1,6 +1,7 @@
 import { defineCommand } from '@deadbyte/runtime'
 import { fetchTexasDog } from '../../services/texas/texas-api.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type DogServices = {
   replyWithMedia?: (media: { buffer: Buffer; mimeType: string; filename?: string }) => Promise<void>
@@ -29,7 +30,8 @@ export const dogCommand = defineCommand({
       const services = ctx.services as DogServices
       const ext = media.mimeType.split('/')[1] ?? 'jpg'
       await services.replyWithMedia?.({ ...media, filename: `cachorrinho.${ext}` })
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply('Não foi possível buscar a foto do cachorrinho. Tente novamente.')
     }
   }

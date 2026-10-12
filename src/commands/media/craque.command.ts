@@ -5,6 +5,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { mediaMessages } from '../../messages/media.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { resolveAndProcessMedia, type MediaEditServices } from './media-edit.factory.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 const ASSET_PATH = join(fileURLToPath(import.meta.url), '..', '..', '..', 'assets', 'craque-do-jogo.png')
 
@@ -28,7 +29,8 @@ export const craqueCommand = defineCommand({
     let assetBuffer: Buffer
     try {
       assetBuffer = await readFile(ASSET_PATH)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(mediaMessages.craqueAssetMissing)
       return
     }

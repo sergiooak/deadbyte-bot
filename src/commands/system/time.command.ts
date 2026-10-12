@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { systemMessages } from '../../messages/system.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { buildShortLocationName, clockEmoji, formatUtcOffset, getTimeForLocation, getUtcOffsetMinutes } from './time.helper.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 const BRASILIA_TZ = 'America/Sao_Paulo'
 const DEFAULT_LOCATION = 'Brasília, Brasil'
@@ -30,7 +31,8 @@ export const timeCommand = defineCommand({
     let result
     try {
       result = await getTimeForLocation(query)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(systemMessages.timeLookupFailed)
       return
     }

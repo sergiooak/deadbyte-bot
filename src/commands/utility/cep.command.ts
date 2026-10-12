@@ -1,6 +1,7 @@
 import { defineCommand } from '@deadbyte/runtime'
 import { fetchTexasCep } from '../../services/texas/texas-api.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export const cepCommand = defineCommand({
   id: 'utility.cep',
@@ -35,7 +36,8 @@ export const cepCommand = defineCommand({
         r.street ? `🛣️ *Logradouro:* ${r.street}` : null,
       ].filter(Boolean).join('\n')
       await ctx.reply(lines)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply('Não foi possível encontrar o CEP informado. Verifique e tente novamente.')
     }
   }

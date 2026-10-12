@@ -1,6 +1,7 @@
 import { defineCommand } from '@deadbyte/runtime'
 import { fetchTexasFontes } from '../../services/texas/texas-api.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 function resolveText(ctx: Parameters<typeof fontesCommand.run>[0]): string | null {
   const argsText = ctx.parsedCommand?.argsText?.trim()
@@ -36,7 +37,8 @@ export const fontesCommand = defineCommand({
     try {
       const result = await fetchTexasFontes(text)
       await ctx.reply(result)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply('Não foi possível converter o texto. Tente novamente.')
     }
   }

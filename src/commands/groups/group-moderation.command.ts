@@ -4,6 +4,7 @@ import { collectGroupTargets, participantUser } from '../../groups/group-targets
 import { groupMessages } from '../../messages/group.messages.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import type { WhatsappChatLike, WhatsappClientLike, WhatsappMessageLike } from '../../whatsapp/whatsapp-adapter.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type GroupModerationServices = {
   rawChat?: WhatsappChatLike
@@ -331,7 +332,8 @@ async function deleteMessageWithReplies(ctx: CommandContext): Promise<void> {
         await message.delete(true)
         deleted += 1
       }
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       // Algumas mensagens antigas ou removidas nao permitem carregar a citacao.
     }
   }

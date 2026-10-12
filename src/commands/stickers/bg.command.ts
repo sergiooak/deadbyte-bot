@@ -9,6 +9,7 @@ import { RembgNotAvailableError, RembgService } from '../../services/stickers/re
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { applyGroupMetadata, resolveStickerOptions } from './create-sticker.command.js'
 import { resolveStickerMedia } from './sticker-fit-command.factory.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type BgCommandServices = {
   stickers?: StickerService
@@ -99,7 +100,8 @@ export const bgCommand = defineCommand({
       if (warning) {
         await ctx.reply(warning)
       }
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
       return
     }
@@ -123,7 +125,8 @@ export const bgCommand = defineCommand({
         .trim()
         .png()
         .toBuffer()
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       // Trim falhou, usa o buffer sem trim mesmo
     }
 
@@ -135,7 +138,8 @@ export const bgCommand = defineCommand({
       const sticker = await services.stickers?.createSticker(stickerMedia, groupMetadata, { ...options, fit: 'contain' })
       if (!sticker) throw new Error('Sticker service is not available.')
       await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
     }
   }

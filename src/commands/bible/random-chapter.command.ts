@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { bibleMessages } from '../../messages/bible.messages.js'
 import { fetchBibleRandomChapter } from '../../services/texas/texas-api.service.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export const randomChapterCommand = defineCommand({
   id: 'bible.random-chapter',
@@ -31,7 +32,8 @@ export const randomChapterCommand = defineCommand({
         ? result.escrita.map((v, i) => `*${i + 1}:* ${v}`).join('\n')
         : result.escrita
       await ctx.reply(bibleMessages.randomChapter(result.nome, result.capitulo, escrita))
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(bibleMessages.fetchError)
     }
   },

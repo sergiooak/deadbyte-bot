@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { bibleMessages } from '../../messages/bible.messages.js'
 import { fetchBibleVerse } from '../../services/texas/texas-api.service.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 function parseVerseArgs(argsText: string): { livro: string; versiculo: string } | null {
   const trimmed = argsText.trim()
@@ -42,7 +43,8 @@ export const getVerseCommand = defineCommand({
     try {
       const result = await fetchBibleVerse(parsed.livro, parsed.versiculo)
       await ctx.reply(bibleMessages.verse(result.nome, result.capitulo, result.versiculo!, result.escrita as string))
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(bibleMessages.fetchError)
     }
   },

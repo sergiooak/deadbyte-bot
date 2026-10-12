@@ -6,6 +6,7 @@ import type { StickerService } from '../../services/stickers/sticker.service.js'
 import type { StickerMetadata } from '../../services/stickers/sticker.types.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
 import { applyGroupMetadata, resolveStickerOptions } from './create-sticker.command.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type StickerCommandServices = {
   stickers?: StickerService
@@ -54,7 +55,8 @@ export const stealStickerCommand = defineCommand({
     let media: BufferMedia | undefined
     try {
       media = await services.resolveTargetMedia?.()
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.mediaDownloadFailed)
       return
     }
@@ -76,7 +78,8 @@ export const stealStickerCommand = defineCommand({
       const sticker = await services.stickers?.createSticker(media, metadata, defaults.options)
       if (!sticker) throw new Error('Sticker service is not available.')
       await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
     }
   }

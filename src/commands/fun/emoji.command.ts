@@ -5,6 +5,7 @@ import { fetchTexasScremoji } from '../../services/texas/texas-api.service.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
 import { applyGroupMetadata, resolveStickerOptions } from '../stickers/create-sticker.command.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 // Tipo de respondivel registrado no ReplyableService para o seletor de fornecedor.
 export const EMOJI_REPLYABLE_TYPE = 'fun.emoji.provider-selector'
@@ -94,7 +95,8 @@ export async function handleEmojiProviderReply(
   }
   try {
     await sendEmojiSticker(ctx, imageUrl, services)
-  } catch {
+  } catch (error) {
+    reportCommandError(error)
     await ctx.reply(stickerMessages.creationFailed)
   }
 }
@@ -137,7 +139,8 @@ export const emojiCommand = defineCommand({
     let providers: Record<string, string>
     try {
       providers = await fetchTexasScremoji(emoji)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
       return
     }
@@ -163,7 +166,8 @@ export const emojiCommand = defineCommand({
 
     try {
       await sendEmojiSticker(ctx, imageUrl, services)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
       return
     }

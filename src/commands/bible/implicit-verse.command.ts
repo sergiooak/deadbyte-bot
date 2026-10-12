@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { bibleMessages } from '../../messages/bible.messages.js'
 import { fetchBibleVerse, fetchBibleChapter } from '../../services/texas/texas-api.service.js'
 import { parseImplicitVerseRef } from './bible-books.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export const implicitVerseCommand = defineCommand({
   id: 'bible.implicit-verse',
@@ -38,7 +39,8 @@ export const implicitVerseCommand = defineCommand({
           : result.escrita as string
         await ctx.reply(bibleMessages.chapter(result.nome, result.capitulo, escrita))
       }
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(bibleMessages.fetchError)
     }
   },

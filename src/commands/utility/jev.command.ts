@@ -3,6 +3,7 @@ import { askJevChoice, askJevYesNo, type JevChoiceResult, type JevNoulResult } f
 import { NO_KEY, YES_KEY, parseQuestion, type ParsedQuestion } from '../../services/jev/question-parser.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
 import { escapeSpintax, spintaxFromVariants } from '../../utils/spintax.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 // Deboche de reserva quando o parser nao devolve comentario para o resultado.
 const FALLBACK_COMMENT = ['Tá decidido, sem choro.', 'É isso e pronto, confia no Jev.', 'Reclamação? Fala com o Jev.']
@@ -105,7 +106,8 @@ export const jevCommand = defineCommand({
     let parsed: ParsedQuestion
     try {
       parsed = await parseQuestion(input.question, input.context)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply('Não consegui entender a pergunta agora. Tenta de novo em instantes.')
       return
     }
@@ -121,7 +123,8 @@ export const jevCommand = defineCommand({
         const result = await askJevYesNo(parsed.question, input.context)
         await ctx.reply(formatYesNo(parsed, result))
       }
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply('O Jev não respondeu agora. Tenta de novo em instantes.')
     }
   }

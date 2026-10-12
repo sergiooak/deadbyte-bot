@@ -5,6 +5,7 @@ import { fetchTexasAttp } from '../../services/texas/texas-api.service.js'
 import type { StickerService } from '../../services/stickers/sticker.service.js'
 import { matchesExplicitAlias } from '../../utils/commands.js'
 import { applyGroupMetadata, resolveStickerOptions } from './create-sticker.command.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 type AttpServices = {
   stickers?: StickerService
@@ -51,7 +52,8 @@ export const attpCommand = defineCommand({
       if (!sticker) throw new Error('Sticker service is not available.')
 
       await ctx.replyWithSticker(sticker.buffer, sticker.mimeType)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.creationFailed)
     }
   }

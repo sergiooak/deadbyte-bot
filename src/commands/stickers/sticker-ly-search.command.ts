@@ -2,6 +2,7 @@ import { defineCommand, type CommandContext } from '@deadbyte/runtime'
 import { stickerMessages } from '../../messages/sticker.messages.js'
 import { getNormalizedCommandAliases, matchesCommandAliasWithSuffix } from '../../utils/commands.js'
 import { sendStickerLyPack, type StickerLyCommandServices } from './sticker-ly.shared.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 const PAGE_SUFFIX = /^\d+$/
 
@@ -60,7 +61,8 @@ export const searchStickerLyCommand = defineCommand({
     let stickers
     try {
       stickers = await services.stickerLy.search(term)
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(stickerMessages.lyPackSendFailed)
       return
     }

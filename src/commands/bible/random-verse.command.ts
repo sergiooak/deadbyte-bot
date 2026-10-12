@@ -2,6 +2,7 @@ import { defineCommand } from '@deadbyte/runtime'
 import { bibleMessages } from '../../messages/bible.messages.js'
 import { fetchBibleRandomVerse } from '../../services/texas/texas-api.service.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export const randomVerseCommand = defineCommand({
   id: 'bible.random-verse',
@@ -25,7 +26,8 @@ export const randomVerseCommand = defineCommand({
     try {
       const result = await fetchBibleRandomVerse()
       await ctx.reply(bibleMessages.randomVerse(result.nome, result.capitulo, result.versiculo!, result.escrita as string))
-    } catch {
+    } catch (error) {
+      reportCommandError(error)
       await ctx.reply(bibleMessages.fetchError)
     }
   },

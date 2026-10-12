@@ -4,6 +4,7 @@ import { utilityMessages } from '../../messages/utility.messages.js'
 import { getNormalizedCommandAliases, matchesCommandAliasWithSuffix } from '../../utils/commands.js'
 import { sortCitiesByRelevance } from './ddd-data.helper.js'
 import { collectPhoneTargets, parsePhoneNumber } from './phone-code.helper.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 const STATE_NAMES: Record<string, string> = {
   AC: 'Acre',
@@ -71,7 +72,8 @@ async function lookupDdd(dddStr: string): Promise<string | undefined> {
     data = await ofetch<BrasilApiDddResponse>(
       `https://brasilapi.com.br/api/ddd/v1/${dddStr}`
     )
-  } catch {
+  } catch (error) {
+    reportCommandError(error)
     return undefined
   }
 

@@ -4,6 +4,7 @@ import { mediaMessages } from '../../messages/media.messages.js'
 import type { FfmpegService } from '../../services/media/ffmpeg.service.js'
 import type { BufferMedia } from '../../services/media/media.types.js'
 import { matchesCommandAlias } from '../../utils/commands.js'
+import { reportCommandError } from '../../logging/trace.js'
 
 export type MediaEditServices = {
   ffmpeg?: FfmpegService
@@ -53,7 +54,8 @@ export async function resolveAndProcessMedia(
   let media: BufferMedia | undefined
   try {
     media = await services.resolveTargetMedia?.()
-  } catch {
+  } catch (error) {
+    reportCommandError(error)
     await ctx.reply(mediaMessages.downloadFailed)
     return
   }
@@ -96,7 +98,8 @@ export async function resolveAndProcessMedia(
         break
       }
     }
-  } catch {
+  } catch (error) {
+    reportCommandError(error)
     await ctx.reply(mediaMessages.processingFailed)
   }
 }
