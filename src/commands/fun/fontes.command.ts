@@ -14,7 +14,7 @@ export const fontesCommand = defineCommand({
   group: 'fun',
   name: 'Fontes / estilos de texto',
   description: 'Converte texto para diversos estilos e fontes Unicode.',
-  aliases: ['fontes', 'fonts', 'morefonts', 'fancy', 'estilos', 'letras', 'unicode'],
+  aliases: ['fontes', 'fonts', 'morefonts', 'fancy', 'estilos', 'unicode'],
   enabledByDefault: true,
   ownerOnlyByDefault: false,
   supports: {
