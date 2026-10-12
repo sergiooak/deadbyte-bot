@@ -1,6 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import type { BotApp } from '../app/create-bot-app.js'
+import { applyGroupMetadata, resolveStickerOptions } from '../commands/stickers/create-sticker.command.js'
+import type { GroupConfigService } from '../groups/group-config.service.js'
+import type { StickerService } from '../services/stickers/sticker.service.js'
+import { fetchTtp } from '../services/stickers/ttp.service.js'
 import { bufferMediaToWhatsappMedia } from './media.mapper.js'
 
 /**
@@ -194,12 +198,20 @@ export async function getChat(app: BotApp, chatId: string) {
 export async function sendToChat(
   app: BotApp,
   chatId: string,
-  message: { text?: string; media?: { base64: string; mimeType: string; filename?: string }; mentionAll?: boolean }
+  message: {
+    text?: string
+    media?: { base64: string; mimeType: string; filename?: string }
+    mentionAll?: boolean
+    /** Envia o texto como figurinha TTP no estilo informado, igual ao !ttp/!ttp2/!ttp3. */
+    ttpStyle?: 1 | 2 | 3
+  }
 ) {
   const chat = await control(app).getChatById(chatId)
   const mentions = message.mentionAll && chat.isGroup ? (chat.participants ?? []).map((participant) => participant.id._serialized) : undefined
 
-  if (message.media) {
+  if (message.ttpStyle && message.text?.trim()) {
+    await chat.sendMessage(await createTtpSticker(app, chat, message.text.trim(), message.ttpStyle), { sendMediaAsSticker: true })
+  } else if (message.media) {
     const media = bufferMediaToWhatsappMedia({
       buffer: Buffer.from(message.media.base64, 'base64'),
       mimeType: message.media.mimeType,
@@ -210,6 +222,22 @@ export async function sendToChat(
     await chat.sendMessage(message.text, { mentions })
   }
   return { ok: true }
+}
+
+/** Mesma figurinha do comando sticker.ttp: pacote/autor da config de figurinhas e do grupo. */
+async function createTtpSticker(app: BotApp, chat: ControlChat, text: string, style: 1 | 2 | 3) {
+  const services = app.services as { stickers?: StickerService; groupConfigs?: GroupConfigService }
+  if (!services.stickers) {
+    throw new Error('StickerService não disponível.')
+  }
+  const image = await fetchTtp(text, style)
+  const { metadata, options } = resolveStickerOptions(app.config.commands['sticker.create']?.config)
+  const sticker = await services.stickers.createSticker(
+    image,
+    applyGroupMetadata(metadata, { isGroup: chat.isGroup, id: chat.id._serialized }, services.groupConfigs),
+    { ...options, fit: 'contain' }
+  )
+  return bufferMediaToWhatsappMedia({ buffer: sticker.buffer, mimeType: sticker.mimeType, filename: 'sticker.webp' })
 }
 
 export async function runChatAction(app: BotApp, chatId: string, action: ChatAction) {

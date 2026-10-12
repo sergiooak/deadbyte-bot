@@ -43,9 +43,11 @@ const SendSchema = z
   .object({
     text: z.string().max(65_536).optional(),
     media: MediaSchema.optional(),
-    mentionAll: z.boolean().optional()
+    mentionAll: z.boolean().optional(),
+    ttpStyle: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional()
   })
   .refine((value) => value.text || value.media, 'Informe um texto ou um arquivo.')
+  .refine((value) => !value.ttpStyle || value.text?.trim(), 'Escreva o texto da figurinha TTP.')
 
 const ActionSchema = z.object({
   action: z.enum(['markRead', 'markUnread', 'archive', 'unarchive', 'pin', 'unpin', 'mute', 'unmute', 'clear', 'delete', 'leave'])
