@@ -40,6 +40,8 @@ export function initBotLogger(config: ResolvedDeadByteConfig, version: string): 
       version,
       commitHash: process.env.DEADBYTE_COMMIT || undefined
     },
+    // Mensagem sem comando sai como debug no wide event: não é gravada.
+    minLevel: 'info',
     pretty: config.mode === 'standalone',
     silent: config.mode === 'managed',
     redact: { builtins: ['email', 'phone', 'creditCard', 'jwt', 'bearer', 'iban'], paths: ['payload.qr', 'qr', 'code'] },
