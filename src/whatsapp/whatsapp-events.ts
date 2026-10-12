@@ -3,6 +3,7 @@ import qrcode from 'qrcode-terminal'
 import type { BotApp } from '../app/create-bot-app.js'
 import type { GroupConfigService } from '../groups/group-config.service.js'
 import { maskPhone } from './pairing.js'
+import { applyWhatsappSettings } from './whatsapp-control.js'
 import type { WhatsappGroupNotificationLike, WhatsappMessageLike } from './whatsapp-adapter.js'
 
 // Ainda não existe no DeadByteEventNames do runtime; o schema aceita qualquer nome.
@@ -107,6 +108,8 @@ export function registerWhatsappEvents(app: BotApp): void {
 
   app.client.on('ready', () => {
     app.state.status = 'ready'
+    // Reaplica presença e auto-download salvos ao lado da sessão (sobrevivem a redeploy).
+    void applyWhatsappSettings(app).catch((error: unknown) => console.error('Falha ao aplicar configurações do WhatsApp:', error))
     void app.events.emit({
       id: crypto.randomUUID(),
       name: DeadByteEventNames.WhatsappReady,
