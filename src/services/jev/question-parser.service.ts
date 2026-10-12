@@ -1,3 +1,5 @@
+import { requireEnv } from '../../utils/required-env.js'
+
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
 const PARSER_MODEL = 'gpt-4o-mini'
 
@@ -63,8 +65,7 @@ const SYSTEM_PROMPT = [
 ].join('\n')
 
 function requireOpenAiApiKey(): string {
-  const apiKey = process.env.DEADBYTE_OPENAI_API_KEY?.trim()
-  if (!apiKey) throw new Error('DEADBYTE_OPENAI_API_KEY is required to parse questions for Jev.')
+  const apiKey = requireEnv('DEADBYTE_OPENAI_API_KEY', 'O parser de perguntas do Jev')
   return apiKey
 }
 

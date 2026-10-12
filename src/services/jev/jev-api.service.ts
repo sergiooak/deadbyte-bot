@@ -1,3 +1,5 @@
+import { requireEnv } from '../../utils/required-env.js'
+
 const TYPESAFE_API_URL = 'https://api.typesafe.ai/v1/systemone'
 const JEV_MODEL = 'jev-latest'
 
@@ -39,8 +41,7 @@ export type JevChoiceResult = {
 }
 
 function requireJevApiKey(): string {
-  const apiKey = process.env.DEADBYTE_TYPESAFE_API_KEY?.trim()
-  if (!apiKey) throw new Error('DEADBYTE_TYPESAFE_API_KEY is required to call the Jev (TypeSafe) API.')
+  const apiKey = requireEnv('DEADBYTE_TYPESAFE_API_KEY', 'O comando Jev (TypeSafe)')
   return apiKey
 }
 

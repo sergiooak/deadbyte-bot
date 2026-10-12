@@ -1,10 +1,10 @@
 import { FfmpegService } from '../media/ffmpeg.service.js'
+import { requireEnv } from '../../utils/required-env.js'
 
 const TTP_BASE_URL = 'https://v1.deadbyte.com.br'
 
 function buildTtpUrl(text: string, style: 1 | 2 | 3 = 1, subtitle = false): string {
-  const apiKey = process.env.DEADBYTE_TTP_API_KEY?.trim()
-  if (!apiKey) throw new Error('DEADBYTE_TTP_API_KEY is required to call the TTP API.')
+  const apiKey = requireEnv('DEADBYTE_TTP_API_KEY', 'A figurinha de texto (ttp)')
 
   const url = new URL(`${TTP_BASE_URL}/image-creator/ttp/${style}`)
   url.searchParams.set('key', apiKey)

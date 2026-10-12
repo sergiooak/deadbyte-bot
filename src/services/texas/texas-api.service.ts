@@ -1,3 +1,5 @@
+import { requireEnv } from '../../utils/required-env.js'
+
 const TEXAS_API_BASE_URL = 'https://api.texaswho.net.br'
 
 type TexasApiResponse = {
@@ -34,8 +36,7 @@ type BibleApiResponse = {
 }
 
 export function buildTexasApiUrl(endpoint: string, params: Record<string, string>): string {
-  const apiKey = process.env.DEADBYTE_TEXAS_API_KEY?.trim()
-  if (!apiKey) throw new Error('DEADBYTE_TEXAS_API_KEY is required to call Texas API.')
+  const apiKey = requireEnv('DEADBYTE_TEXAS_API_KEY', 'Os comandos da Texas API (bíblia, música, emoji)')
 
   const url = new URL(`${TEXAS_API_BASE_URL}/${endpoint}`)
   url.searchParams.set('apikey', apiKey)
@@ -224,8 +225,7 @@ export async function fetchTexasMeme(): Promise<{ buffer: Buffer; mimeType: stri
 }
 
 async function fetchBiblia(params: Record<string, string>): Promise<BibleApiResponse['result']> {
-  const apiKey = process.env.DEADBYTE_TEXAS_API_KEY?.trim()
-  if (!apiKey) throw new Error('DEADBYTE_TEXAS_API_KEY is required to call Texas API.')
+  const apiKey = requireEnv('DEADBYTE_TEXAS_API_KEY', 'Os comandos da Texas API (bíblia, música, emoji)')
 
   const url = new URL(`${TEXAS_API_BASE_URL}/biblia`)
   url.searchParams.set('apikey', apiKey)
