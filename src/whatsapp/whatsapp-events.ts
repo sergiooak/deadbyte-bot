@@ -2,7 +2,6 @@ import { DeadByteEventNames } from '@deadbyte/runtime'
 import qrcode from 'qrcode-terminal'
 import type { BotApp } from '../app/create-bot-app.js'
 import type { GroupConfigService } from '../groups/group-config.service.js'
-import { maskPhone } from './pairing.js'
 import { applyWhatsappSettings } from './whatsapp-control.js'
 import type { WhatsappGroupNotificationLike, WhatsappMessageLike } from './whatsapp-adapter.js'
 
@@ -89,7 +88,7 @@ export function registerWhatsappEvents(app: BotApp): void {
       name: WhatsappPairingCodeGenerated,
       level: 'info',
       instanceId: app.config.instanceId,
-      payload: { phoneNumber: maskPhone(app.state.pairing.phoneNumber) },
+      payload: { phoneNumber: app.state.pairing.phoneNumber },
       timestamp: new Date().toISOString()
     })
   })

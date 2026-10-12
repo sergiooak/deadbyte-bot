@@ -1,7 +1,7 @@
 import { createError, eventHandler, readValidatedBody } from 'h3'
 import { z } from 'zod'
 import type { BotApp } from '../../app/create-bot-app.js'
-import { formatPairingCode, maskPhone, normalizePairingPhone } from '../../whatsapp/pairing.js'
+import { formatPairingCode, normalizePairingPhone } from '../../whatsapp/pairing.js'
 
 const PairingBodySchema = z.object({
   phoneNumber: z.string().min(1)
@@ -15,7 +15,7 @@ function pairingView(app: BotApp) {
   return {
     active: true as const,
     code: formatPairingCode(pairing.code),
-    phoneNumber: maskPhone(pairing.phoneNumber),
+    phoneNumber: pairing.phoneNumber,
     updatedAt: pairing.updatedAt
   }
 }

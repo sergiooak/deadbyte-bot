@@ -11,7 +11,7 @@ import type { ResolvedDeadByteConfig } from '@deadbyte/runtime'
  *   (/data/logs/bots/<instância>/AAAA-MM-DD.jsonl). O console fica em silêncio para não misturar
  *   com o protocolo __DEADBYTE_EVENT__ do stdout.
  * - Em standalone, sai no console em formato legível.
- * - Telefones, e-mails, tokens e cartões são mascarados pelo redact do evlog (LGPD).
+ * - Nomes e números aparecem completos. E-mails, tokens e cartões são mascarados pelo redact do evlog.
  */
 
 let drain: (((ctx: DrainContext) => void) & { flush?: () => Promise<void> }) | undefined
@@ -44,7 +44,7 @@ export function initBotLogger(config: ResolvedDeadByteConfig, version: string): 
     minLevel: 'info',
     pretty: config.mode === 'standalone',
     silent: config.mode === 'managed',
-    redact: { builtins: ['email', 'phone', 'creditCard', 'jwt', 'bearer', 'iban'], paths: ['payload.qr', 'qr', 'code'] },
+    redact: { builtins: ['email', 'creditCard', 'jwt', 'bearer', 'iban'], paths: ['payload.qr', 'qr', 'code'] },
     drain
   })
 }

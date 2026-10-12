@@ -25,7 +25,6 @@ import { readBotEnv } from '../utils/env.js'
 import type { WhatsappChatLike, WhatsappClientLike, WhatsappMessageLike } from '../whatsapp/whatsapp-adapter.js'
 import { createMessageLogger } from '../logging/evlog.js'
 import { currentTraceState, runWithTrace, setCommandErrorReporter, setTraceCommand, type MessageTrace } from '../logging/trace.js'
-import { maskPhone } from '../whatsapp/pairing.js'
 
 export type BotState = {
   status: 'created' | 'starting' | 'waiting_qr' | 'authenticated' | 'ready' | 'disconnected' | 'stopping' | 'stopped' | 'error'
@@ -194,7 +193,7 @@ export function createBotApp(options: {
           chat: { name: previewContext.chat.name, type: previewContext.chat.isGroup ? 'group' : 'private' },
           sender: {
             name: previewContext.sender.pushname || previewContext.sender.name,
-            number: senderNumber ? maskPhone(senderNumber) : undefined
+            number: senderNumber || undefined
           },
           messageType: (rawMessage as { type?: string }).type
         }
